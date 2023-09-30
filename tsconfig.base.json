@@ -14,7 +14,9 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@aws/state": ["libs/frontend/state/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
