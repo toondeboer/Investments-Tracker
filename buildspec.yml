@@ -1,0 +1,23 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 18
+    commands:
+      - echo Installing nx...
+      - npm install -g nx
+  pre_build:
+    commands:
+      - echo Installing npm dependencies...
+      - npm install
+  build:
+    commands:
+      - echo Building frontend...
+      - nx build frontend
+  post_build:
+    commands:
+      - echo Build completed on `date`
+
+artifacts:
+  files: 'dist/apps/frontend/*'
