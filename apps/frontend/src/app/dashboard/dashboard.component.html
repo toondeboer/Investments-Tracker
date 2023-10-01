@@ -9,9 +9,13 @@
     <div>Testing deployment...</div>
   </div>
   <div class="row">
-    <div>value : {{ value$ | async }}</div>
+    <div>value : {{ (state$ | async)?.value }}</div>
   </div>
   <div class="row">
     <button (click)="increment()">Click me</button>
+  </div>
+
+  <div class="row">
+    <div>lambda result : {{ (state$ | async)?.data }}</div>
   </div>
 </div>

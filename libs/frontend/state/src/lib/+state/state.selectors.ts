@@ -3,7 +3,7 @@ import { FeatureState, featureKey } from './state.reducer';
 
 export const selectFeature = createFeatureSelector<FeatureState>(featureKey);
 
-export const selectValue = createSelector(
+export const selectState = createSelector(
   selectFeature,
-  (state: FeatureState) => state.value
+  (state: FeatureState) => state
 );
