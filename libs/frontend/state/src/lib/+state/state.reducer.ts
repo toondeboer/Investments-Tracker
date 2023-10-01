@@ -1,5 +1,5 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
-import { addData, getDataSuccess } from './state.actions';
+import { addDataSuccess, getDataSuccess } from './state.actions';
 
 export const featureKey = 'feature';
 
@@ -15,7 +15,7 @@ export const initialState: FeatureState = {
 
 export const reducer = createReducer(
   initialState,
-  on(addData, (state) => ({ ...state, value: state.value + 1 })),
+  on(addDataSuccess, (state, action) => ({ ...state, data: action.data })),
   on(getDataSuccess, (state, action) => ({ ...state, data: action.data }))
 );
 

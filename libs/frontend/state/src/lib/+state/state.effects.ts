@@ -4,7 +4,14 @@ import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { switchMap, catchError, of, map } from 'rxjs';
-import { getData, getDataFailure, getDataSuccess } from './state.actions';
+import {
+  addData,
+  addDataFailure,
+  addDataSuccess,
+  getData,
+  getDataFailure,
+  getDataSuccess,
+} from './state.actions';
 
 @Injectable()
 export class StateEffects {
@@ -14,15 +21,34 @@ export class StateEffects {
     private readonly service: StateService
   ) {}
 
-  public readonly getVision$ = createEffect(() =>
+  public readonly getData$ = createEffect(() =>
     this.actions$.pipe(
       ofType(getData),
       switchMap(() => {
-        console.log('test');
         return this.service.getData().pipe(
-          map((data) => getDataSuccess({ data })),
+          map((databaseObject) => {
+            console.log(databaseObject);
+            return getDataSuccess({ data: databaseObject.Items[0].data });
+          }),
           catchError((error: HttpErrorResponse) =>
             of(getDataFailure({ error: error.message }))
+          )
+        );
+      })
+    )
+  );
+
+  public readonly insertData$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(addData),
+      switchMap(() => {
+        return this.service.putData().pipe(
+          map((databaseObject) => {
+            console.log(databaseObject);
+            return addDataSuccess({ data: databaseObject.Items[0].data });
+          }),
+          catchError((error: HttpErrorResponse) =>
+            of(addDataFailure({ error: error.message }))
           )
         );
       })

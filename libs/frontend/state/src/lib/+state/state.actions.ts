@@ -11,3 +11,11 @@ export const getDataFailure = createAction(
 );
 
 export const addData = createAction('[State] Add Data');
+export const addDataSuccess = createAction(
+  '[State] Add Data Success',
+  props<{ data: string }>()
+);
+export const addDataFailure = createAction(
+  '[State] Add Data Failure',
+  props<{ error: string }>()
+);
