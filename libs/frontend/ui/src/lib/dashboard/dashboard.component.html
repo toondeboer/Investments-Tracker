@@ -8,8 +8,14 @@
   <div class="row">
     <div>Testing deployment...</div>
   </div>
-  <div class="row">
-    <div>value : {{ (state$ | async)?.value }}</div>
+  <div *ngFor="let transaction of (state$ | async)?.transactions" class="row">
+    <div>
+      date : {{ transaction.date.getDate() }}/{{
+        transaction.date.getUTCMonth() + 1
+      }}/{{ transaction.date.getFullYear() }}
+    </div>
+    <div>amount : {{ transaction.amount }}</div>
+    <div>value : {{ transaction.value }}</div>
   </div>
   <div class="row">
     <button (click)="increment()">Click me</button>

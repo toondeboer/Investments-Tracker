@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { addData, getData, selectState } from '@aws/state';
 import { Store } from '@ngrx/store';
+import { EChartsOption } from 'echarts';
 
 @Component({
   selector: 'aws-dashboard',
@@ -10,10 +11,27 @@ import { Store } from '@ngrx/store';
 export class DashboardComponent implements OnInit {
   state$ = this.store.select(selectState);
 
+  chartOption: EChartsOption = {
+    xAxis: {
+      type: 'category',
+      data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    },
+    yAxis: {
+      type: 'value',
+    },
+    series: [
+      {
+        data: [820, 932, 901, 934, 1290, 1330, 1320],
+        type: 'line',
+      },
+    ],
+  };
+
   constructor(private store: Store) {}
 
   ngOnInit(): void {
-    this.store.dispatch(getData());
+    return;
+    // this.store.dispatch(getData());
   }
 
   increment() {

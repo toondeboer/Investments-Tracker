@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@aws/state": ["libs/frontend/state/src/index.ts"]
+      "@aws/state": ["libs/frontend/state/src/index.ts"],
+      "@aws/ui": ["libs/frontend/ui/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
