@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { addData, getData, selectState } from '@aws/state';
+import { addData, selectState } from '@aws/state';
 import { Store } from '@ngrx/store';
 import { EChartsOption } from 'echarts';
 

@@ -24,4 +24,8 @@
   <div class="row">
     <div>lambda result : {{ (state$ | async)?.data }}</div>
   </div>
+
+  <div class="row">
+    <div echarts class="demo-chart" [options]="chartOption"></div>
+  </div>
 </div>
