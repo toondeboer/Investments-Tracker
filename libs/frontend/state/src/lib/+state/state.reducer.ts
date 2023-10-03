@@ -1,15 +1,12 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
 import { addDataSuccess, getDataSuccess } from './state.actions';
+import { Transaction } from '@aws/util';
 
 export const featureKey = 'feature';
 
 export interface FeatureState {
   data: string;
-  transactions: {
-    date: Date;
-    amount: number;
-    value: number;
-  }[];
+  transactions: Transaction[];
 }
 
 function getDate(monthsAgo: number): Date {
@@ -28,20 +25,20 @@ export const initialState: FeatureState = {
     },
     {
       date: getDate(3),
-      amount: 1,
-      value: 5,
+      amount: 2,
+      value: 4,
     },
     {
       date: getDate(2),
-      amount: 1,
-      value: 5,
+      amount: 3,
+      value: 6,
     },
     {
       date: getDate(1),
-      amount: 1,
-      value: 5,
+      amount: 4,
+      value: 7,
     },
-    { date: new Date(), amount: 1, value: 5 },
+    { date: new Date(), amount: 5, value: 8 },
   ],
 };
 
