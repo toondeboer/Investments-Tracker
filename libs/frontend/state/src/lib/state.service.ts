@@ -1,15 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { DatabaseObject, Transaction } from '@aws/util';
 import { Observable } from 'rxjs';
-
-export interface DatabaseObject {
-  Items: [
-    {
-      partitionKey: string;
-      data: string;
-    }
-  ];
-}
 
 @Injectable({
   providedIn: 'root',
@@ -22,17 +14,41 @@ export class StateService {
     return this.http.get<DatabaseObject>(`${this.baseUrl}`);
   }
 
-  public putData(): Observable<DatabaseObject> {
-    return this.http.post<DatabaseObject>(
+  public saveTransaction(
+    transaction: Transaction
+  ): Observable<{ Attributes: { transactions: Transaction[] } }> {
+    return this.http.put<{ Attributes: { transactions: Transaction[] } }>(
       `${this.baseUrl}`,
       {
         TableName: 'table',
-        Item: {
+        Key: {
           partitionKey: 'pk-test',
-          data: 'test12345',
         },
-      },
-      { headers: { 'Content-Type': 'application/json' } }
+        UpdateExpression: 'set transactions = list_append(transactions, :t)',
+        ExpressionAttributeValues: {
+          ':t': [transaction],
+        },
+        ReturnValues: 'ALL_NEW',
+      }
+    );
+  }
+
+  public setTransactions(
+    transactions: Transaction[]
+  ): Observable<{ Attributes: { transactions: Transaction[] } }> {
+    return this.http.put<{ Attributes: { transactions: Transaction[] } }>(
+      `${this.baseUrl}`,
+      {
+        TableName: 'table',
+        Key: {
+          partitionKey: 'pk-test',
+        },
+        UpdateExpression: 'set transactions = :t',
+        ExpressionAttributeValues: {
+          ':t': transactions,
+        },
+        ReturnValues: 'ALL_NEW',
+      }
     );
   }
 }

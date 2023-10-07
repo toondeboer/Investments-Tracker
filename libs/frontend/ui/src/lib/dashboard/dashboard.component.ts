@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { addData, selectState } from '@aws/state';
-import { Transaction, transactionToChartData } from '@aws/util';
+import { getData, selectState } from '@aws/state';
 import { Store } from '@ngrx/store';
 import { EChartsOption } from 'echarts';
 
@@ -31,15 +30,6 @@ export class DashboardComponent implements OnInit {
   constructor(private store: Store) {}
 
   ngOnInit(): void {
-    return;
-    // this.store.dispatch(getData());
-  }
-
-  getChartData(transactions: Transaction[]) {
-    return transactionToChartData(transactions);
-  }
-
-  increment() {
-    this.store.dispatch(addData());
+    this.store.dispatch(getData());
   }
 }

@@ -1,0 +1,19 @@
+<h1>Transactions</h1>
+<div *ngFor="let transaction of transactions" class="transaction-row">
+  <div>
+    date : {{ transaction.date.getDate() }}/{{
+      transaction.date.getUTCMonth() + 1
+    }}/{{ transaction.date.getFullYear() }}
+  </div>
+  <div>amount : {{ transaction.amount }}</div>
+  <div>value : {{ transaction.value }}</div>
+  <button (click)="deleteTransaction(transactions, transaction)">Delete</button>
+</div>
+
+<div class="transaction-form">
+  <div>Add transaction:</div>
+  <input type="date" [(ngModel)]="date" />
+  <input type="number" [(ngModel)]="value" placeholder="value" />
+  <input type="number" [(ngModel)]="amount" placeholder="amount" />
+  <button (click)="saveTransaction()">Save</button>
+</div>

@@ -1,14 +1,8 @@
-<div class="container">
-  <div class="row">
-    <h1>Hello world</h1>
-  </div>
-  <div class="row">
-    <div>Hello world</div>
-  </div>
-  <div class="row">
-    <div>Testing deployment...</div>
-  </div>
-  <div *ngFor="let transaction of (state$ | async)?.transactions" class="row">
+<div class="container" *ngIf="state$ | async as state">
+  <aws-transactions-table
+    [transactions]="state.transactions"
+  ></aws-transactions-table>
+  <div *ngFor="let transaction of state?.transactions" class="row">
     <div>
       date : {{ transaction.date.getDate() }}/{{
         transaction.date.getUTCMonth() + 1
@@ -17,18 +11,11 @@
     <div>amount : {{ transaction.amount }}</div>
     <div>value : {{ transaction.value }}</div>
   </div>
-  <div class="row">
-    <button (click)="increment()">Click me</button>
-  </div>
-
-  <div class="row">
-    <div>lambda result : {{ (state$ | async)?.data }}</div>
-  </div>
 
   <div class="row">
     <div echarts class="demo-chart" [options]="chartOption"></div>
   </div>
-  <div *ngIf="(state$ | async)?.transactions as transactions" class="row">
-    <aws-chart [chartData]="getChartData(transactions)"></aws-chart>
+  <div class="row">
+    <aws-chart [transactions]="state.transactions"></aws-chart>
   </div>
 </div>

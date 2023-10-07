@@ -1,21 +1,38 @@
+import { DatabaseObject, Transaction } from '@aws/util';
 import { createAction, props } from '@ngrx/store';
 
 export const getData = createAction('[State] Get Data');
 export const getDataSuccess = createAction(
   '[State] Get Data Success',
-  props<{ data: string }>()
+  props<{ data: DatabaseObject }>()
 );
 export const getDataFailure = createAction(
   '[State] Get Data Failure',
   props<{ error: string }>()
 );
 
-export const addData = createAction('[State] Add Data');
-export const addDataSuccess = createAction(
-  '[State] Add Data Success',
-  props<{ data: string }>()
+export const saveTransaction = createAction(
+  '[State] Save Transaction',
+  props<{ transaction: Transaction }>()
 );
-export const addDataFailure = createAction(
-  '[State] Add Data Failure',
+export const saveTransactionSuccess = createAction(
+  '[State] Save Transaction Success',
+  props<{ transactions: Transaction[] }>()
+);
+export const saveTransactionFailure = createAction(
+  '[State] Save Transaction Failure',
+  props<{ error: string }>()
+);
+
+export const deleteTransaction = createAction(
+  '[State] Delete Transaction',
+  props<{ newTransactions: Transaction[] }>()
+);
+export const deleteTransactionSuccess = createAction(
+  '[State] Delete Transaction Success',
+  props<{ transactions: Transaction[] }>()
+);
+export const deleteTransactionFailure = createAction(
+  '[State] Delete Transaction Failure',
   props<{ error: string }>()
 );

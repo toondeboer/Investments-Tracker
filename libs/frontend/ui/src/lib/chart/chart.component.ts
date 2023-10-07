@@ -1,5 +1,5 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { ChartData } from '@aws/util';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Transaction, transactionToChartData } from '@aws/util';
 import { EChartsOption } from 'echarts';
 
 @Component({
@@ -7,40 +7,32 @@ import { EChartsOption } from 'echarts';
   templateUrl: './chart.component.html',
   styleUrls: ['./chart.component.scss'],
 })
-export class ChartComponent implements OnInit {
-  @Input() chartData: ChartData | undefined;
+export class ChartComponent implements OnChanges {
+  @Input() transactions: Transaction[] = [];
 
-  chartOption: EChartsOption;
+  chartOptions: EChartsOption | undefined;
 
-  constructor() {
-    this.chartOption = {
-      xAxis: {
-        type: 'category',
-        data: this.chartData?.x,
-      },
-      yAxis: {
-        type: 'value',
-      },
-      series: [
-        {
-          data: this.chartData?.data,
-          type: 'line',
-        },
-      ],
-    };
+  ngOnChanges() {
+    this.chartOptions = this.getChartOptions();
   }
-  ngOnInit(): void {
-    this.chartOption = {
+
+  getChartData(transactions: Transaction[]) {
+    return transactionToChartData(transactions);
+  }
+
+  getChartOptions(): EChartsOption {
+    const chartData = this.getChartData(this.transactions);
+    return {
       xAxis: {
         type: 'category',
-        data: this.chartData?.x,
+        data: chartData.x,
       },
       yAxis: {
         type: 'value',
       },
       series: [
         {
-          data: this.chartData?.data,
+          data: chartData.data,
           type: 'line',
         },
       ],
