@@ -1,4 +1,4 @@
-import { DatabaseObject, Transaction } from '@aws/util';
+import { DatabaseObject, Transaction, TransactionDbo } from '@aws/util';
 import { createAction, props } from '@ngrx/store';
 
 export const getData = createAction('[State] Get Data');
@@ -17,7 +17,7 @@ export const saveTransaction = createAction(
 );
 export const saveTransactionSuccess = createAction(
   '[State] Save Transaction Success',
-  props<{ transactions: Transaction[] }>()
+  props<{ transactions: TransactionDbo[] }>()
 );
 export const saveTransactionFailure = createAction(
   '[State] Save Transaction Failure',
@@ -30,7 +30,7 @@ export const deleteTransaction = createAction(
 );
 export const deleteTransactionSuccess = createAction(
   '[State] Delete Transaction Success',
-  props<{ transactions: Transaction[] }>()
+  props<{ transactions: TransactionDbo[] }>()
 );
 export const deleteTransactionFailure = createAction(
   '[State] Delete Transaction Failure',

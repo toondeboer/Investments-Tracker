@@ -2,19 +2,6 @@
   <aws-transactions-table
     [transactions]="state.transactions"
   ></aws-transactions-table>
-  <div *ngFor="let transaction of state?.transactions" class="row">
-    <div>
-      date : {{ transaction.date.getDate() }}/{{
-        transaction.date.getUTCMonth() + 1
-      }}/{{ transaction.date.getFullYear() }}
-    </div>
-    <div>amount : {{ transaction.amount }}</div>
-    <div>value : {{ transaction.value }}</div>
-  </div>
-
-  <div class="row">
-    <div echarts class="demo-chart" [options]="chartOption"></div>
-  </div>
   <div class="row">
     <aws-chart [transactions]="state.transactions"></aws-chart>
   </div>

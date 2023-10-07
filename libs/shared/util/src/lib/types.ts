@@ -9,15 +9,23 @@ export type ChartData = {
   data: number[];
 };
 
-export interface DatabaseObject {
+export type TransactionDbo = {
+  date: string;
+  amount: number;
+  value: number;
+};
+
+export type DatabaseObject = {
   Items: [
     {
       partitionKey: string;
-      transactions: {
-        date: string;
-        amount: number;
-        value: number;
-      }[];
+      transactions: TransactionDbo[];
     }
   ];
-}
+};
+
+export type TransactionsAttributes = {
+  Attributes: {
+    transactions: TransactionDbo[];
+  };
+};

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { DatabaseObject, Transaction } from '@aws/util';
+import { DatabaseObject, Transaction, TransactionsAttributes } from '@aws/util';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -16,39 +16,33 @@ export class StateService {
 
   public saveTransaction(
     transaction: Transaction
-  ): Observable<{ Attributes: { transactions: Transaction[] } }> {
-    return this.http.put<{ Attributes: { transactions: Transaction[] } }>(
-      `${this.baseUrl}`,
-      {
-        TableName: 'table',
-        Key: {
-          partitionKey: 'pk-test',
-        },
-        UpdateExpression: 'set transactions = list_append(transactions, :t)',
-        ExpressionAttributeValues: {
-          ':t': [transaction],
-        },
-        ReturnValues: 'ALL_NEW',
-      }
-    );
+  ): Observable<TransactionsAttributes> {
+    return this.http.put<TransactionsAttributes>(`${this.baseUrl}`, {
+      TableName: 'table',
+      Key: {
+        partitionKey: 'pk-test',
+      },
+      UpdateExpression: 'set transactions = list_append(transactions, :t)',
+      ExpressionAttributeValues: {
+        ':t': [transaction],
+      },
+      ReturnValues: 'ALL_NEW',
+    });
   }
 
   public setTransactions(
     transactions: Transaction[]
-  ): Observable<{ Attributes: { transactions: Transaction[] } }> {
-    return this.http.put<{ Attributes: { transactions: Transaction[] } }>(
-      `${this.baseUrl}`,
-      {
-        TableName: 'table',
-        Key: {
-          partitionKey: 'pk-test',
-        },
-        UpdateExpression: 'set transactions = :t',
-        ExpressionAttributeValues: {
-          ':t': transactions,
-        },
-        ReturnValues: 'ALL_NEW',
-      }
-    );
+  ): Observable<TransactionsAttributes> {
+    return this.http.put<TransactionsAttributes>(`${this.baseUrl}`, {
+      TableName: 'table',
+      Key: {
+        partitionKey: 'pk-test',
+      },
+      UpdateExpression: 'set transactions = :t',
+      ExpressionAttributeValues: {
+        ':t': transactions,
+      },
+      ReturnValues: 'ALL_NEW',
+    });
   }
 }
