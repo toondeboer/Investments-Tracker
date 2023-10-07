@@ -1,4 +1,10 @@
-import { ChartData, Transaction, TransactionDbo } from './types';
+import {
+  ChartData,
+  Ticker,
+  Transaction,
+  TransactionDbo,
+  YahooObject,
+} from './types';
 
 export function transactionToChartData(transactions: Transaction[]): ChartData {
   if (transactions.length === 0) {
@@ -28,4 +34,13 @@ export function transactionsDboToTransactions(
         return 1;
       }
     });
+}
+
+export function yahooObjectToTicker(yahooObject: YahooObject): Ticker {
+  const result = yahooObject.chart.result[0];
+  return {
+    name: result.meta.symbol,
+    values: result.indicators.quote[0].close,
+    dates: result.timestamp.map((time) => new Date(time * 1000)),
+  };
 }

@@ -10,6 +10,7 @@ import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { EffectsModule } from '@ngrx/effects';
 import { HttpClientModule } from '@angular/common/http';
 import { UiModule } from '@aws/ui';
+import { YahooModule } from '@aws/yahoo';
 
 @NgModule({
   declarations: [AppComponent],
@@ -20,6 +21,7 @@ import { UiModule } from '@aws/ui';
     StoreModule.forRoot(),
     EffectsModule.forRoot(),
     StateModule,
+    YahooModule,
     StoreDevtoolsModule.instrument(),
     UiModule,
     NgxEchartsModule.forRoot({

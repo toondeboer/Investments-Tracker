@@ -29,3 +29,35 @@ export type TransactionsAttributes = {
     transactions: TransactionDbo[];
   };
 };
+
+export type YahooObject = {
+  chart: {
+    result: [
+      {
+        meta: {
+          currency: string;
+          symbol: string;
+        };
+        timestamp: number[];
+        indicators: {
+          quote: [
+            {
+              low: number[];
+              high: number[];
+              volume: number[];
+              close: number[];
+              open: number[];
+            }
+          ];
+          adjclose: [{ adjclose: number[] }];
+        };
+      }
+    ];
+  };
+};
+
+export type Ticker = {
+  name: string;
+  dates: Date[];
+  values: number[];
+};

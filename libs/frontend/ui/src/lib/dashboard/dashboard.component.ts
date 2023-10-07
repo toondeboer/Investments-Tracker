@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { getData, selectState } from '@aws/state';
+import { getTicker } from '@aws/yahoo';
 import { Store } from '@ngrx/store';
-import { EChartsOption } from 'echarts';
 
 @Component({
   selector: 'aws-dashboard',
@@ -15,5 +15,6 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.store.dispatch(getData());
+    this.store.dispatch(getTicker());
   }
 }

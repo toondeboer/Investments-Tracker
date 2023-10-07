@@ -17,7 +17,8 @@
     "paths": {
       "@aws/state": ["libs/frontend/state/src/index.ts"],
       "@aws/ui": ["libs/frontend/ui/src/index.ts"],
-      "@aws/util": ["libs/shared/util/src/index.ts"]
+      "@aws/util": ["libs/shared/util/src/index.ts"],
+      "@aws/yahoo": ["libs/frontend/yahoo/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

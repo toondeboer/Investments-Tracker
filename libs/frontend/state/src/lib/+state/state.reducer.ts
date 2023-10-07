@@ -6,7 +6,7 @@ import {
 } from './state.actions';
 import { Transaction, transactionsDboToTransactions } from '@aws/util';
 
-export const featureKey = 'feature';
+export const featureKey = 'state';
 
 export interface FeatureState {
   transactions: Transaction[];
