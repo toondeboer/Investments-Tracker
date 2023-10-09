@@ -2,7 +2,12 @@
   <aws-transactions-table
     [transactions]="state.transactions"
   ></aws-transactions-table>
+  <div *ngIf="yahoo$ | async as yahoo" class="row">
+    <aws-chart [x]="yahoo.ticker.dates" [y]="yahoo.ticker.values"></aws-chart>
+  </div>
   <div class="row">
-    <aws-chart [transactions]="state.transactions"></aws-chart>
+    <aws-transaction-chart
+      [transactions]="state.transactions"
+    ></aws-transaction-chart>
   </div>
 </div>

@@ -3,9 +3,9 @@
   <div>
     date : {{ transaction.date.getDate() }}/{{
       transaction.date.getUTCMonth() + 1
-    }}/{{ transaction.date.getFullYear() }}
+    }}/{{ transaction.date.getFullYear() }},
   </div>
-  <div>amount : {{ transaction.amount }}</div>
+  <div>amount : {{ transaction.amount }},</div>
   <div>value : {{ transaction.value }}</div>
   <button (click)="deleteTransaction(transactions, transaction)">Delete</button>
 </div>

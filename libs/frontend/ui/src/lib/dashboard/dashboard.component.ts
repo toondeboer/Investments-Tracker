@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { getData, selectState } from '@aws/state';
-import { getTicker } from '@aws/yahoo';
+import { getTicker, selectYahoo } from '@aws/yahoo';
 import { Store } from '@ngrx/store';
 
 @Component({
@@ -10,6 +10,7 @@ import { Store } from '@ngrx/store';
 })
 export class DashboardComponent implements OnInit {
   state$ = this.store.select(selectState);
+  yahoo$ = this.store.select(selectYahoo);
 
   constructor(private store: Store) {}
 

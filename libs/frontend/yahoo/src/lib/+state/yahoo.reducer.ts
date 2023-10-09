@@ -5,11 +5,15 @@ import { Ticker } from '@aws/util';
 export const featureKey = 'yahoo';
 
 export interface FeatureState {
-  ticker: Ticker | null;
+  ticker: Ticker;
 }
 
 export const initialState: FeatureState = {
-  ticker: null,
+  ticker: {
+    name: '',
+    dates: [],
+    values: [],
+  },
 };
 
 export const reducer = createReducer(

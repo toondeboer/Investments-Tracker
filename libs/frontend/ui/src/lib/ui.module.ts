@@ -6,6 +6,7 @@ import { ChartComponent } from './chart/chart.component';
 import { UtilModule } from '@aws/util';
 import { TransactionsTableComponent } from './transactions-table/transactions-table.component';
 import { FormsModule } from '@angular/forms';
+import { TransactionChartComponent } from './transaction-chart/transaction-chart.component';
 
 @NgModule({
   imports: [CommonModule, NgxEchartsModule, UtilModule, FormsModule],
@@ -13,6 +14,7 @@ import { FormsModule } from '@angular/forms';
     DashboardComponent,
     ChartComponent,
     TransactionsTableComponent,
+    TransactionChartComponent,
   ],
 })
 export class UiModule {}

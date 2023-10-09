@@ -1,5 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { Transaction, transactionToChartData } from '@aws/util';
+import { Component, Input, OnChanges } from '@angular/core';
 import { EChartsOption } from 'echarts';
 
 @Component({
@@ -8,7 +7,8 @@ import { EChartsOption } from 'echarts';
   styleUrls: ['./chart.component.scss'],
 })
 export class ChartComponent implements OnChanges {
-  @Input() transactions: Transaction[] = [];
+  @Input() x: Date[] = [];
+  @Input() y: number[] = [];
 
   chartOptions: EChartsOption | undefined;
 
@@ -16,23 +16,18 @@ export class ChartComponent implements OnChanges {
     this.chartOptions = this.getChartOptions();
   }
 
-  getChartData(transactions: Transaction[]) {
-    return transactionToChartData(transactions);
-  }
-
   getChartOptions(): EChartsOption {
-    const chartData = this.getChartData(this.transactions);
     return {
       xAxis: {
         type: 'category',
-        data: chartData.x,
+        data: this.x.map((x) => x.toDateString()),
       },
       yAxis: {
         type: 'value',
       },
       series: [
         {
-          data: chartData.data,
+          data: this.y,
           type: 'line',
         },
       ],
