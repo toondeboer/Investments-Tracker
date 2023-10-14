@@ -19,6 +19,7 @@
     "@nx/angular": "16.9.0",
     "echarts": "^5.4.3",
     "ngx-echarts": "^16.0.0",
+    "ngx-papaparse": "^8.0.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.13.0"

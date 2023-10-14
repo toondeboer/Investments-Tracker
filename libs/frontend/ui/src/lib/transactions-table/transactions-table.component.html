@@ -17,3 +17,8 @@
   <input type="number" [(ngModel)]="value" placeholder="value" />
   <button (click)="saveTransaction()">Save</button>
 </div>
+
+<!-- <div>Upload from file: <input type="file" /></div> -->
+<input type="file" (change)="handleFileInput($event)" accept=".csv" />
+
+<button (click)="deleteAll()">Delete All Transactions</button>

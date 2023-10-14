@@ -1,4 +1,10 @@
-import { DatabaseObject, Ticker, Transaction, TransactionDbo } from '@aws/util';
+import {
+  CsvInput,
+  DatabaseObject,
+  Ticker,
+  Transaction,
+  TransactionDbo,
+} from '@aws/util';
 import { createAction, props } from '@ngrx/store';
 
 export const getData = createAction('[State] Get Data');
@@ -37,7 +43,32 @@ export const deleteTransactionFailure = createAction(
   props<{ error: string }>()
 );
 
+export const deleteAllTransactions = createAction(
+  '[State] Delete All Transactions'
+);
+export const deleteAllTransactionsSuccess = createAction(
+  '[State] Delete All Transactions Success',
+  props<{ transactions: TransactionDbo[] }>()
+);
+export const deleteAllTransactionsFailure = createAction(
+  '[State] Delete All Transactions Failure',
+  props<{ error: string }>()
+);
+
 export const setChartData = createAction(
-  '[Yahoo] Get Ticker Success',
+  '[State] Set Chart Data',
   props<{ ticker: Ticker }>()
+);
+
+export const handleFileInput = createAction(
+  '[State] Handle File Input',
+  props<{ data: CsvInput }>()
+);
+export const handleFileInputSuccess = createAction(
+  '[State] Handle File InputSuccess',
+  props<{ transactions: TransactionDbo[] }>()
+);
+export const handleFileInputFailure = createAction(
+  '[State] Handle File InputFailure',
+  props<{ error: string }>()
 );

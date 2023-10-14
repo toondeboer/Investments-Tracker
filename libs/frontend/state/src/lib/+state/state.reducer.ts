@@ -1,7 +1,9 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
 import {
+  deleteAllTransactionsSuccess,
   deleteTransactionSuccess,
   getDataSuccess,
+  handleFileInputSuccess,
   saveTransactionSuccess,
   setChartData,
 } from './state.actions';
@@ -41,30 +43,50 @@ export const reducer = createReducer(
       action.data.Items[0].transactions
     ),
   })),
-  on(saveTransactionSuccess, deleteTransactionSuccess, (state, action) => ({
-    ...state,
-    transactions: transactionsDboToTransactions(action.transactions),
-  })),
   on(
-    getDataSuccess,
     saveTransactionSuccess,
     deleteTransactionSuccess,
-    (state) => ({
+    deleteAllTransactionsSuccess,
+    handleFileInputSuccess,
+    (state, action) => ({
       ...state,
-      dates: getDailyDates(state.transactions[0].date, new Date()),
+      transactions: transactionsDboToTransactions(action.transactions),
     })
   ),
   on(
     getDataSuccess,
     saveTransactionSuccess,
     deleteTransactionSuccess,
-    (state) => ({
-      ...state,
-      chartData: {
-        ...state.chartData,
-        ...getTransactionAmountsAndValues(state.dates, state.transactions),
-      },
-    })
+    deleteAllTransactionsSuccess,
+    handleFileInputSuccess,
+    (state) => {
+      if (state.transactions.length > 0) {
+        return {
+          ...state,
+          dates: getDailyDates(state.transactions[0].date, new Date()),
+        };
+      }
+      return state;
+    }
+  ),
+  on(
+    getDataSuccess,
+    saveTransactionSuccess,
+    deleteTransactionSuccess,
+    deleteAllTransactionsSuccess,
+    handleFileInputSuccess,
+    (state) => {
+      if (state.transactions.length > 0) {
+        return {
+          ...state,
+          chartData: {
+            ...state.chartData,
+            ...getTransactionAmountsAndValues(state.dates, state.transactions),
+          },
+        };
+      }
+      return state;
+    }
   ),
   on(setChartData, (state, action) => ({
     ...state,

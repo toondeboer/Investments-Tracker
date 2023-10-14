@@ -63,3 +63,9 @@ export type ChartData = {
   aggregatedAmounts: number[];
   portfolioValues: number[];
 };
+
+export type CsvInput = {
+  Datum: string;
+  Omschrijving: string;
+  '': string;
+}[];

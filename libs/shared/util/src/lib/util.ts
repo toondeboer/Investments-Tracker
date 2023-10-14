@@ -1,4 +1,10 @@
-import { Ticker, Transaction, TransactionDbo, YahooObject } from './types';
+import {
+  CsvInput,
+  Ticker,
+  Transaction,
+  TransactionDbo,
+  YahooObject,
+} from './types';
 
 export function transactionsDboToTransactions(
   transactions: TransactionDbo[]
@@ -138,4 +144,31 @@ export function getPortfolioValues(
     }
   }
   return values;
+}
+
+export function parseCsvInput(csv: CsvInput): Transaction[] {
+  const transactions: Transaction[] = [];
+
+  for (const row of csv) {
+    if (
+      row.Omschrijving &&
+      row.Datum &&
+      row[''] &&
+      row.Omschrijving.startsWith('Koop ')
+    ) {
+      transactions.push({
+        date: new Date(
+          parseInt(row.Datum.split('-')[2]),
+          parseInt(row.Datum.split('-')[1]) - 1,
+          parseInt(row.Datum.split('-')[0])
+        ),
+        amount: parseFloat(
+          row.Omschrijving.replace('Koop ', '').split(' @')[0]
+        ),
+        value: Math.abs(parseFloat(row[''])),
+      });
+    }
+  }
+
+  return transactions;
 }

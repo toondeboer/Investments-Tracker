@@ -3,18 +3,26 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { switchMap, catchError, of, map } from 'rxjs';
+import { switchMap, catchError, of, map, withLatestFrom } from 'rxjs';
 import {
+  deleteAllTransactions,
+  deleteAllTransactionsFailure,
+  deleteAllTransactionsSuccess,
   deleteTransaction,
   deleteTransactionFailure,
   deleteTransactionSuccess,
   getData,
   getDataFailure,
   getDataSuccess,
+  handleFileInput,
+  handleFileInputFailure,
+  handleFileInputSuccess,
   saveTransaction,
   saveTransactionFailure,
   saveTransactionSuccess,
 } from './state.actions';
+import { Transaction, parseCsvInput } from '@aws/util';
+import { selectState } from './state.selectors';
 
 @Injectable()
 export class StateEffects {
@@ -72,6 +80,47 @@ export class StateEffects {
             of(deleteTransactionFailure({ error: error.message }))
           )
         );
+      })
+    )
+  );
+
+  public readonly deleteAllTransactions$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(deleteAllTransactions),
+      switchMap(() => {
+        return this.service.setTransactions([]).pipe(
+          map(({ Attributes }) => {
+            return deleteAllTransactionsSuccess({
+              transactions: Attributes.transactions,
+            });
+          }),
+          catchError((error: HttpErrorResponse) =>
+            of(deleteAllTransactionsFailure({ error: error.message }))
+          )
+        );
+      })
+    )
+  );
+
+  public readonly handleFileInput$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(handleFileInput),
+      withLatestFrom(this.store.select(selectState)),
+      switchMap(([{ data }, { transactions }]) => {
+        const newTransactions: Transaction[] = parseCsvInput(data);
+
+        return this.service
+          .setTransactions(transactions.concat(newTransactions))
+          .pipe(
+            map(({ Attributes }) => {
+              return handleFileInputSuccess({
+                transactions: Attributes.transactions,
+              });
+            }),
+            catchError((error: HttpErrorResponse) =>
+              of(handleFileInputFailure({ error: error.message }))
+            )
+          );
       })
     )
   );
