@@ -1,0 +1,3 @@
+<div *ngIf="yahoo$ | async as yahoo" class="row">
+  <aws-chart [x]="yahoo.ticker.dates" [y]="yahoo.ticker.values"></aws-chart>
+</div>

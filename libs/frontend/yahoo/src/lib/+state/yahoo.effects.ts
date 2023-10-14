@@ -5,7 +5,7 @@ import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { switchMap, catchError, of, map } from 'rxjs';
 import { YahooService } from '../yahoo.service';
 import { getTicker, getTickerFailure, getTickerSuccess } from './yahoo.actions';
-import { YahooObject, yahooObjectToTicker } from '@aws/util';
+import { yahooObjectToTicker } from '@aws/util';
 
 @Injectable()
 export class YahooEffects {
@@ -18,9 +18,8 @@ export class YahooEffects {
   public readonly getTicker$ = createEffect(() =>
     this.actions$.pipe(
       ofType(getTicker),
-      switchMap(() => {
-        console.log('effects');
-        return this.service.getTicker('AAPL').pipe(
+      switchMap(({ tickerRequest }) => {
+        return this.service.getTicker(tickerRequest).pipe(
           map((yahooObject) => {
             const ticker = yahooObjectToTicker(yahooObject);
             return getTickerSuccess({ ticker });

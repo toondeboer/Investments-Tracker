@@ -30,6 +30,12 @@ export type TransactionsAttributes = {
   };
 };
 
+export type TickerRequest = {
+  name: string;
+  startDate: Date;
+  endDate: Date;
+};
+
 export type YahooObject = {
   chart: {
     result: [

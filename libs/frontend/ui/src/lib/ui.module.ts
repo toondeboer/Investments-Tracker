@@ -7,6 +7,7 @@ import { UtilModule } from '@aws/util';
 import { TransactionsTableComponent } from './transactions-table/transactions-table.component';
 import { FormsModule } from '@angular/forms';
 import { TransactionChartComponent } from './transaction-chart/transaction-chart.component';
+import { YahooComponent } from './yahoo/yahoo.component';
 
 @NgModule({
   imports: [CommonModule, NgxEchartsModule, UtilModule, FormsModule],
@@ -15,6 +16,7 @@ import { TransactionChartComponent } from './transaction-chart/transaction-chart
     ChartComponent,
     TransactionsTableComponent,
     TransactionChartComponent,
+    YahooComponent,
   ],
 })
 export class UiModule {}

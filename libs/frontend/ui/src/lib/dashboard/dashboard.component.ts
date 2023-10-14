@@ -10,12 +10,10 @@ import { Store } from '@ngrx/store';
 })
 export class DashboardComponent implements OnInit {
   state$ = this.store.select(selectState);
-  yahoo$ = this.store.select(selectYahoo);
 
   constructor(private store: Store) {}
 
   ngOnInit(): void {
     this.store.dispatch(getData());
-    this.store.dispatch(getTicker());
   }
 }

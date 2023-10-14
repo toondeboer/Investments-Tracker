@@ -2,9 +2,10 @@
   <aws-transactions-table
     [transactions]="state.transactions"
   ></aws-transactions-table>
-  <div *ngIf="yahoo$ | async as yahoo" class="row">
-    <aws-chart [x]="yahoo.ticker.dates" [y]="yahoo.ticker.values"></aws-chart>
-  </div>
+  <aws-yahoo
+    *ngIf="state.transactions.length > 0"
+    [transactions]="state.transactions"
+  ></aws-yahoo>
   <div class="row">
     <aws-transaction-chart
       [transactions]="state.transactions"

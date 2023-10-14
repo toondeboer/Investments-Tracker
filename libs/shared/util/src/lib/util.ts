@@ -44,3 +44,15 @@ export function yahooObjectToTicker(yahooObject: YahooObject): Ticker {
     dates: result.timestamp.map((time) => new Date(time * 1000)),
   };
 }
+
+export function getDailyDates(start: Date, end: Date): Date[] {
+  const dates: Date[] = [];
+  const currentDate = new Date(start);
+
+  while (currentDate <= end) {
+    dates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  return dates;
+}

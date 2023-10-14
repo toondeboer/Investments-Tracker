@@ -4,16 +4,22 @@ import {
   getDataSuccess,
   saveTransactionSuccess,
 } from './state.actions';
-import { Transaction, transactionsDboToTransactions } from '@aws/util';
+import {
+  Transaction,
+  getDailyDates,
+  transactionsDboToTransactions,
+} from '@aws/util';
 
 export const featureKey = 'state';
 
 export interface FeatureState {
   transactions: Transaction[];
+  dates: Date[];
 }
 
 export const initialState: FeatureState = {
   transactions: [],
+  dates: [],
 };
 
 export const reducer = createReducer(
@@ -27,7 +33,19 @@ export const reducer = createReducer(
   on(saveTransactionSuccess, deleteTransactionSuccess, (state, action) => ({
     ...state,
     transactions: transactionsDboToTransactions(action.transactions),
-  }))
+  })),
+  on(
+    getDataSuccess,
+    saveTransactionSuccess,
+    deleteTransactionSuccess,
+    (state) => ({
+      ...state,
+      dates: getDailyDates(
+        state.transactions[0].date,
+        state.transactions[state.transactions.length - 1].date
+      ),
+    })
+  )
 );
 
 export const feature = createFeature({ name: featureKey, reducer });
