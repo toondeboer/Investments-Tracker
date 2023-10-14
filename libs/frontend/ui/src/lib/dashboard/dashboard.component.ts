@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { getData, selectState } from '@aws/state';
-import { getTicker, selectYahoo } from '@aws/yahoo';
 import { Store } from '@ngrx/store';
 
 @Component({

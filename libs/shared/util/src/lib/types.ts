@@ -4,11 +4,6 @@ export type Transaction = {
   value: number;
 };
 
-export type ChartData = {
-  x: string[];
-  data: number[];
-};
-
 export type TransactionDbo = {
   date: string;
   amount: number;
@@ -28,12 +23,6 @@ export type TransactionsAttributes = {
   Attributes: {
     transactions: TransactionDbo[];
   };
-};
-
-export type TickerRequest = {
-  name: string;
-  startDate: Date;
-  endDate: Date;
 };
 
 export type YahooObject = {
@@ -66,4 +55,11 @@ export type Ticker = {
   name: string;
   dates: Date[];
   values: number[];
+};
+
+export type ChartData = {
+  transactionAmounts: number[];
+  transactionValues: number[];
+  aggregatedAmounts: number[];
+  portfolioValues: number[];
 };

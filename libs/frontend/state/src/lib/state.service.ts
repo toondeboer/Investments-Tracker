@@ -11,12 +11,14 @@ export class StateService {
   constructor(private http: HttpClient) {}
 
   public getData(): Observable<DatabaseObject> {
+    console.log('AWS LAMBDA CALL');
     return this.http.get<DatabaseObject>(`${this.baseUrl}`);
   }
 
   public saveTransaction(
     transaction: Transaction
   ): Observable<TransactionsAttributes> {
+    console.log('AWS LAMBDA CALL');
     return this.http.put<TransactionsAttributes>(`${this.baseUrl}`, {
       TableName: 'table',
       Key: {
@@ -33,6 +35,7 @@ export class StateService {
   public setTransactions(
     transactions: Transaction[]
   ): Observable<TransactionsAttributes> {
+    console.log('AWS LAMBDA CALL');
     return this.http.put<TransactionsAttributes>(`${this.baseUrl}`, {
       TableName: 'table',
       Key: {

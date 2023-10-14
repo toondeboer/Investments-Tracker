@@ -9,15 +9,23 @@ import { EChartsOption } from 'echarts';
 export class ChartComponent implements OnChanges {
   @Input() x: Date[] = [];
   @Input() y: number[] = [];
+  @Input() label: string | undefined;
 
   chartOptions: EChartsOption | undefined;
 
   ngOnChanges() {
+    if (this.x.length !== this.y.length) {
+      console.log(`WARNING: X and Y are not the same size.`);
+    }
     this.chartOptions = this.getChartOptions();
   }
 
   getChartOptions(): EChartsOption {
     return {
+      title: {
+        left: 'center',
+        text: this.label,
+      },
       xAxis: {
         type: 'category',
         data: this.x.map((x) => x.toDateString()),
@@ -29,6 +37,8 @@ export class ChartComponent implements OnChanges {
         {
           data: this.y,
           type: 'line',
+          connectNulls: true,
+          smooth: true,
         },
       ],
     };

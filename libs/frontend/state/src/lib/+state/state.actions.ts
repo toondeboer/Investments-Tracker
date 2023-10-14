@@ -1,4 +1,4 @@
-import { DatabaseObject, Transaction, TransactionDbo } from '@aws/util';
+import { DatabaseObject, Ticker, Transaction, TransactionDbo } from '@aws/util';
 import { createAction, props } from '@ngrx/store';
 
 export const getData = createAction('[State] Get Data');
@@ -35,4 +35,9 @@ export const deleteTransactionSuccess = createAction(
 export const deleteTransactionFailure = createAction(
   '[State] Delete Transaction Failure',
   props<{ error: string }>()
+);
+
+export const setChartData = createAction(
+  '[Yahoo] Get Ticker Success',
+  props<{ ticker: Ticker }>()
 );

@@ -2,13 +2,11 @@
   <aws-transactions-table
     [transactions]="state.transactions"
   ></aws-transactions-table>
+
   <aws-yahoo
     *ngIf="state.transactions.length > 0"
     [transactions]="state.transactions"
+    [dates]="state.dates"
+    [chartData]="state.chartData"
   ></aws-yahoo>
-  <div class="row">
-    <aws-transaction-chart
-      [transactions]="state.transactions"
-    ></aws-transaction-chart>
-  </div>
 </div>

@@ -6,7 +6,6 @@ import { ChartComponent } from './chart/chart.component';
 import { UtilModule } from '@aws/util';
 import { TransactionsTableComponent } from './transactions-table/transactions-table.component';
 import { FormsModule } from '@angular/forms';
-import { TransactionChartComponent } from './transaction-chart/transaction-chart.component';
 import { YahooComponent } from './yahoo/yahoo.component';
 
 @NgModule({
@@ -15,7 +14,6 @@ import { YahooComponent } from './yahoo/yahoo.component';
     DashboardComponent,
     ChartComponent,
     TransactionsTableComponent,
-    TransactionChartComponent,
     YahooComponent,
   ],
 })

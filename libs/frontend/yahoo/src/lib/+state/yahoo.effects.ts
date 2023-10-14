@@ -2,10 +2,18 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { switchMap, catchError, of, map } from 'rxjs';
+import { switchMap, catchError, of, withLatestFrom, mergeMap } from 'rxjs';
 import { YahooService } from '../yahoo.service';
 import { getTicker, getTickerFailure, getTickerSuccess } from './yahoo.actions';
 import { yahooObjectToTicker } from '@aws/util';
+import {
+  deleteTransactionSuccess,
+  getDataSuccess,
+  saveTransactionSuccess,
+  selectState,
+  setChartData,
+} from '@aws/state';
+import { selectYahoo } from './yahoo.selectors';
 
 @Injectable()
 export class YahooEffects {
@@ -18,16 +26,31 @@ export class YahooEffects {
   public readonly getTicker$ = createEffect(() =>
     this.actions$.pipe(
       ofType(getTicker),
-      switchMap(({ tickerRequest }) => {
-        return this.service.getTicker(tickerRequest).pipe(
-          map((yahooObject) => {
+      withLatestFrom(this.store.select(selectState)),
+      switchMap(([{ name }, { transactions }]) => {
+        return this.service.getTicker(name, transactions[0].date).pipe(
+          mergeMap((yahooObject) => {
             const ticker = yahooObjectToTicker(yahooObject);
-            return getTickerSuccess({ ticker });
+            return [getTickerSuccess({ ticker }), setChartData({ ticker })];
           }),
           catchError((error: HttpErrorResponse) =>
             of(getTickerFailure({ error: error.message }))
           )
         );
+      })
+    )
+  );
+
+  public readonly setChartData$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(getDataSuccess, saveTransactionSuccess, deleteTransactionSuccess),
+      withLatestFrom(this.store.select(selectYahoo)),
+      switchMap(([_, { ticker }]) => {
+        if (ticker.dates.length > 0) {
+          return [setChartData({ ticker })];
+        } else {
+          return [];
+        }
       })
     )
   );

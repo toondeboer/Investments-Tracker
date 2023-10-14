@@ -1,9 +1,9 @@
-import { Ticker, TickerRequest } from '@aws/util';
+import { Ticker } from '@aws/util';
 import { createAction, props } from '@ngrx/store';
 
 export const getTicker = createAction(
   '[Yahoo] Get Ticker',
-  props<{ tickerRequest: TickerRequest }>()
+  props<{ name: string }>()
 );
 export const getTickerSuccess = createAction(
   '[Yahoo] Get Ticker Success',

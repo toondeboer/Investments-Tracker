@@ -3,10 +3,14 @@ import {
   deleteTransactionSuccess,
   getDataSuccess,
   saveTransactionSuccess,
+  setChartData,
 } from './state.actions';
 import {
+  ChartData,
   Transaction,
   getDailyDates,
+  getPortfolioValues,
+  getTransactionAmountsAndValues,
   transactionsDboToTransactions,
 } from '@aws/util';
 
@@ -15,11 +19,18 @@ export const featureKey = 'state';
 export interface FeatureState {
   transactions: Transaction[];
   dates: Date[];
+  chartData: ChartData;
 }
 
 export const initialState: FeatureState = {
   transactions: [],
   dates: [],
+  chartData: {
+    transactionAmounts: [],
+    transactionValues: [],
+    aggregatedAmounts: [],
+    portfolioValues: [],
+  },
 };
 
 export const reducer = createReducer(
@@ -40,12 +51,32 @@ export const reducer = createReducer(
     deleteTransactionSuccess,
     (state) => ({
       ...state,
-      dates: getDailyDates(
-        state.transactions[0].date,
-        state.transactions[state.transactions.length - 1].date
-      ),
+      dates: getDailyDates(state.transactions[0].date, new Date()),
     })
-  )
+  ),
+  on(
+    getDataSuccess,
+    saveTransactionSuccess,
+    deleteTransactionSuccess,
+    (state) => ({
+      ...state,
+      chartData: {
+        ...state.chartData,
+        ...getTransactionAmountsAndValues(state.dates, state.transactions),
+      },
+    })
+  ),
+  on(setChartData, (state, action) => ({
+    ...state,
+    chartData: {
+      ...state.chartData,
+      portfolioValues: getPortfolioValues(
+        state.dates,
+        state.chartData.aggregatedAmounts,
+        action.ticker
+      ),
+    },
+  }))
 );
 
 export const feature = createFeature({ name: featureKey, reducer });

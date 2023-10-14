@@ -1,3 +1,31 @@
 <div *ngIf="yahoo$ | async as yahoo" class="row">
-  <aws-chart [x]="yahoo.ticker.dates" [y]="yahoo.ticker.values"></aws-chart>
+  <aws-chart
+    [x]="dates"
+    [y]="chartData?.portfolioValues ?? []"
+    label="Portfolio"
+  ></aws-chart>
+
+  <aws-chart
+    [x]="dates"
+    [y]="chartData?.transactionValues ?? []"
+    label="Transactions Values"
+  ></aws-chart>
+
+  <aws-chart
+    [x]="dates"
+    [y]="chartData?.transactionAmounts ?? []"
+    label="Transactions Amounts"
+  ></aws-chart>
+
+  <aws-chart
+    [x]="dates"
+    [y]="chartData?.aggregatedAmounts ?? []"
+    label="Aggregated Transactions Amounts"
+  ></aws-chart>
+
+  <aws-chart
+    [x]="yahoo.ticker.dates"
+    [y]="yahoo.ticker.values"
+    label="Yahoo Data Only"
+  ></aws-chart>
 </div>
