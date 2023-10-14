@@ -69,3 +69,7 @@ export type CsvInput = {
   Omschrijving: string;
   '': string;
 }[];
+
+export type Summary = {
+  portfolioValue: number;
+};

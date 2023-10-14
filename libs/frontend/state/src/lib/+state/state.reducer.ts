@@ -9,8 +9,10 @@ import {
 } from './state.actions';
 import {
   ChartData,
+  Summary,
   Transaction,
   getDailyDates,
+  getMostRecentPortfolioValue,
   getPortfolioValues,
   getTransactionAmountsAndValues,
   transactionsDboToTransactions,
@@ -20,12 +22,16 @@ export const featureKey = 'state';
 
 export interface FeatureState {
   transactions: Transaction[];
+  summary: Summary;
   dates: Date[];
   chartData: ChartData;
 }
 
 export const initialState: FeatureState = {
   transactions: [],
+  summary: {
+    portfolioValue: 0,
+  },
   dates: [],
   chartData: {
     transactionAmounts: [],
@@ -88,17 +94,21 @@ export const reducer = createReducer(
       return state;
     }
   ),
-  on(setChartData, (state, action) => ({
-    ...state,
-    chartData: {
-      ...state.chartData,
-      portfolioValues: getPortfolioValues(
-        state.dates,
-        state.chartData.aggregatedAmounts,
-        action.ticker
-      ),
-    },
-  }))
+  on(setChartData, (state, action) => {
+    const portfolioValues = getPortfolioValues(
+      state.dates,
+      state.chartData.aggregatedAmounts,
+      action.ticker
+    );
+    return {
+      ...state,
+      summary: { portfolioValue: getMostRecentPortfolioValue(portfolioValues) },
+      chartData: {
+        ...state.chartData,
+        portfolioValues,
+      },
+    };
+  })
 );
 
 export const feature = createFeature({ name: featureKey, reducer });

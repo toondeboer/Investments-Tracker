@@ -146,6 +146,18 @@ export function getPortfolioValues(
   return values;
 }
 
+export function getMostRecentPortfolioValue(values: number[]): number {
+  let index = values.length - 1;
+  while (index >= 0) {
+    if (values[index]) {
+      return values[index];
+    }
+    index -= 1;
+  }
+
+  return 0;
+}
+
 export function parseCsvInput(csv: CsvInput): Transaction[] {
   const transactions: Transaction[] = [];
 

@@ -7,6 +7,9 @@
   </div>
   <div>amount : {{ transaction.amount }},</div>
   <div>value : {{ transaction.value }}</div>
+  <div>
+    pps : {{ transaction.value / transaction.amount | number : '1.2-2' }}
+  </div>
   <button (click)="deleteTransaction(transactions, transaction)">Delete</button>
 </div>
 
