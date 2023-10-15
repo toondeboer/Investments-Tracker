@@ -60,10 +60,12 @@ export function getTransactionAmountsAndValues(
   transactionAmounts: number[];
   transactionValues: number[];
   aggregatedAmounts: number[];
+  aggregatedValues: number[];
 } {
   const amounts: number[] = [];
   const values: number[] = [];
   const aggregatedAmounts: number[] = [];
+  const aggregatedValues: number[] = [];
   let index = 0;
   let currentTransaction: Transaction = transactions[index];
 
@@ -73,8 +75,10 @@ export function getTransactionAmountsAndValues(
       values.push(NaN);
       if (aggregatedAmounts.length === 0) {
         aggregatedAmounts.push(0);
+        aggregatedValues.push(0);
       } else {
         aggregatedAmounts.push(aggregatedAmounts[aggregatedAmounts.length - 1]);
+        aggregatedValues.push(aggregatedValues[aggregatedValues.length - 1]);
       }
     } else {
       let newAmount = 0;
@@ -93,9 +97,13 @@ export function getTransactionAmountsAndValues(
       values.push(newValue);
       if (aggregatedAmounts.length === 0) {
         aggregatedAmounts.push(newAmount);
+        aggregatedValues.push(newValue);
       } else {
         aggregatedAmounts.push(
           aggregatedAmounts[aggregatedAmounts.length - 1] + newAmount
+        );
+        aggregatedValues.push(
+          aggregatedValues[aggregatedValues.length - 1] + newValue
         );
       }
     }
@@ -104,6 +112,7 @@ export function getTransactionAmountsAndValues(
     transactionAmounts: amounts,
     transactionValues: values,
     aggregatedAmounts,
+    aggregatedValues,
   };
 }
 
@@ -146,7 +155,7 @@ export function getPortfolioValues(
   return values;
 }
 
-export function getMostRecentPortfolioValue(values: number[]): number {
+export function getMostRecentValueFromList(values: number[]): number {
   let index = values.length - 1;
   while (index >= 0) {
     if (values[index]) {
@@ -183,4 +192,15 @@ export function parseCsvInput(csv: CsvInput): Transaction[] {
   }
 
   return transactions;
+}
+
+export function subtractLists(list1: number[], list2: number[]): number[] {
+  if (list1.length !== list2.length) {
+    console.log(`WARNING: Lists are not the same size.`);
+  }
+  const result = [];
+  for (let i = 0; i < list1.length; i++) {
+    result.push(list1[i] - list2[i]);
+  }
+  return result;
 }

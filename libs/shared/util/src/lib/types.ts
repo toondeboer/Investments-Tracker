@@ -1,3 +1,20 @@
+export type Summary = {
+  portfolioValue: number;
+  totalInvested: number;
+  amountOfShares: number;
+  averageSharePrice: number;
+  currentSharePrice: number;
+};
+
+export type ChartData = {
+  transactionAmounts: number[];
+  transactionValues: number[];
+  aggregatedAmounts: number[];
+  aggregatedValues: number[];
+  portfolioValues: number[];
+  profit: number[];
+};
+
 export type Transaction = {
   date: Date;
   amount: number;
@@ -57,19 +74,8 @@ export type Ticker = {
   values: number[];
 };
 
-export type ChartData = {
-  transactionAmounts: number[];
-  transactionValues: number[];
-  aggregatedAmounts: number[];
-  portfolioValues: number[];
-};
-
 export type CsvInput = {
   Datum: string;
   Omschrijving: string;
   '': string;
 }[];
-
-export type Summary = {
-  portfolioValue: number;
-};

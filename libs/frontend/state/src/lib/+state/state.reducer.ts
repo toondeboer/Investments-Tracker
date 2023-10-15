@@ -12,9 +12,10 @@ import {
   Summary,
   Transaction,
   getDailyDates,
-  getMostRecentPortfolioValue,
+  getMostRecentValueFromList,
   getPortfolioValues,
   getTransactionAmountsAndValues,
+  subtractLists,
   transactionsDboToTransactions,
 } from '@aws/util';
 
@@ -31,13 +32,19 @@ export const initialState: FeatureState = {
   transactions: [],
   summary: {
     portfolioValue: 0,
+    totalInvested: 0,
+    amountOfShares: 0,
+    averageSharePrice: 0,
+    currentSharePrice: 0,
   },
   dates: [],
   chartData: {
     transactionAmounts: [],
     transactionValues: [],
     aggregatedAmounts: [],
+    aggregatedValues: [],
     portfolioValues: [],
+    profit: [],
   },
 };
 
@@ -66,32 +73,35 @@ export const reducer = createReducer(
     deleteAllTransactionsSuccess,
     handleFileInputSuccess,
     (state) => {
-      if (state.transactions.length > 0) {
+      const transactions = state.transactions;
+      if (transactions.length > 0) {
+        const dates = getDailyDates(transactions[0].date, new Date());
+        const transactionAmountsAndValues = getTransactionAmountsAndValues(
+          dates,
+          transactions
+        );
+        const totalInvested = getMostRecentValueFromList(
+          transactionAmountsAndValues.aggregatedValues
+        );
+        const amountOfShares = getMostRecentValueFromList(
+          transactionAmountsAndValues.aggregatedAmounts
+        );
         return {
           ...state,
-          dates: getDailyDates(state.transactions[0].date, new Date()),
-        };
-      }
-      return state;
-    }
-  ),
-  on(
-    getDataSuccess,
-    saveTransactionSuccess,
-    deleteTransactionSuccess,
-    deleteAllTransactionsSuccess,
-    handleFileInputSuccess,
-    (state) => {
-      if (state.transactions.length > 0) {
-        return {
-          ...state,
-          chartData: {
-            ...state.chartData,
-            ...getTransactionAmountsAndValues(state.dates, state.transactions),
+          dates,
+          chartData: { ...state.chartData, ...transactionAmountsAndValues },
+          summary: {
+            ...state.summary,
+            totalInvested,
+            amountOfShares,
+            averageSharePrice: totalInvested / amountOfShares,
           },
         };
       }
-      return state;
+      return {
+        ...state,
+        transactions,
+      };
     }
   ),
   on(setChartData, (state, action) => {
@@ -100,12 +110,21 @@ export const reducer = createReducer(
       state.chartData.aggregatedAmounts,
       action.ticker
     );
+    const profit = subtractLists(
+      portfolioValues,
+      state.chartData.aggregatedValues
+    );
     return {
       ...state,
-      summary: { portfolioValue: getMostRecentPortfolioValue(portfolioValues) },
+      summary: {
+        ...state.summary,
+        portfolioValue: getMostRecentValueFromList(portfolioValues),
+        currentSharePrice: getMostRecentValueFromList(action.ticker.values),
+      },
       chartData: {
         ...state.chartData,
         portfolioValues,
+        profit,
       },
     };
   })
