@@ -1,6 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { DatabaseObject, Transaction, TransactionsAttributes } from '@aws/util';
+import {
+  DatabaseObject,
+  Transactions,
+  TransactionsAttributes,
+} from '@aws/util';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -15,27 +19,11 @@ export class StateService {
     return this.http.get<DatabaseObject>(`${this.baseUrl}`);
   }
 
-  public saveTransaction(
-    transaction: Transaction
-  ): Observable<TransactionsAttributes> {
-    console.log('AWS LAMBDA CALL');
-    return this.http.put<TransactionsAttributes>(`${this.baseUrl}`, {
-      TableName: 'table',
-      Key: {
-        partitionKey: 'pk-test',
-      },
-      UpdateExpression: 'set transactions = list_append(transactions, :t)',
-      ExpressionAttributeValues: {
-        ':t': [transaction],
-      },
-      ReturnValues: 'ALL_NEW',
-    });
-  }
-
   public setTransactions(
-    transactions: Transaction[]
+    transactions: Transactions
   ): Observable<TransactionsAttributes> {
     console.log('AWS LAMBDA CALL');
+    console.log(transactions);
     return this.http.put<TransactionsAttributes>(`${this.baseUrl}`, {
       TableName: 'table',
       Key: {

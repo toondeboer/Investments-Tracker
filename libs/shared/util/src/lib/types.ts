@@ -1,27 +1,51 @@
 export type Summary = {
   portfolioValue: number;
   totalInvested: number;
+  totalDividend: number;
+  totalCommission: number;
   amountOfShares: number;
   averageSharePrice: number;
   currentSharePrice: number;
 };
 
 export type ChartData = {
-  transactionAmounts: number[];
-  transactionValues: number[];
-  aggregatedAmounts: number[];
-  aggregatedValues: number[];
+  stock: TransactionChartData;
+  dividend: TransactionChartData;
+  commission: TransactionChartData;
   portfolioValues: number[];
   profit: number[];
 };
 
+export type TransactionChartData = {
+  transactionValues: number[];
+  aggregatedValues: number[];
+  transactionAmounts: number[];
+  aggregatedAmounts: number[];
+};
+
+export type TransactionType = 'stock' | 'dividend' | 'commission';
+
+export type Transactions = {
+  stock: Transaction[];
+  dividend: Transaction[];
+  commission: Transaction[];
+};
+
 export type Transaction = {
+  type: TransactionType;
   date: Date;
   amount: number;
   value: number;
 };
 
+export type TransactionsDbo = {
+  stock: TransactionDbo[];
+  dividend: TransactionDbo[];
+  commission: TransactionDbo[];
+};
+
 export type TransactionDbo = {
+  type: string;
   date: string;
   amount: number;
   value: number;
@@ -31,14 +55,14 @@ export type DatabaseObject = {
   Items: [
     {
       partitionKey: string;
-      transactions: TransactionDbo[];
+      transactions: TransactionsDbo;
     }
   ];
 };
 
 export type TransactionsAttributes = {
   Attributes: {
-    transactions: TransactionDbo[];
+    transactions: TransactionsDbo;
   };
 };
 

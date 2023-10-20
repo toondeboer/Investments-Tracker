@@ -1,27 +1,84 @@
 <h1>Transactions</h1>
-<div *ngFor="let transaction of transactions" class="transaction-row">
-  <div>
-    date : {{ transaction.date.getDate() }}/{{
-      transaction.date.getUTCMonth() + 1
-    }}/{{ transaction.date.getFullYear() }},
+<ng-container *ngIf="transactions">
+  <div>Stocks</div>
+  <div *ngFor="let transaction of transactions.stock" class="transaction-row">
+    <div>
+      date : {{ transaction.date.getDate() }}/{{
+        transaction.date.getUTCMonth() + 1
+      }}/{{ transaction.date.getFullYear() }},
+    </div>
+    <div>amount : {{ transaction.amount }},</div>
+    <div>value : {{ transaction.value }}</div>
+    <div>
+      pps : {{ transaction.value / transaction.amount | number : '1.2-2' }}
+    </div>
+    <button
+      (click)="deleteTransaction(transactions, transaction)"
+      [disabled]="true"
+    >
+      Delete
+    </button>
   </div>
-  <div>amount : {{ transaction.amount }},</div>
-  <div>value : {{ transaction.value }}</div>
-  <div>
-    pps : {{ transaction.value / transaction.amount | number : '1.2-2' }}
+
+  <div>Dividend</div>
+  <div
+    *ngFor="let transaction of transactions.dividend"
+    class="transaction-row"
+  >
+    <div>
+      date : {{ transaction.date.getDate() }}/{{
+        transaction.date.getUTCMonth() + 1
+      }}/{{ transaction.date.getFullYear() }},
+    </div>
+    <div>value : {{ transaction.value }}</div>
+    <button
+      (click)="deleteTransaction(transactions, transaction)"
+      [disabled]="true"
+    >
+      Delete
+    </button>
   </div>
-  <button (click)="deleteTransaction(transactions, transaction)">Delete</button>
-</div>
 
-<div class="transaction-form">
-  <div>Add transaction:</div>
-  <input type="date" [(ngModel)]="date" />
-  <input type="number" [(ngModel)]="amount" placeholder="amount" />
-  <input type="number" [(ngModel)]="value" placeholder="value" />
-  <button (click)="saveTransaction()">Save</button>
-</div>
+  <div>Commission</div>
+  <div
+    *ngFor="let transaction of transactions.commission"
+    class="transaction-row"
+  >
+    <div>
+      date : {{ transaction.date.getDate() }}/{{
+        transaction.date.getUTCMonth() + 1
+      }}/{{ transaction.date.getFullYear() }},
+    </div>
+    <div>value : {{ transaction.value }}</div>
+    <button
+      (click)="deleteTransaction(transactions, transaction)"
+      [disabled]="true"
+    >
+      Delete
+    </button>
+  </div>
 
-<!-- <div>Upload from file: <input type="file" /></div> -->
-<input type="file" (change)="handleFileInput($event)" accept=".csv" />
+  <div class="transaction-form">
+    <div>Add transaction:</div>
+    <select [(ngModel)]="type">
+      <option value="stock">Stock</option>
+      <option value="dividend">Dividend</option>
+      <option value="commission">Commission</option>
+    </select>
+    <input type="number" [(ngModel)]="amount" placeholder="amount" />
+    <input type="date" [(ngModel)]="date" />
+    <input type="number" [(ngModel)]="amount" placeholder="amount" />
+    <input type="number" [(ngModel)]="value" placeholder="value" />
+    <button (click)="saveTransaction(transactions)" [disabled]="true">
+      Save
+    </button>
+  </div>
+</ng-container>
+
+<div>
+  Upload from file:
+
+  <input type="file" (change)="handleFileInput($event)" accept=".csv" />
+</div>
 
 <button (click)="deleteAll()">Delete All Transactions</button>

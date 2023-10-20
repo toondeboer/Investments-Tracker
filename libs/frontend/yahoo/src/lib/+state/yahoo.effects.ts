@@ -28,7 +28,7 @@ export class YahooEffects {
       ofType(getTicker),
       withLatestFrom(this.store.select(selectState)),
       switchMap(([{ name }, { transactions }]) => {
-        return this.service.getTicker(name, transactions[0].date).pipe(
+        return this.service.getTicker(name, transactions.stock[0].date).pipe(
           mergeMap((yahooObject) => {
             const ticker = yahooObjectToTicker(yahooObject);
             return [getTickerSuccess({ ticker }), setChartData({ ticker })];

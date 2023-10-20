@@ -9,7 +9,6 @@ import { Store } from '@ngrx/store';
   styleUrls: ['./yahoo.component.scss'],
 })
 export class YahooComponent implements OnInit {
-  @Input() transactions: Transaction[] = [];
   @Input() dates: Date[] = [];
   @Input() chartData: ChartData | undefined;
 

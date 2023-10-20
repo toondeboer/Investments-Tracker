@@ -13,5 +13,7 @@ export class SummaryComponent {
     amountOfShares: 0,
     averageSharePrice: 0,
     currentSharePrice: 0,
+    totalDividend: 0,
+    totalCommission: 0,
   };
 }

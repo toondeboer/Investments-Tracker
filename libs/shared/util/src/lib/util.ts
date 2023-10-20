@@ -2,25 +2,61 @@ import {
   CsvInput,
   Ticker,
   Transaction,
-  TransactionDbo,
+  TransactionType,
+  Transactions,
+  TransactionsDbo,
   YahooObject,
 } from './types';
 
 export function transactionsDboToTransactions(
-  transactions: TransactionDbo[]
-): Transaction[] {
-  return transactions
-    .map((transaction) => ({
+  transactions: TransactionsDbo
+): Transactions {
+  const stock: Transaction[] = [];
+  const dividend: Transaction[] = [];
+  const commission: Transaction[] = [];
+
+  transactions.stock.forEach((transaction) => {
+    const newTransaction: Transaction = {
       ...transaction,
+      type: transaction.type as TransactionType,
       date: new Date(transaction.date),
-    }))
-    .sort((t1, t2) => {
-      if (t1.date < t2.date) {
-        return -1;
-      } else {
-        return 1;
-      }
-    });
+    };
+    stock.push(newTransaction);
+  });
+
+  transactions.dividend.forEach((transaction) => {
+    const newTransaction: Transaction = {
+      ...transaction,
+      type: transaction.type as TransactionType,
+      date: new Date(transaction.date),
+    };
+    dividend.push(newTransaction);
+  });
+
+  transactions.commission.forEach((transaction) => {
+    const newTransaction: Transaction = {
+      ...transaction,
+      type: transaction.type as TransactionType,
+      date: new Date(transaction.date),
+    };
+    commission.push(newTransaction);
+  });
+
+  return {
+    stock: sortTransactions(stock),
+    dividend: sortTransactions(dividend),
+    commission: sortTransactions(commission),
+  };
+}
+
+export function sortTransactions(transactions: Transaction[]): Transaction[] {
+  return transactions.sort((t1, t2) => {
+    if (t1.date < t2.date) {
+      return -1;
+    } else {
+      return 1;
+    }
+  });
 }
 
 export function yahooObjectToTicker(yahooObject: YahooObject): Ticker {
@@ -69,14 +105,25 @@ export function getTransactionAmountsAndValues(
   let index = 0;
   let currentTransaction: Transaction = transactions[index];
 
+  if (transactions.length === 0) {
+    return {
+      transactionAmounts: amounts,
+      transactionValues: values,
+      aggregatedAmounts,
+      aggregatedValues,
+    };
+  }
+
   for (const date of dates) {
     if (!isSameDay(date, currentTransaction.date)) {
-      amounts.push(NaN);
-      values.push(NaN);
       if (aggregatedAmounts.length === 0) {
+        amounts.push(0);
+        values.push(0);
         aggregatedAmounts.push(0);
         aggregatedValues.push(0);
       } else {
+        amounts.push(NaN);
+        values.push(NaN);
         aggregatedAmounts.push(aggregatedAmounts[aggregatedAmounts.length - 1]);
         aggregatedValues.push(aggregatedValues[aggregatedValues.length - 1]);
       }
@@ -167,17 +214,18 @@ export function getMostRecentValueFromList(values: number[]): number {
   return 0;
 }
 
-export function parseCsvInput(csv: CsvInput): Transaction[] {
-  const transactions: Transaction[] = [];
+export function parseCsvInput(csv: CsvInput): Transactions {
+  const stock: Transaction[] = [];
+  const dividend: Transaction[] = [];
+  const commission: Transaction[] = [];
 
   for (const row of csv) {
-    if (
-      row.Omschrijving &&
-      row.Datum &&
-      row[''] &&
-      row.Omschrijving.startsWith('Koop ')
-    ) {
-      transactions.push({
+    if (!row.Omschrijving || !row.Datum || !row['']) {
+      continue;
+    }
+    if (row.Omschrijving.startsWith('Koop ')) {
+      stock.push({
+        type: 'stock',
         date: new Date(
           parseInt(row.Datum.split('-')[2]),
           parseInt(row.Datum.split('-')[1]) - 1,
@@ -189,9 +237,47 @@ export function parseCsvInput(csv: CsvInput): Transaction[] {
         value: Math.abs(parseFloat(row[''])),
       });
     }
+    if (
+      row.Omschrijving === 'DEGIRO Transactiekosten en/of kosten van derden'
+    ) {
+      commission.push({
+        type: 'commission',
+        date: new Date(
+          parseInt(row.Datum.split('-')[2]),
+          parseInt(row.Datum.split('-')[1]) - 1,
+          parseInt(row.Datum.split('-')[0])
+        ),
+        amount: 1,
+        value: Math.abs(parseFloat(row[''])),
+      });
+    }
+    if (row.Omschrijving === 'DEGIRO Verrekening Promotie') {
+      commission.push({
+        type: 'commission',
+        date: new Date(
+          parseInt(row.Datum.split('-')[2]),
+          parseInt(row.Datum.split('-')[1]) - 1,
+          parseInt(row.Datum.split('-')[0])
+        ),
+        amount: 1,
+        value: -1 * Math.abs(parseFloat(row[''])),
+      });
+    }
+    if (row.Omschrijving === 'Valuta Creditering') {
+      dividend.push({
+        type: 'dividend',
+        date: new Date(
+          parseInt(row.Datum.split('-')[2]),
+          parseInt(row.Datum.split('-')[1]) - 1,
+          parseInt(row.Datum.split('-')[0])
+        ),
+        amount: 1,
+        value: Math.abs(parseFloat(row[''])),
+      });
+    }
   }
 
-  return transactions;
+  return { stock, dividend, commission };
 }
 
 export function subtractLists(list1: number[], list2: number[]): number[] {

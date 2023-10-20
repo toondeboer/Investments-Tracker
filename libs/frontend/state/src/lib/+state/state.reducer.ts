@@ -10,7 +10,7 @@ import {
 import {
   ChartData,
   Summary,
-  Transaction,
+  Transactions,
   getDailyDates,
   getMostRecentValueFromList,
   getPortfolioValues,
@@ -22,27 +22,47 @@ import {
 export const featureKey = 'state';
 
 export interface FeatureState {
-  transactions: Transaction[];
+  transactions: Transactions;
   summary: Summary;
   dates: Date[];
   chartData: ChartData;
 }
 
 export const initialState: FeatureState = {
-  transactions: [],
+  transactions: {
+    stock: [],
+    dividend: [],
+    commission: [],
+  },
   summary: {
     portfolioValue: 0,
     totalInvested: 0,
     amountOfShares: 0,
     averageSharePrice: 0,
     currentSharePrice: 0,
+    totalDividend: 0,
+    totalCommission: 0,
   },
   dates: [],
   chartData: {
-    transactionAmounts: [],
-    transactionValues: [],
-    aggregatedAmounts: [],
-    aggregatedValues: [],
+    stock: {
+      transactionAmounts: [],
+      transactionValues: [],
+      aggregatedAmounts: [],
+      aggregatedValues: [],
+    },
+    dividend: {
+      transactionAmounts: [],
+      transactionValues: [],
+      aggregatedAmounts: [],
+      aggregatedValues: [],
+    },
+    commission: {
+      transactionAmounts: [],
+      transactionValues: [],
+      aggregatedAmounts: [],
+      aggregatedValues: [],
+    },
     portfolioValues: [],
     profit: [],
   },
@@ -74,27 +94,49 @@ export const reducer = createReducer(
     handleFileInputSuccess,
     (state) => {
       const transactions = state.transactions;
-      if (transactions.length > 0) {
-        const dates = getDailyDates(transactions[0].date, new Date());
-        const transactionAmountsAndValues = getTransactionAmountsAndValues(
+      if (transactions.stock.length > 0) {
+        const dates = getDailyDates(transactions.stock[0].date, new Date());
+
+        const stockTransactionAmountsAndValues = getTransactionAmountsAndValues(
           dates,
-          transactions
+          transactions.stock
         );
+        const dividendTransactionAmountsAndValues =
+          getTransactionAmountsAndValues(dates, transactions.dividend);
+        const commissionTransactionAmountsAndValues =
+          getTransactionAmountsAndValues(dates, transactions.commission);
+
         const totalInvested = getMostRecentValueFromList(
-          transactionAmountsAndValues.aggregatedValues
+          stockTransactionAmountsAndValues.aggregatedValues
         );
         const amountOfShares = getMostRecentValueFromList(
-          transactionAmountsAndValues.aggregatedAmounts
+          stockTransactionAmountsAndValues.aggregatedAmounts
         );
+
+        const totalDividend = getMostRecentValueFromList(
+          dividendTransactionAmountsAndValues.aggregatedValues
+        );
+
+        const totalCommission = getMostRecentValueFromList(
+          commissionTransactionAmountsAndValues.aggregatedValues
+        );
+
         return {
           ...state,
           dates,
-          chartData: { ...state.chartData, ...transactionAmountsAndValues },
+          chartData: {
+            ...state.chartData,
+            stock: { ...stockTransactionAmountsAndValues },
+            dividend: { ...dividendTransactionAmountsAndValues },
+            commission: { ...commissionTransactionAmountsAndValues },
+          },
           summary: {
             ...state.summary,
             totalInvested,
             amountOfShares,
             averageSharePrice: totalInvested / amountOfShares,
+            totalDividend,
+            totalCommission,
           },
         };
       }
@@ -107,12 +149,13 @@ export const reducer = createReducer(
   on(setChartData, (state, action) => {
     const portfolioValues = getPortfolioValues(
       state.dates,
-      state.chartData.aggregatedAmounts,
+      state.chartData.stock.aggregatedAmounts,
       action.ticker
     );
+    //TODO: calculate profit with commission/dividend
     const profit = subtractLists(
       portfolioValues,
-      state.chartData.aggregatedValues
+      state.chartData.stock.aggregatedValues
     );
     return {
       ...state,

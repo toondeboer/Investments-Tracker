@@ -2,8 +2,8 @@ import {
   CsvInput,
   DatabaseObject,
   Ticker,
-  Transaction,
-  TransactionDbo,
+  Transactions,
+  TransactionsDbo,
 } from '@aws/util';
 import { createAction, props } from '@ngrx/store';
 
@@ -19,11 +19,11 @@ export const getDataFailure = createAction(
 
 export const saveTransaction = createAction(
   '[State] Save Transaction',
-  props<{ transaction: Transaction }>()
+  props<{ transactions: Transactions }>()
 );
 export const saveTransactionSuccess = createAction(
   '[State] Save Transaction Success',
-  props<{ transactions: TransactionDbo[] }>()
+  props<{ transactions: TransactionsDbo }>()
 );
 export const saveTransactionFailure = createAction(
   '[State] Save Transaction Failure',
@@ -32,11 +32,11 @@ export const saveTransactionFailure = createAction(
 
 export const deleteTransaction = createAction(
   '[State] Delete Transaction',
-  props<{ newTransactions: Transaction[] }>()
+  props<{ newTransactions: Transactions }>()
 );
 export const deleteTransactionSuccess = createAction(
   '[State] Delete Transaction Success',
-  props<{ transactions: TransactionDbo[] }>()
+  props<{ transactions: TransactionsDbo }>()
 );
 export const deleteTransactionFailure = createAction(
   '[State] Delete Transaction Failure',
@@ -48,7 +48,7 @@ export const deleteAllTransactions = createAction(
 );
 export const deleteAllTransactionsSuccess = createAction(
   '[State] Delete All Transactions Success',
-  props<{ transactions: TransactionDbo[] }>()
+  props<{ transactions: TransactionsDbo }>()
 );
 export const deleteAllTransactionsFailure = createAction(
   '[State] Delete All Transactions Failure',
@@ -66,7 +66,7 @@ export const handleFileInput = createAction(
 );
 export const handleFileInputSuccess = createAction(
   '[State] Handle File InputSuccess',
-  props<{ transactions: TransactionDbo[] }>()
+  props<{ transactions: TransactionsDbo }>()
 );
 export const handleFileInputFailure = createAction(
   '[State] Handle File InputFailure',

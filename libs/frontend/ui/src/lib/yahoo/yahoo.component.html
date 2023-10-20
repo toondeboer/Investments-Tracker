@@ -15,25 +15,43 @@
 
   <aws-chart
     [x]="dates"
-    [y]="chartData?.transactionValues ?? []"
+    [y]="chartData?.dividend?.transactionValues ?? []"
+    label="Dividend (Kwartaal)"
+  ></aws-chart>
+
+  <aws-chart
+    [x]="dates"
+    [y]="chartData?.dividend?.aggregatedValues ?? []"
+    label="Aggregated Dividend"
+  ></aws-chart>
+
+  <aws-chart
+    [x]="dates"
+    [y]="chartData?.commission?.aggregatedValues ?? []"
+    label="Aggregated Commission"
+  ></aws-chart>
+
+  <aws-chart
+    [x]="dates"
+    [y]="chartData?.stock?.transactionValues ?? []"
     label="Transactions Values"
   ></aws-chart>
 
   <aws-chart
     [x]="dates"
-    [y]="chartData?.aggregatedValues ?? []"
+    [y]="chartData?.stock?.aggregatedValues ?? []"
     label="Aggregated Transactions Values"
   ></aws-chart>
 
   <aws-chart
     [x]="dates"
-    [y]="chartData?.transactionAmounts ?? []"
+    [y]="chartData?.stock?.transactionAmounts ?? []"
     label="Transactions Amounts"
   ></aws-chart>
 
   <aws-chart
     [x]="dates"
-    [y]="chartData?.aggregatedAmounts ?? []"
+    [y]="chartData?.stock?.aggregatedAmounts ?? []"
     label="Aggregated Transactions Amounts"
   ></aws-chart>
 

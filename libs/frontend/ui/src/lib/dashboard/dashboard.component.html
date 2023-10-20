@@ -6,8 +6,7 @@
   ></aws-transactions-table>
 
   <aws-yahoo
-    *ngIf="state.transactions.length > 0"
-    [transactions]="state.transactions"
+    *ngIf="state.transactions.stock.length > 0"
     [dates]="state.dates"
     [chartData]="state.chartData"
   ></aws-yahoo>

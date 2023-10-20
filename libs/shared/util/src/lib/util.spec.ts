@@ -15,6 +15,7 @@ describe('parseCsvInput', () => {
     ];
     const expected: Transaction[] = [
       {
+        type: 'buy',
         date: new Date(2023, 9, 3),
         amount: 6,
         value: 463.06,
