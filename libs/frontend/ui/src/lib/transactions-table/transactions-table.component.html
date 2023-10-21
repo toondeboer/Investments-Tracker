@@ -81,4 +81,4 @@
   <input type="file" (change)="handleFileInput($event)" accept=".csv" />
 </div>
 
-<button (click)="deleteAll()">Delete All Transactions</button>
+<button (click)="deleteAll()" [disabled]="true">Delete All Transactions</button>

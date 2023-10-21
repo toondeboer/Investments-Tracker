@@ -73,11 +73,12 @@ mat-sidenav-content {
   background-color: rgb(243, 239, 232);
 }
 
-.container {
+.grid {
   display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
 }
 
 .bold {
