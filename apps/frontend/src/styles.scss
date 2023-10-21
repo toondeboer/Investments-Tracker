@@ -1,5 +1,81 @@
 /* You can add global styles to this file, and also import other style files */
+@use '@angular/material' as mat;
 
-body {
+@include mat.core();
+
+$primary-palette: (
+  50: #e0f4fd,
+  100: #b0e3f8,
+  200: #7bd1f4,
+  300: #44bff0,
+  400: #05b2ee,
+  500: #00a4eb,
+  600: #0096dd,
+  700: #0084ca,
+  800: #0073b6,
+  900: #005395,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: white,
+    400: white,
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+  ),
+);
+
+$accent-palette: (
+  50: #fff7e1,
+  100: #ffeab3,
+  200: #ffdc82,
+  300: #ffd04f,
+  400: #ffc42b,
+  500: #ffbb11,
+  600: #ffad0d,
+  700: #fe9a0e,
+  800: #fd890f,
+  900: #fc6910,
+  contrast: (
+    50: rgba(black, 0.87),
+    100: rgba(black, 0.87),
+    200: rgba(black, 0.87),
+    300: white,
+    400: white,
+    500: white,
+    600: white,
+    700: white,
+    800: white,
+    900: white,
+  ),
+);
+
+$primary: mat.define-palette($primary-palette);
+$accent: mat.define-palette($accent-palette);
+
+$my-theme: mat.define-light-theme(
+  (
+    color: (
+      primary: $primary,
+      accent: $accent,
+    ),
+    typography: mat.define-typography-config(),
+    density: 0,
+  )
+);
+
+@include mat.all-component-themes($my-theme);
+
+mat-sidenav-content {
   background-color: rgb(243, 239, 232);
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
 }

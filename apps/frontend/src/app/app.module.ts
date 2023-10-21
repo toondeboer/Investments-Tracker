@@ -11,12 +11,14 @@ import { EffectsModule } from '@ngrx/effects';
 import { HttpClientModule } from '@angular/common/http';
 import { UiModule } from '@aws/ui';
 import { YahooModule } from '@aws/yahoo';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [AppComponent],
   imports: [
     BrowserModule,
     HttpClientModule,
+    BrowserAnimationsModule,
     RouterModule.forRoot(appRoutes, { initialNavigation: 'enabledBlocking' }),
     StoreModule.forRoot(),
     EffectsModule.forRoot(),

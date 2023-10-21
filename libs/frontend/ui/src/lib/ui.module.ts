@@ -8,15 +8,34 @@ import { TransactionsTableComponent } from './transactions-table/transactions-ta
 import { FormsModule } from '@angular/forms';
 import { YahooComponent } from './yahoo/yahoo.component';
 import { SummaryComponent } from './summary/summary.component';
+import { PageWrapperComponent } from './page-wrapper/page-wrapper.component';
+import { RouterModule } from '@angular/router';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatListModule } from '@angular/material/list';
+import { MatButtonModule } from '@angular/material/button';
+import { TransactionsComponent } from './transactions/transactions.component';
 
 @NgModule({
-  imports: [CommonModule, NgxEchartsModule, UtilModule, FormsModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    NgxEchartsModule,
+    UtilModule,
+    FormsModule,
+    MatToolbarModule,
+    MatSidenavModule,
+    MatListModule,
+    MatButtonModule,
+  ],
   declarations: [
     DashboardComponent,
     ChartComponent,
     TransactionsTableComponent,
     YahooComponent,
     SummaryComponent,
+    PageWrapperComponent,
+    TransactionsComponent,
   ],
 })
 export class UiModule {}

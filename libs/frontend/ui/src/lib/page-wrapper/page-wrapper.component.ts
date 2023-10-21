@@ -1,0 +1,44 @@
+import { ChangeDetectorRef, Component, OnDestroy } from '@angular/core';
+import { MediaMatcher } from '@angular/cdk/layout';
+import { Router } from '@angular/router';
+import { MatSidenav } from '@angular/material/sidenav';
+
+@Component({
+  selector: 'aws-page-wrapper',
+  templateUrl: './page-wrapper.component.html',
+  styleUrls: ['./page-wrapper.component.scss'],
+})
+export class PageWrapperComponent implements OnDestroy {
+  mobileQuery: MediaQueryList;
+  navigationOptions = [
+    {
+      path: 'dashboard',
+      text: 'Dashboard',
+    },
+    {
+      path: 'transactions',
+      text: 'Transactions',
+    },
+  ];
+
+  private _mobileQueryListener: () => void;
+
+  constructor(
+    changeDetectorRef: ChangeDetectorRef,
+    media: MediaMatcher,
+    private readonly router: Router
+  ) {
+    this.mobileQuery = media.matchMedia('(max-width: 600px)');
+    this._mobileQueryListener = () => changeDetectorRef.detectChanges();
+    this.mobileQuery.addListener(this._mobileQueryListener);
+  }
+
+  ngOnDestroy(): void {
+    this.mobileQuery.removeListener(this._mobileQueryListener);
+  }
+
+  routeTo(route: string, snav: MatSidenav) {
+    snav.close();
+    this.router.navigate([route]);
+  }
+}

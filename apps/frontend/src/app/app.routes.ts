@@ -1,9 +1,24 @@
 import { Route } from '@angular/router';
-import { DashboardComponent } from '@aws/ui';
+import {
+  DashboardComponent,
+  PageWrapperComponent,
+  TransactionsComponent,
+} from '@aws/ui';
 
 export const appRoutes: Route[] = [
   {
     path: '',
-    component: DashboardComponent,
+    component: PageWrapperComponent,
+    children: [
+      {
+        path: 'dashboard',
+        component: DashboardComponent,
+      },
+      {
+        path: 'transactions',
+        component: TransactionsComponent,
+      },
+      { path: '**', redirectTo: 'dashboard' },
+    ],
   },
 ];
