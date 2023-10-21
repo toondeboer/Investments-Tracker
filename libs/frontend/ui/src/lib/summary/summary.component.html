@@ -1,33 +1,35 @@
 <h1>Portfolio Summary</h1>
-<div class="row">
-  <h3>Portfolio value:</h3>
-  <h3>{{ summary.portfolioValue | number : '1.2-2' }}</h3>
-</div>
-<div class="row">
-  <h3>Total Invested:</h3>
-  <h3>{{ summary.totalInvested | number : '1.2-2' }}</h3>
-</div>
-<div class="row">
-  <h3>Profit:</h3>
-  <h3>
-    {{ summary.portfolioValue - summary.totalInvested | number : '1.2-2' }}
-  </h3>
-</div>
-<div class="row">
-  <h3>Shares:</h3>
-  <h3>
-    {{ summary.amountOfShares }}
-  </h3>
-</div>
-<div class="row">
-  <h3>Avarage Price paid per share:</h3>
-  <h3>
-    {{ summary.averageSharePrice | number : '1.2-2' }}
-  </h3>
-</div>
-<div class="row">
-  <h3>Current Share price:</h3>
-  <h3>
-    {{ summary.currentSharePrice | number : '1.2-2' }}
-  </h3>
+<div class="grid">
+  <div class="box">
+    <div>Portfolio value</div>
+    <div class="bold">{{ summary.portfolioValue | number : '1.2-2' }}</div>
+  </div>
+  <div class="box">
+    <div>Total Invested</div>
+    <div class="bold">{{ summary.totalInvested | number : '1.2-2' }}</div>
+  </div>
+  <div class="box">
+    <div>Profit</div>
+    <div class="bold">
+      {{ summary.portfolioValue - summary.totalInvested | number : '1.2-2' }}
+    </div>
+  </div>
+  <div class="box">
+    <div>Shares</div>
+    <div class="bold">
+      {{ summary.amountOfShares }}
+    </div>
+  </div>
+  <div class="box">
+    <div>Avarage Price paid per share</div>
+    <div class="bold">
+      {{ summary.averageSharePrice | number : '1.2-2' }}
+    </div>
+  </div>
+  <div class="box">
+    <div>Current Share price</div>
+    <div class="bold">
+      {{ summary.currentSharePrice | number : '1.2-2' }}
+    </div>
+  </div>
 </div>

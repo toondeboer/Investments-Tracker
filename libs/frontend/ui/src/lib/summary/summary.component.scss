@@ -1,5 +1,17 @@
-.row {
+.grid {
   display: flex;
-  justify-content: space-around;
-  gap: 10px;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  margin: 5px;
+  border: solid 2px black;
+  border-radius: 5px;
+  text-align: center;
 }
