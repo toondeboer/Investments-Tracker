@@ -1,0 +1,181 @@
+<div *ngIf="state$ | async as state" class="scroll-container">
+  <ng-container *ngIf="state.summary.totalReturn.absolute !== 0">
+    <div *ngIf="state.summary.totalReturn as return" class="scroll-text">
+      <div>Portfolio value:</div>
+      <div class="bold">
+        {{ state.summary.portfolioValue | number : '1.2-2' }},
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        {{ return.absolute | number : '1.2-2' }}
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        ({{ return.percentage | number : '1.2-2' }}%)
+      </div>
+    </div>
+
+    <div *ngIf="state.summary.dailyReturn as return" class="scroll-text small">
+      <div>1d:</div>
+      <div
+        class="bold"
+        [ngClass]="{ negative: return.absolute < 0 }"
+        class="number-text"
+      >
+        {{ return.absolute | number : '1.2-2' }}
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        ({{ return.percentage | number : '1.2-2' }}%)
+      </div>
+    </div>
+
+    <div *ngIf="state.summary.weeklyReturn as return" class="scroll-text small">
+      <div>1w:</div>
+      <div
+        class="bold"
+        [ngClass]="{ negative: return.absolute < 0 }"
+        class="number-text"
+      >
+        {{ return.absolute | number : '1.2-2' }}
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        ({{ return.percentage | number : '1.2-2' }}%)
+      </div>
+    </div>
+
+    <div
+      *ngIf="state.summary.monthlyReturn as return"
+      class="scroll-text small"
+    >
+      <div>1m:</div>
+      <div
+        class="bold"
+        [ngClass]="{ negative: return.absolute < 0 }"
+        class="number-text"
+      >
+        {{ return.absolute | number : '1.2-2' }}
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        ({{ return.percentage | number : '1.2-2' }}%)
+      </div>
+    </div>
+
+    <!-- Duplicate items below -->
+
+    <div *ngIf="state.summary.totalReturn as return" class="scroll-text">
+      <div>Portfolio value:</div>
+      <div class="bold">
+        {{ state.summary.portfolioValue | number : '1.2-2' }},
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        {{ return.absolute | number : '1.2-2' }}
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        ({{ return.percentage | number : '1.2-2' }}%)
+      </div>
+    </div>
+
+    <div *ngIf="state.summary.dailyReturn as return" class="scroll-text small">
+      <div>1d:</div>
+      <div
+        class="bold"
+        [ngClass]="{ negative: return.absolute < 0 }"
+        class="number-text"
+      >
+        {{ return.absolute | number : '1.2-2' }}
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        ({{ return.percentage | number : '1.2-2' }}%)
+      </div>
+    </div>
+
+    <div *ngIf="state.summary.weeklyReturn as return" class="scroll-text small">
+      <div>1w:</div>
+      <div
+        class="bold"
+        [ngClass]="{ negative: return.absolute < 0 }"
+        class="number-text"
+      >
+        {{ return.absolute | number : '1.2-2' }}
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        ({{ return.percentage | number : '1.2-2' }}%)
+      </div>
+    </div>
+
+    <div
+      *ngIf="state.summary.monthlyReturn as return"
+      class="scroll-text small"
+    >
+      <div>1m:</div>
+      <div
+        class="bold"
+        [ngClass]="{ negative: return.absolute < 0 }"
+        class="number-text"
+      >
+        {{ return.absolute | number : '1.2-2' }}
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        ({{ return.percentage | number : '1.2-2' }}%)
+      </div>
+    </div>
+
+    <div *ngIf="state.summary.totalReturn as return" class="scroll-text">
+      <div>Portfolio value:</div>
+      <div class="bold">
+        {{ state.summary.portfolioValue | number : '1.2-2' }},
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        {{ return.absolute | number : '1.2-2' }}
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        ({{ return.percentage | number : '1.2-2' }}%)
+      </div>
+    </div>
+
+    <div *ngIf="state.summary.dailyReturn as return" class="scroll-text small">
+      <div>1d:</div>
+      <div
+        class="bold"
+        [ngClass]="{ negative: return.absolute < 0 }"
+        class="number-text"
+      >
+        {{ return.absolute | number : '1.2-2' }}
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        ({{ return.percentage | number : '1.2-2' }}%)
+      </div>
+    </div>
+
+    <div *ngIf="state.summary.weeklyReturn as return" class="scroll-text small">
+      <div>1w:</div>
+      <div
+        class="bold"
+        [ngClass]="{ negative: return.absolute < 0 }"
+        class="number-text"
+      >
+        {{ return.absolute | number : '1.2-2' }}
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        ({{ return.percentage | number : '1.2-2' }}%)
+      </div>
+    </div>
+
+    <div
+      *ngIf="state.summary.monthlyReturn as return"
+      class="scroll-text small"
+    >
+      <div>1m:</div>
+      <div
+        class="bold"
+        [ngClass]="{ negative: return.absolute < 0 }"
+        class="number-text"
+      >
+        {{ return.absolute | number : '1.2-2' }}
+      </div>
+      <div [ngClass]="{ negative: return.absolute < 0 }" class="number-text">
+        ({{ return.percentage | number : '1.2-2' }}%)
+      </div>
+    </div>
+
+    <!-- Duplicate above -->
+  </ng-container>
+</div>

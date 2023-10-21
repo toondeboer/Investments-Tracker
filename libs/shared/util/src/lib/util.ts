@@ -1,5 +1,6 @@
 import {
   CsvInput,
+  Return,
   Ticker,
   Transaction,
   TransactionType,
@@ -202,16 +203,19 @@ export function getPortfolioValues(
   return values;
 }
 
-export function getMostRecentValueFromList(values: number[]): number {
+export function getMostRecentValueFromList(values: number[]): {
+  value: number;
+  index: number;
+} {
   let index = values.length - 1;
   while (index >= 0) {
     if (values[index]) {
-      return values[index];
+      return { value: values[index], index };
     }
     index -= 1;
   }
 
-  return 0;
+  return { value: 0, index: 0 };
 }
 
 export function parseCsvInput(csv: CsvInput): Transactions {
@@ -289,4 +293,25 @@ export function subtractLists(list1: number[], list2: number[]): number[] {
     result.push(list1[i] - list2[i]);
   }
   return result;
+}
+
+export function getReturn(
+  portfolioValues: number[],
+  profit: number[],
+  days: number
+): Return {
+  const mostRecentProfit = getMostRecentValueFromList(profit);
+  const profitDaysAgo = getMostRecentValueFromList(
+    profit.slice(
+      0,
+      mostRecentProfit.index - days < 0 ? 0 : mostRecentProfit.index - days
+    )
+  );
+  const absolute = mostRecentProfit.value - profitDaysAgo.value;
+
+  return {
+    absolute,
+    percentage:
+      (absolute / getMostRecentValueFromList(portfolioValues).value) * 100,
+  };
 }

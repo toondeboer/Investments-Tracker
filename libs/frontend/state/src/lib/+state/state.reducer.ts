@@ -14,6 +14,7 @@ import {
   getDailyDates,
   getMostRecentValueFromList,
   getPortfolioValues,
+  getReturn,
   getTransactionAmountsAndValues,
   subtractLists,
   transactionsDboToTransactions,
@@ -42,6 +43,22 @@ export const initialState: FeatureState = {
     currentSharePrice: 0,
     totalDividend: 0,
     totalCommission: 0,
+    dailyReturn: {
+      absolute: 0,
+      percentage: 0,
+    },
+    weeklyReturn: {
+      absolute: 0,
+      percentage: 0,
+    },
+    monthlyReturn: {
+      absolute: 0,
+      percentage: 0,
+    },
+    totalReturn: {
+      absolute: 0,
+      percentage: 0,
+    },
   },
   dates: [],
   chartData: {
@@ -108,18 +125,18 @@ export const reducer = createReducer(
 
         const totalInvested = getMostRecentValueFromList(
           stockTransactionAmountsAndValues.aggregatedValues
-        );
+        ).value;
         const amountOfShares = getMostRecentValueFromList(
           stockTransactionAmountsAndValues.aggregatedAmounts
-        );
+        ).value;
 
         const totalDividend = getMostRecentValueFromList(
           dividendTransactionAmountsAndValues.aggregatedValues
-        );
+        ).value;
 
         const totalCommission = getMostRecentValueFromList(
           commissionTransactionAmountsAndValues.aggregatedValues
-        );
+        ).value;
 
         return {
           ...state,
@@ -157,12 +174,26 @@ export const reducer = createReducer(
       portfolioValues,
       state.chartData.stock.aggregatedValues
     );
+    const dailyReturn = getReturn(portfolioValues, profit, 1);
+    const weeklyReturn = getReturn(portfolioValues, profit, 7);
+    const monthlyReturn = getReturn(portfolioValues, profit, 30);
+    const totalReturn = getReturn(
+      portfolioValues,
+      profit,
+      portfolioValues.length
+    );
     return {
       ...state,
       summary: {
         ...state.summary,
-        portfolioValue: getMostRecentValueFromList(portfolioValues),
-        currentSharePrice: getMostRecentValueFromList(action.ticker.values),
+        portfolioValue: getMostRecentValueFromList(portfolioValues).value,
+        currentSharePrice: getMostRecentValueFromList(action.ticker.values)
+          .value,
+
+        dailyReturn,
+        weeklyReturn,
+        monthlyReturn,
+        totalReturn,
       },
       chartData: {
         ...state.chartData,

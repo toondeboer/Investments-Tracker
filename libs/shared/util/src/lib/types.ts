@@ -6,6 +6,15 @@ export type Summary = {
   amountOfShares: number;
   averageSharePrice: number;
   currentSharePrice: number;
+  dailyReturn: Return;
+  weeklyReturn: Return;
+  monthlyReturn: Return;
+  totalReturn: Return;
+};
+
+export type Return = {
+  absolute: number;
+  percentage: number;
 };
 
 export type ChartData = {

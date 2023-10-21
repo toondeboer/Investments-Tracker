@@ -15,5 +15,21 @@ export class SummaryComponent {
     currentSharePrice: 0,
     totalDividend: 0,
     totalCommission: 0,
+    dailyReturn: {
+      absolute: 0,
+      percentage: 0,
+    },
+    weeklyReturn: {
+      absolute: 0,
+      percentage: 0,
+    },
+    monthlyReturn: {
+      absolute: 0,
+      percentage: 0,
+    },
+    totalReturn: {
+      absolute: 0,
+      percentage: 0,
+    },
   };
 }

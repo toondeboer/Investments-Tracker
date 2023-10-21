@@ -1,0 +1,36 @@
+.scroll-container {
+  display: flex;
+  overflow: hidden;
+  white-space: nowrap;
+  width: 3200px;
+}
+
+.scroll-text {
+  animation: scrollText 10s linear infinite;
+  width: 400px;
+  display: flex;
+  gap: 5px;
+}
+
+@keyframes scrollText {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(
+      -1000px
+    ); // Equals the size of the child components (Excluding the duplicates at the end)
+  }
+}
+
+.small {
+  width: 200px;
+}
+
+.number-text {
+  color: greenyellow;
+}
+
+.negative {
+  color: red;
+}
