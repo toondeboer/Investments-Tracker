@@ -169,10 +169,9 @@ export const reducer = createReducer(
       state.chartData.stock.aggregatedAmounts,
       action.ticker
     );
-    //TODO: calculate profit with commission/dividend
     const profit = subtractLists(
-      portfolioValues,
-      state.chartData.stock.aggregatedValues
+      subtractLists(portfolioValues, state.chartData.stock.aggregatedValues),
+      state.chartData.commission.aggregatedValues
     );
     const dailyReturn = getReturn(portfolioValues, profit, 1);
     const weeklyReturn = getReturn(portfolioValues, profit, 7);

@@ -1,3 +1,7 @@
+.grid {
+  margin-top: 10px;
+}
+
 .box {
   display: flex;
   flex-direction: column;
@@ -8,4 +12,6 @@
   border: solid 2px black;
   border-radius: 5px;
   text-align: center;
+  background-color: white;
+  box-shadow: 5px 10px 18px #888888;
 }

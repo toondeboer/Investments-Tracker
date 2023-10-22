@@ -1,4 +1,3 @@
-<h1>Portfolio Summary</h1>
 <div class="grid">
   <div class="box">
     <div>Portfolio value</div>
@@ -9,9 +8,15 @@
     <div class="bold">{{ summary.totalInvested | number : '1.2-2' }}</div>
   </div>
   <div class="box">
-    <div>Profit</div>
+    <div>Profit (excl. commission)</div>
     <div class="bold">
       {{ summary.portfolioValue - summary.totalInvested | number : '1.2-2' }}
+    </div>
+  </div>
+  <div class="box">
+    <div>Profit (incl. commission)</div>
+    <div class="bold">
+      {{ summary.totalReturn.absolute | number : '1.2-2' }}
     </div>
   </div>
   <div class="box">
@@ -30,6 +35,18 @@
     <div>Current Share price</div>
     <div class="bold">
       {{ summary.currentSharePrice | number : '1.2-2' }}
+    </div>
+  </div>
+  <div class="box">
+    <div>Total Dividend</div>
+    <div class="bold">
+      {{ summary.totalDividend | number : '1.2-2' }}
+    </div>
+  </div>
+  <div class="box">
+    <div>Total Commission</div>
+    <div class="bold">
+      {{ summary.totalCommission | number : '1.2-2' }}
     </div>
   </div>
 </div>
