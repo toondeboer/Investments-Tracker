@@ -64,7 +64,7 @@ export function yahooObjectToTicker(yahooObject: YahooObject): Ticker {
   const result = yahooObject.chart.result[0];
   return {
     name: result.meta.symbol,
-    values: result.indicators.quote[0].close,
+    values: result.indicators.quote[0].close.map((v) => (v === null ? NaN : v)),
     dates: result.timestamp.map((time) => new Date(time * 1000)),
   };
 }
