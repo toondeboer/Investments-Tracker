@@ -26,6 +26,9 @@ export class ChartComponent implements OnChanges {
         left: 'center',
         text: this.label,
       },
+      grid: {
+        containLabel: true,
+      },
       xAxis: {
         type: 'category',
         data: this.x.map(

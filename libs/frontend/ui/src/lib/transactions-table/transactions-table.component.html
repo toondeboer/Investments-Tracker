@@ -1,4 +1,10 @@
 <h1>Transactions</h1>
+
+<div>
+  Upload from file:
+  <input type="file" (change)="handleFileInput($event)" accept=".csv" />
+</div>
+
 <ng-container *ngIf="transactions">
   <div>Stocks</div>
   <div *ngFor="let transaction of transactions.stock" class="transaction-row">
@@ -74,11 +80,5 @@
     </button>
   </div>
 </ng-container>
-
-<div>
-  Upload from file:
-
-  <input type="file" (change)="handleFileInput($event)" accept=".csv" />
-</div>
 
 <button (click)="deleteAll()" [disabled]="true">Delete All Transactions</button>

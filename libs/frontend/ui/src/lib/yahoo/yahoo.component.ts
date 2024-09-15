@@ -1,6 +1,6 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { ChartData, Transaction } from '@aws/util';
-import { getTicker, selectYahoo } from '@aws/yahoo';
+import { Component, Input } from '@angular/core';
+import { ChartData } from '@aws/util';
+import { selectYahoo } from '@aws/yahoo';
 import { Store } from '@ngrx/store';
 
 @Component({
@@ -8,19 +8,11 @@ import { Store } from '@ngrx/store';
   templateUrl: './yahoo.component.html',
   styleUrls: ['./yahoo.component.scss'],
 })
-export class YahooComponent implements OnInit {
+export class YahooComponent {
   @Input() dates: Date[] = [];
   @Input() chartData: ChartData | undefined;
 
   yahoo$ = this.store.select(selectYahoo);
 
   constructor(private store: Store) {}
-
-  ngOnInit(): void {
-    this.store.dispatch(
-      getTicker({
-        name: 'VUSA.AS',
-      })
-    );
-  }
 }

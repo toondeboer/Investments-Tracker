@@ -25,18 +25,20 @@ export class YahooEffects {
 
   public readonly getTicker$ = createEffect(() =>
     this.actions$.pipe(
-      ofType(getTicker),
+      ofType(getDataSuccess),
       withLatestFrom(this.store.select(selectState)),
-      switchMap(([{ name }, { transactions }]) => {
-        return this.service.getTicker(name, transactions.stock[0].date).pipe(
-          mergeMap((yahooObject) => {
-            const ticker = yahooObjectToTicker(yahooObject);
-            return [getTickerSuccess({ ticker }), setChartData({ ticker })];
-          }),
-          catchError((error: HttpErrorResponse) =>
-            of(getTickerFailure({ error: error.message }))
-          )
-        );
+      switchMap(([_, { transactions }]) => {
+        return this.service
+          .getTicker('VUSA.AS', transactions.stock[0].date)
+          .pipe(
+            mergeMap((yahooObject) => {
+              const ticker = yahooObjectToTicker(yahooObject);
+              return [getTickerSuccess({ ticker }), setChartData({ ticker })];
+            }),
+            catchError((error: HttpErrorResponse) =>
+              of(getTickerFailure({ error: error.message }))
+            )
+          );
       })
     )
   );
