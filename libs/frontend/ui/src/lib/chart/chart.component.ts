@@ -40,6 +40,9 @@ export class ChartComponent implements OnChanges {
       },
       yAxis: {
         type: 'value',
+        axisLabel: {
+          formatter: '{value} €',
+        },
       },
       series: [
         {

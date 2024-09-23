@@ -19,7 +19,7 @@ export type Return = {
 
 export type ChartData = {
   stock: TransactionChartData;
-  dividend: TransactionChartData;
+  dividend: DividendTransactionChartData;
   commission: TransactionChartData;
   portfolioValues: number[];
   profit: number[];
@@ -31,6 +31,10 @@ export type TransactionChartData = {
   transactionAmounts: number[];
   aggregatedAmounts: number[];
 };
+
+export interface DividendTransactionChartData extends TransactionChartData {
+  perQuarterByYear: { year: string; data: number[] }[];
+}
 
 export type TransactionType = 'stock' | 'dividend' | 'commission';
 

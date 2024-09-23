@@ -164,6 +164,26 @@ export function getTransactionAmountsAndValues(
   };
 }
 
+export function getDividendPerQuarterByYear(
+  dividends: Transaction[]
+): { year: string; data: number[] }[] {
+  const dividendsByYear: { [year: string]: number[] } = {};
+
+  dividends.forEach((dividend) => {
+    const year = dividend.date.getFullYear().toString();
+    const quarter = Math.floor(dividend.date.getMonth() / 3);
+    if (!dividendsByYear[year]) {
+      dividendsByYear[year] = [0, 0, 0, 0];
+    }
+    dividendsByYear[year][quarter] += dividend.value;
+  });
+
+  return Object.keys(dividendsByYear).map((year) => ({
+    year,
+    data: dividendsByYear[year],
+  }));
+}
+
 export function getPortfolioValues(
   dates: Date[],
   aggregatedAmounts: number[],

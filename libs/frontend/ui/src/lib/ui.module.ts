@@ -16,6 +16,7 @@ import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import { TransactionsComponent } from './transactions/transactions.component';
 import { ScrollingTextComponent } from './scrolling-text/scrolling-text.component';
+import { BarChartComponent } from './bar-chart/bar-chart.component';
 
 @NgModule({
   imports: [
@@ -38,6 +39,7 @@ import { ScrollingTextComponent } from './scrolling-text/scrolling-text.componen
     PageWrapperComponent,
     TransactionsComponent,
     ScrollingTextComponent,
+    BarChartComponent,
   ],
 })
 export class UiModule {}

@@ -1,5 +1,7 @@
 <h1>Charts</h1>
 <div *ngIf="yahoo$ | async as yahoo" class="grid">
+  <aws-bar-chart [series]="chartData?.dividend?.perQuarterByYear ?? []">
+  </aws-bar-chart>
   <aws-chart
     [x]="dates"
     [y]="chartData?.portfolioValues ?? []"

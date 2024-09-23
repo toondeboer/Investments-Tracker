@@ -12,6 +12,7 @@ import {
   Summary,
   Transactions,
   getDailyDates,
+  getDividendPerQuarterByYear,
   getMostRecentValueFromList,
   getPortfolioValues,
   getReturn,
@@ -73,6 +74,7 @@ export const initialState: FeatureState = {
       transactionValues: [],
       aggregatedAmounts: [],
       aggregatedValues: [],
+      perQuarterByYear: [],
     },
     commission: {
       transactionAmounts: [],
@@ -120,6 +122,9 @@ export const reducer = createReducer(
         );
         const dividendTransactionAmountsAndValues =
           getTransactionAmountsAndValues(dates, transactions.dividend);
+        const dividendPerQuarterByYear = getDividendPerQuarterByYear(
+          transactions.dividend
+        );
         const commissionTransactionAmountsAndValues =
           getTransactionAmountsAndValues(dates, transactions.commission);
 
@@ -143,8 +148,13 @@ export const reducer = createReducer(
           dates,
           chartData: {
             ...state.chartData,
-            stock: { ...stockTransactionAmountsAndValues },
-            dividend: { ...dividendTransactionAmountsAndValues },
+            stock: {
+              ...stockTransactionAmountsAndValues,
+            },
+            dividend: {
+              ...dividendTransactionAmountsAndValues,
+              perQuarterByYear: dividendPerQuarterByYear,
+            },
             commission: { ...commissionTransactionAmountsAndValues },
           },
           summary: {
