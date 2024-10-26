@@ -7,6 +7,7 @@ import {
   Transactions,
   TransactionsDbo,
   YahooObject,
+  YearQuarter,
 } from './types';
 
 export function transactionsDboToTransactions(
@@ -184,6 +185,72 @@ export function getDividendPerQuarterByYear(
   }));
 }
 
+export function getDividendPerQuarter(
+  dividendPerQuarterByYear: { year: string; data: number[] }[]
+): { yearQuarters: YearQuarter[]; dividends: number[] } {
+  const yearQuarters: YearQuarter[] = [];
+  const dividends: number[] = [];
+
+  for (const dividendByYear of dividendPerQuarterByYear) {
+    dividendByYear.data.forEach((dividend, quarter) => {
+      if (dividend > 0) {
+        yearQuarters.push({
+          year: dividendByYear.year,
+          quarter,
+        });
+        dividends.push(dividend);
+      }
+    });
+  }
+
+  return { yearQuarters, dividends };
+}
+
+export function getDividendTtmPerQuarter(dividendPerQuarter: {
+  yearQuarters: YearQuarter[];
+  dividends: number[];
+}): { yearQuarters: YearQuarter[]; dividends: number[] } {
+  return {
+    yearQuarters: dividendPerQuarter.yearQuarters,
+    dividends: dividendPerQuarter.dividends.map((_, i) => {
+      const start = Math.max(0, i - 3);
+      const end = i + 1;
+
+      return dividendPerQuarter.dividends
+        .slice(start, end)
+        .reduce((acc, val) => acc + val, 0);
+    }),
+  };
+}
+
+export function getYieldPerYear(
+  dates: Date[],
+  portfolioValues: number[],
+  profitValues: number[]
+): { years: string[]; yields: number[]; profit: number[] } {
+  const years: string[] = [];
+  const yields: number[] = [];
+  const profit: number[] = [];
+  let profitLastYear = 0;
+  dates.forEach((date, index) => {
+    if (
+      (date.getMonth() === 11 && date.getDate() === 31) ||
+      index + 1 === dates.length
+    ) {
+      years.push(date.getFullYear().toString());
+      const profitThisYear =
+        getMostRecentValueAtIndex(profitValues, index) - profitLastYear;
+      profit.push(profitThisYear);
+      yields.push(
+        (100 * profitThisYear) /
+          getMostRecentValueAtIndex(portfolioValues, index)
+      );
+      profitLastYear = profitThisYear;
+    }
+  });
+  return { years, yields, profit };
+}
+
 export function getPortfolioValues(
   dates: Date[],
   aggregatedAmounts: number[],
@@ -236,6 +303,10 @@ export function getMostRecentValueFromList(values: number[]): {
   }
 
   return { value: 0, index: 0 };
+}
+
+function getMostRecentValueAtIndex(values: number[], index: number) {
+  return getMostRecentValueFromList(values.slice(0, index + 1)).value;
 }
 
 export function parseCsvInput(csv: CsvInput): Transactions {

@@ -19,6 +19,9 @@ import {
   getTransactionAmountsAndValues,
   subtractLists,
   transactionsDboToTransactions,
+  getDividendTtmPerQuarter,
+  getDividendPerQuarter,
+  getYieldPerYear,
 } from '@aws/util';
 
 export const featureKey = 'state';
@@ -75,6 +78,8 @@ export const initialState: FeatureState = {
       aggregatedAmounts: [],
       aggregatedValues: [],
       perQuarterByYear: [],
+      perQuarter: { yearQuarters: [], dividends: [] },
+      ttmPerQuarter: { yearQuarters: [], dividends: [] },
     },
     commission: {
       transactionAmounts: [],
@@ -84,6 +89,7 @@ export const initialState: FeatureState = {
     },
     portfolioValues: [],
     profit: [],
+    yieldPerYear: { years: [], yields: [], profit: [] },
   },
 };
 
@@ -125,6 +131,12 @@ export const reducer = createReducer(
         const dividendPerQuarterByYear = getDividendPerQuarterByYear(
           transactions.dividend
         );
+        const dividendPerQuarter = getDividendPerQuarter(
+          dividendPerQuarterByYear
+        );
+        const dividendTtmPerQuarter =
+          getDividendTtmPerQuarter(dividendPerQuarter);
+
         const commissionTransactionAmountsAndValues =
           getTransactionAmountsAndValues(dates, transactions.commission);
 
@@ -154,6 +166,8 @@ export const reducer = createReducer(
             dividend: {
               ...dividendTransactionAmountsAndValues,
               perQuarterByYear: dividendPerQuarterByYear,
+              perQuarter: dividendPerQuarter,
+              ttmPerQuarter: dividendTtmPerQuarter,
             },
             commission: { ...commissionTransactionAmountsAndValues },
           },
@@ -191,6 +205,8 @@ export const reducer = createReducer(
       profit,
       portfolioValues.length
     );
+
+    const yieldPerYear = getYieldPerYear(state.dates, portfolioValues, profit);
     return {
       ...state,
       summary: {
@@ -208,6 +224,7 @@ export const reducer = createReducer(
         ...state.chartData,
         portfolioValues,
         profit,
+        yieldPerYear,
       },
     };
   })

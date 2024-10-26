@@ -1,22 +1,17 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { EChartsOption } from 'echarts';
 
-const colors = [
-  '#4CAF50',
-  '#FF9800',
-  '#2196F3',
-  '#F44336',
-  '#9C27B0',
-  '#FFC107',
-];
-
 @Component({
   selector: 'aws-bar-chart',
   templateUrl: './bar-chart.component.html',
   styleUrls: ['./bar-chart.component.scss'],
 })
 export class BarChartComponent implements OnChanges {
-  @Input() series: { year: string; data: number[] }[] = [];
+  @Input() series: { years: string[]; yields: number[]; profit: number[] } = {
+    years: [],
+    yields: [],
+    profit: [],
+  };
 
   chartOptions: EChartsOption | undefined;
 
@@ -28,7 +23,7 @@ export class BarChartComponent implements OnChanges {
     return {
       title: {
         left: 'center',
-        text: 'Dividend',
+        text: 'Yield',
       },
       grid: {
         containLabel: true,
@@ -41,29 +36,49 @@ export class BarChartComponent implements OnChanges {
       },
       legend: {
         top: '10%',
-        data: this.series.map((serie) => serie.year),
       },
       xAxis: {
         type: 'category',
-        data: ['Q1', 'Q2', 'Q3', 'Q4'],
-        axisLabel: {
-          formatter: (value: string) => `${value}`,
-        },
+        data: this.series.years,
       },
-      yAxis: {
-        type: 'value',
-        axisLabel: {
-          formatter: '{value} €',
+      yAxis: [
+        {
+          type: 'value',
+          axisLabel: {
+            formatter: '{value} %',
+          },
         },
-      },
-      series: this.series.map((serie, index) => ({
-        name: serie.year,
-        type: 'bar',
-        data: serie.data,
-        itemStyle: {
-          color: colors[index % colors.length],
+        {
+          type: 'value',
+          position: 'right',
+          axisLabel: {
+            formatter: '{value} €',
+          },
         },
-      })),
+      ],
+      series: [
+        {
+          name: 'Yield %',
+          type: 'bar',
+          data: this.series.yields.map(
+            (value) => Math.round(value * 100) / 100
+          ),
+          itemStyle: {
+            color: '#4CAF50',
+          },
+        },
+        {
+          name: 'Profit',
+          type: 'line',
+          yAxisIndex: 1,
+          data: this.series.profit.map(
+            (value) => Math.round(value * 100) / 100
+          ),
+          itemStyle: {
+            color: '#FF9800',
+          },
+        },
+      ],
     };
   }
 }

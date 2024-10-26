@@ -16,6 +16,8 @@ import { MatListModule } from '@angular/material/list';
 import { MatButtonModule } from '@angular/material/button';
 import { TransactionsComponent } from './transactions/transactions.component';
 import { ScrollingTextComponent } from './scrolling-text/scrolling-text.component';
+import { BarChartPerQuarterByYear } from './bar-chart-per-quarter-by-year/bar-chart-per-quarter-by-year';
+import { BarAndLineChartComponent } from './bar-and-line-chart/bar-and-line-chart.component';
 import { BarChartComponent } from './bar-chart/bar-chart.component';
 
 @NgModule({
@@ -39,6 +41,8 @@ import { BarChartComponent } from './bar-chart/bar-chart.component';
     PageWrapperComponent,
     TransactionsComponent,
     ScrollingTextComponent,
+    BarChartPerQuarterByYear,
+    BarAndLineChartComponent,
     BarChartComponent,
   ],
 })

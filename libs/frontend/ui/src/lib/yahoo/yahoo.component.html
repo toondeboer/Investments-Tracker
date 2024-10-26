@@ -1,7 +1,8 @@
 <h1>Charts</h1>
 <div *ngIf="yahoo$ | async as yahoo" class="grid">
-  <aws-bar-chart [series]="chartData?.dividend?.perQuarterByYear ?? []">
-  </aws-bar-chart>
+  <aws-bar-chart-per-quarter-by-year [series]="chartData?.dividend?.perQuarterByYear ?? []">
+  </aws-bar-chart-per-quarter-by-year>
+  <aws-bar-and-line-chart [series]="chartData?.dividend?.ttmPerQuarter ?? {yearQuarters: [], dividends:[]}"></aws-bar-and-line-chart>
   <aws-chart
     [x]="dates"
     [y]="chartData?.portfolioValues ?? []"
@@ -13,6 +14,7 @@
     [y]="chartData?.profit ?? []"
     label="Profit"
   ></aws-chart>
+  <aws-bar-chart [series]="chartData?.yieldPerYear ?? {years: [], yields: [], profit: []}"></aws-bar-chart>
 
   <aws-chart
     [x]="dates"
@@ -54,11 +56,13 @@
     [x]="dates"
     [y]="chartData?.stock?.transactionAmounts ?? []"
     label="Transactions Amounts"
+    [money]="false"
   ></aws-chart>
 
   <aws-chart
     [x]="dates"
     [y]="chartData?.stock?.aggregatedAmounts ?? []"
     label="Aggregated Transactions Amounts"
+    [money]="false"
   ></aws-chart>
 </div>

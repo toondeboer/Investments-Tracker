@@ -23,6 +23,7 @@ export type ChartData = {
   commission: TransactionChartData;
   portfolioValues: number[];
   profit: number[];
+  yieldPerYear: { years: string[]; yields: number[]; profit: number[] };
 };
 
 export type TransactionChartData = {
@@ -34,6 +35,8 @@ export type TransactionChartData = {
 
 export interface DividendTransactionChartData extends TransactionChartData {
   perQuarterByYear: { year: string; data: number[] }[];
+  perQuarter: { yearQuarters: YearQuarter[]; dividends: number[] };
+  ttmPerQuarter: { yearQuarters: YearQuarter[]; dividends: number[] };
 }
 
 export type TransactionType = 'stock' | 'dividend' | 'commission';
@@ -116,3 +119,8 @@ export type CsvInput = {
   Omschrijving: string;
   '': string;
 }[];
+
+export type YearQuarter = {
+  year: string;
+  quarter: number;
+};

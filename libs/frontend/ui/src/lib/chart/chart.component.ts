@@ -10,6 +10,7 @@ export class ChartComponent implements OnChanges {
   @Input() x: Date[] = [];
   @Input() y: number[] = [];
   @Input() label: string | undefined;
+  @Input() money: boolean = true;
 
   chartOptions: EChartsOption | undefined;
 
@@ -41,7 +42,7 @@ export class ChartComponent implements OnChanges {
       yAxis: {
         type: 'value',
         axisLabel: {
-          formatter: '{value} €',
+          formatter: `{value}${this.money ? ' €' : ''}`,
         },
       },
       series: [
