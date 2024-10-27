@@ -32,7 +32,7 @@ export class ChartComponent implements OnChanges {
         containLabel: true,
       },
       tooltip: {
-        trigger: 'item',
+        trigger: this.showSymbols ? 'item' : 'axis',
         axisPointer: {
           type: 'shadow',
         },
@@ -59,7 +59,7 @@ export class ChartComponent implements OnChanges {
           connectNulls: true,
           smooth: true,
           symbol: this.showSymbols ? 'emptyCircle' : 'circle',
-          symbolSize: this.showSymbols ? 4 : 1,
+          symbolSize: this.showSymbols ? 10 : 1,
           showAllSymbol: true,
         },
       ],
