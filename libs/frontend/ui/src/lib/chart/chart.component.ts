@@ -11,6 +11,7 @@ export class ChartComponent implements OnChanges {
   @Input() y: number[] = [];
   @Input() label: string | undefined;
   @Input() money: boolean = true;
+  @Input() showSymbols: boolean = false;
 
   chartOptions: EChartsOption | undefined;
 
@@ -30,6 +31,12 @@ export class ChartComponent implements OnChanges {
       grid: {
         containLabel: true,
       },
+      tooltip: {
+        trigger: 'item',
+        axisPointer: {
+          type: 'shadow',
+        },
+      },
       xAxis: {
         type: 'category',
         data: this.x.map(
@@ -47,10 +54,13 @@ export class ChartComponent implements OnChanges {
       },
       series: [
         {
-          data: this.y,
+          data: this.y.map((value) => Math.round(value * 100) / 100),
           type: 'line',
           connectNulls: true,
           smooth: true,
+          symbol: this.showSymbols ? 'emptyCircle' : 'circle',
+          symbolSize: this.showSymbols ? 4 : 1,
+          showAllSymbol: true,
         },
       ],
     };

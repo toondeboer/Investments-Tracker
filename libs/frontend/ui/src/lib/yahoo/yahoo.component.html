@@ -20,6 +20,7 @@
     [x]="dates"
     [y]="chartData?.dividend?.transactionValues ?? []"
     label="Dividend (Kwartaal)"
+    [showSymbols]="true"
   ></aws-chart>
 
   <aws-chart
@@ -44,6 +45,7 @@
     [x]="dates"
     [y]="chartData?.stock?.transactionValues ?? []"
     label="Transactions Values"
+    [showSymbols]="true"
   ></aws-chart>
 
   <aws-chart
@@ -57,6 +59,7 @@
     [y]="chartData?.stock?.transactionAmounts ?? []"
     label="Transactions Amounts"
     [money]="false"
+    [showSymbols]="true"
   ></aws-chart>
 
   <aws-chart

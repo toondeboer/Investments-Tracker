@@ -2,7 +2,7 @@
   display: flex;
   overflow: hidden;
   white-space: nowrap;
-  width: 3200px;
+  width: 3150px; // 3 * (width .scroll-text + 3 * width .small)
 }
 
 .scroll-text {
@@ -12,17 +12,17 @@
   gap: 5px;
 }
 
+.small {
+  width: 200px;
+}
+
 @keyframes scrollText {
   0% {
     transform: translateX(0);
   }
   100% {
     transform: translateX(
-      -1000px
+      -1050px
     ); // Equals the size of the child components (Excluding the duplicates at the end)
   }
-}
-
-.small {
-  width: 200px;
 }
