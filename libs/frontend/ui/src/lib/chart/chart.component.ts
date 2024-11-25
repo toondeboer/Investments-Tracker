@@ -37,15 +37,28 @@ export class ChartComponent implements OnChanges {
           type: 'shadow',
         },
       },
-      xAxis: {
-        type: 'category',
-        data: this.x.map(
-          (x) =>
-            `${x.getDate()}-${x.toLocaleString('en-US', {
-              month: 'short',
-            })}`
-        ),
-      },
+      xAxis: [
+        {
+          type: 'category',
+          show: false,
+          data: this.x.map(
+            (x) =>
+              `${x.getDate()} ${x.toLocaleString('en-US', {
+                month: 'short',
+              })} ${x.getFullYear()}`
+          ),
+        },
+        {
+          type: 'category',
+          position: 'bottom',
+          data: this.x.map(
+            (x) =>
+              `${x.toLocaleString('en-US', {
+                month: 'short',
+              })} '${x.getFullYear().toString().slice(2, 4)}`
+          ),
+        },
+      ],
       yAxis: {
         type: 'value',
         axisLabel: {

@@ -3,22 +3,30 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 18
+      nodejs: 20
     commands:
       - echo Installing nx...
-      - npm install -g nx
+      - yarn global add nx
+      - echo Installing dependencies for Lambda function...
+      - cd libs/backend/lambdas/dynamodb && yarn install && cd ../../../..
   pre_build:
     commands:
       - echo Installing npm dependencies...
-      - npm install
+      - yarn install
   build:
     commands:
       - echo Building frontend...
       - nx build frontend
+      - echo Packaging Lambda function...
+      - libs/backend/lambdas/dynamodb
+      - zip -r ../../../../../lambda.zip . # Package the Lambda function
+      - cd ../../../..
   post_build:
     commands:
       - echo Build completed on `date`
 
 artifacts:
-  files: '**/*'
+  files:
+    - '**/*'
+    - 'lambda.zip'
   base-directory: dist/apps/frontend

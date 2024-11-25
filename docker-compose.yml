@@ -1,0 +1,30 @@
+services:
+  dynamodb-local:
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath ./data"
+    image: "amazon/dynamodb-local:latest"
+    container_name: dynamodb-local
+    ports:
+      - "8000:8000"
+    volumes:
+      - "./docker/dynamodb:/home/dynamodblocal/data"
+    working_dir: /home/dynamodblocal
+
+  dynamo-lambda:
+    build:
+      context: ./libs/backend/lambdas/dynamodb
+      dockerfile: Dockerfile
+    ports:
+      - "9001:8080" # Map Lambda's runtime port
+    environment:
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=yourAccessKey
+      - AWS_SECRET_ACCESS_KEY=yourSecretKey
+
+  yahoo-lambda:
+    build:
+      context: ./libs/backend/lambdas/yahoo
+      dockerfile: Dockerfile
+    ports:
+      - "9002:8080" # Map Lambda's runtime port
+    environment:
+      - AWS_REGION=us-east-1
