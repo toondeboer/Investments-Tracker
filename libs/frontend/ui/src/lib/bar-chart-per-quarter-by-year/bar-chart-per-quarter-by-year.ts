@@ -1,5 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { EChartsOption } from 'echarts';
+import { NgxEchartsDirective } from 'ngx-echarts';
+import { CommonModule, NgIf } from '@angular/common';
 
 const colors = [
   '#4CAF50',
@@ -14,6 +16,10 @@ const colors = [
   selector: 'aws-bar-chart-per-quarter-by-year',
   templateUrl: './bar-chart-per-quarter-by-year.html',
   styleUrls: ['./bar-chart-per-quarter-by-year.scss'],
+  imports: [
+    NgxEchartsDirective,
+    CommonModule
+  ]
 })
 export class BarChartPerQuarterByYear implements OnChanges {
   @Input() series: { year: string; data: number[] }[] = [];

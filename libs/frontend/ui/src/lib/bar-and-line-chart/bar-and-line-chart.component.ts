@@ -1,11 +1,17 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { EChartsOption } from 'echarts';
 import { YearQuarter } from '@aws/util';
+import { NgxEchartsDirective } from 'ngx-echarts';
+import { CommonModule, NgIf } from '@angular/common';
 
 @Component({
   selector: 'aws-bar-and-line-chart',
   templateUrl: './bar-and-line-chart.component.html',
   styleUrls: ['./bar-and-line-chart.component.scss'],
+  imports: [
+    NgxEchartsDirective,
+    CommonModule
+  ]
 })
 export class BarAndLineChartComponent implements OnChanges {
   @Input() series: { yearQuarters: YearQuarter[]; dividends: number[] } = {

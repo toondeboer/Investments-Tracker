@@ -1,10 +1,16 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { EChartsOption } from 'echarts';
+import { NgxEchartsDirective } from 'ngx-echarts';
+import { CommonModule, NgIf } from '@angular/common';
 
 @Component({
   selector: 'aws-bar-chart',
   templateUrl: './bar-chart.component.html',
   styleUrls: ['./bar-chart.component.scss'],
+  imports: [
+    NgxEchartsDirective,
+    CommonModule
+  ]
 })
 export class BarChartComponent implements OnChanges {
   @Input() series: { years: string[]; yields: number[]; profit: number[] } = {

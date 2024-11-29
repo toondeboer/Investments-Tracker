@@ -1,10 +1,16 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { EChartsOption } from 'echarts';
+import { NgxEchartsDirective } from 'ngx-echarts';
+import { CommonModule, NgIf } from '@angular/common';
 
 @Component({
   selector: 'aws-chart',
   templateUrl: './chart.component.html',
   styleUrls: ['./chart.component.scss'],
+  imports: [
+    NgxEchartsDirective,
+    CommonModule
+  ]
 })
 export class ChartComponent implements OnChanges {
   @Input() x: Date[] = [];

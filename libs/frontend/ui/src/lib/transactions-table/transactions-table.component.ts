@@ -8,11 +8,18 @@ import {
 import { Transaction, TransactionType, Transactions } from '@aws/util';
 import { Store } from '@ngrx/store';
 import { Papa } from 'ngx-papaparse';
+import { FormsModule } from '@angular/forms';
+import { CommonModule, DecimalPipe, NgForOf, NgIf } from '@angular/common';
 
 @Component({
   selector: 'aws-transactions-table',
   templateUrl: './transactions-table.component.html',
   styleUrls: ['./transactions-table.component.scss'],
+  imports: [
+    FormsModule,
+    DecimalPipe,
+    CommonModule
+  ]
 })
 export class TransactionsTableComponent {
   @Input() transactions: Transactions | undefined;

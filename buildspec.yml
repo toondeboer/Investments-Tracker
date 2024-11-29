@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      nodejs: 20
+      nodejs: 22
     commands:
       - echo Installing nx...
       - yarn global add nx
@@ -18,7 +18,7 @@ phases:
       - echo Building frontend...
       - nx build frontend
       - echo Packaging Lambda function...
-      - libs/backend/lambdas/dynamodb
+      - cd libs/backend/lambdas/dynamodb
       - zip -r ../../../../../lambda.zip . # Package the Lambda function
       - cd ../../../..
   post_build:

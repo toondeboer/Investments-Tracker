@@ -32,18 +32,5 @@ import { BarChartComponent } from './bar-chart/bar-chart.component';
     MatListModule,
     MatButtonModule,
   ],
-  declarations: [
-    DashboardComponent,
-    ChartComponent,
-    TransactionsTableComponent,
-    YahooComponent,
-    SummaryComponent,
-    PageWrapperComponent,
-    TransactionsComponent,
-    ScrollingTextComponent,
-    BarChartPerQuarterByYear,
-    BarAndLineChartComponent,
-    BarChartComponent,
-  ],
 })
 export class UiModule {}
