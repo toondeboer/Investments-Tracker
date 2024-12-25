@@ -8,6 +8,7 @@ import {
   TransactionsDbo,
   YahooObject,
   YearQuarter,
+  CsvInputEnglish
 } from './types';
 
 export function transactionsDboToTransactions(
@@ -307,6 +308,22 @@ export function getMostRecentValueFromList(values: number[]): {
 
 function getMostRecentValueAtIndex(values: number[], index: number) {
   return getMostRecentValueFromList(values.slice(0, index + 1)).value;
+}
+
+function isCsvInputEnglish(input: CsvInput | CsvInputEnglish): input is CsvInputEnglish {
+  return typeof input[0] == 'object' && input[0] != null && 'Date' in input[0] && 'Description' in input[0] && '' in input[0];
+}
+
+export function translateToDutch(csv: CsvInput | CsvInputEnglish): CsvInput {
+  if (isCsvInputEnglish(csv)) {
+    return csv.map((row) => ({
+      Omschrijving: row.Description ,
+      Datum: row.Date,
+      '': row[''],
+    }));
+  }
+
+    return csv;
 }
 
 export function parseCsvInput(csv: CsvInput): Transactions {

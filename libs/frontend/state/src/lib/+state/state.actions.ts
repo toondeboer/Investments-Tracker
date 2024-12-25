@@ -1,9 +1,9 @@
 import {
-  CsvInput,
+  CsvInput, CsvInputEnglish,
   DatabaseObject,
   Ticker,
   Transactions,
-  TransactionsDbo,
+  TransactionsDbo
 } from '@aws/util';
 import { createAction, props } from '@ngrx/store';
 
@@ -62,7 +62,7 @@ export const setChartData = createAction(
 
 export const handleFileInput = createAction(
   '[State] Handle File Input',
-  props<{ data: CsvInput }>()
+  props<{ data: CsvInput | CsvInputEnglish }>()
 );
 export const handleFileInputSuccess = createAction(
   '[State] Handle File InputSuccess',

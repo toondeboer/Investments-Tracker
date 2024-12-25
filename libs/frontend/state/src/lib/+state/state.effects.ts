@@ -21,7 +21,7 @@ import {
   saveTransactionFailure,
   saveTransactionSuccess,
 } from './state.actions';
-import { Transactions, parseCsvInput } from '@aws/util';
+import { Transactions, parseCsvInput, translateToDutch } from '@aws/util';
 
 @Injectable()
 export class StateEffects {
@@ -107,6 +107,7 @@ export class StateEffects {
     this.actions$.pipe(
       ofType(handleFileInput),
       switchMap(({ data }) => {
+        data = translateToDutch(data);
         const newTransactions: Transactions = parseCsvInput(data);
 
         return this.service.setTransactions(newTransactions).pipe(

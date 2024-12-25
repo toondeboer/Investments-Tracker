@@ -118,6 +118,12 @@ export type CsvInput = {
   Datum: string;
   Omschrijving: string;
   '': string;
+}[]
+
+export type CsvInputEnglish = {
+  Date: string;
+  Description: string;
+  '': string;
 }[];
 
 export type YearQuarter = {
