@@ -11,7 +11,7 @@ services:
 
   dynamo-lambda:
     build:
-      context: ./libs/backend/lambdas/dynamodb
+      context: ./libs/backend/lambdas/src/dynamodb
       dockerfile: Dockerfile
     ports:
       - "9001:8080" # Map Lambda's runtime port
@@ -22,7 +22,7 @@ services:
 
   yahoo-lambda:
     build:
-      context: ./libs/backend/lambdas/yahoo
+      context: ./libs/backend/lambdas/src/yahoo
       dockerfile: Dockerfile
     ports:
       - "9002:8080" # Map Lambda's runtime port

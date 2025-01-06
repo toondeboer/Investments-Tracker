@@ -21,6 +21,12 @@
       },
       "configurations": {
         "production": {
+          "fileReplacements": [
+            {
+              "replace": "src/environments/environment.ts",
+              "with": "src/environments/environment.prod.ts"
+            }
+          ],
           "budgets": [
             {
               "type": "initial",
@@ -36,6 +42,7 @@
           "outputHashing": "all"
         },
         "development": {
+          "fileReplacements": [],
           "buildOptimizer": false,
           "optimization": false,
           "vendorChunk": true,
@@ -48,6 +55,9 @@
     },
     "serve": {
       "executor": "@angular-devkit/build-angular:dev-server",
+      "options": {
+        "proxyConfig": "apps/frontend/proxy.conf.json"
+      },
       "configurations": {
         "production": {
           "buildTarget": "frontend:build:production"

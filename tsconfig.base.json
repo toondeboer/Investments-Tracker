@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@aws/lambdas": ["libs/backend/lambdas/src/index.ts"],
       "@aws/state": ["libs/frontend/state/src/index.ts"],
       "@aws/ui": ["libs/frontend/ui/src/index.ts"],
       "@aws/util": ["libs/shared/util/src/index.ts"],

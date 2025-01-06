@@ -1,7 +1,7 @@
 import https from 'https';
 
 export const handler = async (event) => {
-  const { symbol, start, end } = event.queryStringParameters;
+  const { symbol, start, end } = event.body;
   const apiUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${start}&period2=${end}`;
   const options = {
     hostname: 'query1.finance.yahoo.com',
@@ -22,7 +22,6 @@ export const handler = async (event) => {
       });
 
       res.on('end', () => {
-        console.log(data);
         resolve({
           statusCode: 200,
           body: data,

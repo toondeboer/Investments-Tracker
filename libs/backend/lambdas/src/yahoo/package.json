@@ -1,0 +1,13 @@
+{
+  "name": "yahoo-lambda",
+  "version": "1.0.0",
+  "description": "AWS Lambda function for Yahoo integration",
+  "main": "index.mjs",
+  "scripts": {
+    "dev": "nodemon index.handler"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1164.0",
+    "nodemon": "^2.0.15"
+  }
+}

@@ -12,6 +12,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { UiModule } from '@aws/ui';
 import { YahooModule } from '@aws/yahoo';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { environment } from '../environments/environment';
 
 @NgModule({
   declarations: [AppComponent],
@@ -35,7 +36,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
       echarts: () => import('echarts'), // or import('./path-to-my-custom-echarts')
     }),
   ],
-  providers: [],
+  providers: [[{ provide: 'ENVIRONMENT', useValue: environment }]],
   bootstrap: [AppComponent],
 })
 export class AppModule {}

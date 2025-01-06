@@ -1,21 +1,30 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { YahooObject } from '@aws/util';
+import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class YahooService {
-  baseUrl = `https://42zobgj5c7.execute-api.us-east-1.amazonaws.com/default/yahoo_finance`;
-  constructor(private http: HttpClient) {}
+  constructor(
+    @Inject('ENVIRONMENT') private environment: any,
+    private http: HttpClient
+  ) {}
 
-  public getTicker(name: string, startDate: Date): Observable<YahooObject> {
+  public getTicker(
+    name: string,
+    startDate: Date
+  ): Observable<{ body: string }> {
     console.log('AWS LAMBDA CALL');
     const start = Math.floor(startDate.getTime() / 1000);
     const end = Math.ceil(new Date().getTime() / 1000);
-    return this.http.get<YahooObject>(
-      `${this.baseUrl}?symbol=${name}&start=${start}&end=${end}`
-    );
+    const body = {
+      symbol: name,
+      start: start,
+      end: end,
+    };
+    return this.http.post<{ body: string }>(this.environment.yahooLambdaUrl, {
+      body,
+    });
   }
 }

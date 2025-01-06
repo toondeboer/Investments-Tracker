@@ -1,0 +1,26 @@
+{
+  "name": "lambdas",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/backend/lambdas/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/backend/lambdas",
+        "main": "libs/backend/lambdas/src/index.ts",
+        "tsConfig": "libs/backend/lambdas/tsconfig.lib.json",
+        "assets": ["libs/backend/lambdas/*.md"]
+      }
+    },
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "libs/backend/lambdas/jest.config.ts"
+      }
+    }
+  }
+}
