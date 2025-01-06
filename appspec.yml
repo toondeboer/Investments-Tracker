@@ -1,7 +1,0 @@
-version: 0.0
-resources:
-  - name: yahoo_finance
-    type: AWS::Lambda::Function
-    properties:
-      name: yahoo_finance
-      alias: live

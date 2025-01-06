@@ -7,26 +7,25 @@ phases:
     commands:
       - echo Installing nx...
       - yarn global add nx
-      - echo Installing dependencies for Lambda function...
-      - cd libs/backend/lambdas/dynamodb && yarn install && cd ../../../..
   pre_build:
     commands:
-      - echo Installing npm dependencies...
+      - echo Installing dependencies...
       - yarn install
   build:
     commands:
       - echo Building frontend...
       - nx build frontend
       - echo Packaging Lambda function...
-      - cd libs/backend/lambdas/dynamodb
-      - zip -r ../../../../../lambda.zip . # Package the Lambda function
-      - cd ../../../..
+      - cd libs/backend/lambdas/src/yahoo
+      - zip -r ../../../../../yahoo.zip index.mjs # Package the Lambda function
+      - cd ../../../../..
+      - echo Build completed on `date`
   post_build:
     commands:
-      - echo Build completed on `date`
+      - echo Deploying lambda function...
+      - aws lambda update-function-code --function-name yahoo_finance --zip-file fileb://yahoo.zip --region us-east-1
+      - echo Deployment completed on `date`
 
 artifacts:
-  files:
-    - '**/*'
-    - 'lambda.zip'
+  files: '**/*'
   base-directory: dist/apps/frontend
