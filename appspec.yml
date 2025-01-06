@@ -1,5 +1,7 @@
 version: 0.0
-Resources:
-  - FunctionName: dynamodb  # Replace with your actual Lambda function name
-    AliasName: live                    # The alias you want to use (e.g., `live`, `prod`)
-    CurrentVersion: true
+resources:
+  - name: yahoo_finance
+    type: AWS::Lambda::Function
+    properties:
+      name: yahoo_finance
+      alias: live
