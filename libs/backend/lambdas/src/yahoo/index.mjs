@@ -5,6 +5,7 @@ export const handler = async (event) => {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
     'Access-Control-Allow-Headers': '*',
+    'Content-Type': 'application/json',
   };
 
   if (event.httpMethod === 'OPTIONS') {
@@ -15,7 +16,7 @@ export const handler = async (event) => {
     };
   }
 
-  const { symbol, start, end } = event.body;
+  const { symbol, start, end } = JSON.parse(event.body);
   const apiUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${start}&period2=${end}`;
   const options = {
     hostname: 'query1.finance.yahoo.com',

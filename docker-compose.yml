@@ -28,3 +28,5 @@ services:
       - "9002:8080" # Map Lambda's runtime port
     environment:
       - AWS_REGION=us-east-1
+    volumes:
+      - ./libs/backend/lambdas/src/yahoo:/var/task  # Mount the local code folder inside the container

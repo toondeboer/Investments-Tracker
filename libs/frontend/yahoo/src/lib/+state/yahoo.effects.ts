@@ -31,8 +31,8 @@ export class YahooEffects {
         return this.service
           .getTicker('VUSA.AS', transactions.stock[0].date)
           .pipe(
-            mergeMap(({ body }) => {
-              const ticker = yahooObjectToTicker(JSON.parse(body));
+            mergeMap((yahooObject) => {
+              const ticker = yahooObjectToTicker(yahooObject);
               return [getTickerSuccess({ ticker }), setChartData({ ticker })];
             }),
             catchError((error: HttpErrorResponse) =>
