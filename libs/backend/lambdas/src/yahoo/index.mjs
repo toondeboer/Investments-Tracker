@@ -1,6 +1,20 @@
 import https from 'https';
 
 export const handler = async (event) => {
+  const headers = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+    'Access-Control-Allow-Headers': '*',
+  };
+
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers,
+      body: '',
+    };
+  }
+
   const { symbol, start, end } = event.body;
   const apiUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${start}&period2=${end}`;
   const options = {
@@ -24,6 +38,7 @@ export const handler = async (event) => {
       res.on('end', () => {
         resolve({
           statusCode: 200,
+          headers,
           body: data,
         });
       });
@@ -32,6 +47,7 @@ export const handler = async (event) => {
     req.on('error', (error) => {
       reject({
         statusCode: 500,
+        headers,
         body: JSON.stringify({
           error: 'Failed to fetch data from Yahoo Finance',
         }),
