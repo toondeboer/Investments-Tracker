@@ -1,6 +1,6 @@
 {
-  "/2015-03-31/functions/function/invocations": {
-    "target": "http://localhost:9002",
+  "/yahoo_finance": {
+    "target": "http://localhost:3000",
     "secure": false,
     "changeOrigin": true,
     "logLevel": "debug"
