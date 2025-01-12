@@ -7,7 +7,7 @@ Description: >
 
 Resources:
   YahooFunction:
-    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Type: AWS::Serverless::Function
     Properties:
       CodeUri: libs/backend/lambdas/src/yahoo/
       Handler: index.handler
@@ -16,7 +16,25 @@ Resources:
       - x86_64
       Events:
         YahooFinance:
-          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Type: Api
           Properties:
             Path: /yahoo_finance
             Method: post
+
+  DynamoDBFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: libs/backend/lambdas/src/dynamodb/
+      Handler: index.handler
+      Runtime: nodejs22.x
+      Architectures:
+        - x86_64
+      Events:
+        DynamoDB:
+          Type: Api
+          Properties:
+            Path: /microservice
+            Method: any
+      Environment:
+        Variables:
+          ENVIRONMENT: dev

@@ -15,15 +15,25 @@ phases:
     commands:
       - echo Building frontend...
       - nx build frontend
-      - echo Packaging Lambda function...
+      - echo Packaging Lambda function yahoo...
       - cd libs/backend/lambdas/src/yahoo
-      - zip -r ../../../../../yahoo.zip index.mjs # Package the Lambda function
+      - zip -r ../../../../../yahoo.zip index.mjs
+      - cd ../../../../..
+      - echo Packaging Lambda function dynamo db...
+      - cd libs/backend/lambdas/src/dynamodb
+      - zip -r ../../../../../dynamodb.zip index.mjs
       - cd ../../../../..
       - echo Build completed on `date`
   post_build:
     commands:
-      - echo Deploying lambda function...
+      - echo Deploying lambda function yahoo...
       - aws lambda update-function-code --function-name yahoo_finance --zip-file fileb://yahoo.zip --region us-east-1
+      - echo Deploying lambda function dynamodb...
+      - aws lambda update-function-code --function-name microservice --zip-file fileb://dynamodb.zip --region us-east-1
+      - echo Updating environment variables...
+      - aws lambda update-function-configuration \
+        --function-name microservice \
+        --environment Variables="{ENVIRONMENT=prod}"
       - echo Deployment completed on `date`
 
 artifacts:

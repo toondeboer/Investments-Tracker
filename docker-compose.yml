@@ -8,25 +8,3 @@ services:
     volumes:
       - "./docker/dynamodb:/home/dynamodblocal/data"
     working_dir: /home/dynamodblocal
-
-  dynamo-lambda:
-    build:
-      context: ./libs/backend/lambdas/src/dynamodb
-      dockerfile: Dockerfile
-    ports:
-      - "9001:8080" # Map Lambda's runtime port
-    environment:
-      - AWS_REGION=us-east-1
-      - AWS_ACCESS_KEY_ID=yourAccessKey
-      - AWS_SECRET_ACCESS_KEY=yourSecretKey
-
-  yahoo-lambda:
-    build:
-      context: ./libs/backend/lambdas/src/yahoo
-      dockerfile: Dockerfile
-    ports:
-      - "9002:8080" # Map Lambda's runtime port
-    environment:
-      - AWS_REGION=us-east-1
-    volumes:
-      - ./libs/backend/lambdas/src/yahoo:/var/task  # Mount the local code folder inside the container

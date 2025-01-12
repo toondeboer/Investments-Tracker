@@ -1,11 +1,25 @@
-import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
+import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 
-const dynamo = DynamoDBDocument.from(
-  new DynamoDBClient({
-    endpoint: 'http://host.docker.internal:8000', // DynamoDB local endpoint
-  })
-);
+let dynamoDB;
+
+// Determine the current environment (default to 'dev')
+const currentEnv = process.env.environment || 'dev';
+
+if (currentEnv === 'dev') {
+  console.log('Using local DynamoDB instance...');
+  dynamoDB = new DynamoDBDocument(
+    new DynamoDB({
+      endpoint: 'http://host.docker.internal:8000',
+      region: 'us-east-1', // Use the same region as your local setup
+      accessKeyId: 'fakeAccessKeyId', // Placeholder for local testing
+      secretAccessKey: 'fakeSecretAccessKey', // Placeholder for local testing
+    })
+  );
+} else if (currentEnv === 'prod') {
+  console.log('Using AWS DynamoDB...');
+  dynamoDB = DynamoDBDocument.from(new DynamoDB());
+}
 
 /**
  * Demonstrates a simple HTTP endpoint using API Gateway. You have full
@@ -18,8 +32,6 @@ const dynamo = DynamoDBDocument.from(
  * DynamoDB API as a JSON body.
  */
 export const handler = async (event) => {
-  console.log('Received event:', JSON.stringify(event, null, 2));
-
   let body;
   let statusCode = '200';
   const headers = {
@@ -29,16 +41,16 @@ export const handler = async (event) => {
   try {
     switch (event.httpMethod) {
       case 'DELETE':
-        body = await dynamo.delete(JSON.parse(event.body));
+        body = await dynamoDB.delete(JSON.parse(event.body));
         break;
       case 'GET':
-        body = await dynamo.scan({ TableName: 'table' });
+        body = await dynamoDB.scan({ TableName: 'table' });
         break;
       case 'POST':
-        body = await dynamo.put(JSON.parse(event.body));
+        body = await dynamoDB.put(JSON.parse(event.body));
         break;
       case 'PUT':
-        body = await dynamo.update(JSON.parse(event.body));
+        body = await dynamoDB.update(JSON.parse(event.body));
         break;
       case 'OPTIONS':
         break;

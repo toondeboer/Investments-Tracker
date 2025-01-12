@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Inject, Injectable } from '@angular/core';
 import {
   DatabaseObject,
   Transactions,
@@ -11,12 +11,16 @@ import { Observable } from 'rxjs';
   providedIn: 'root',
 })
 export class StateService {
-  baseUrl = `https://42zobgj5c7.execute-api.us-east-1.amazonaws.com/default/microservice`;
-  constructor(private http: HttpClient) {}
+  constructor(
+    @Inject('ENVIRONMENT') private environment: any,
+    private http: HttpClient
+  ) {}
 
   public getData(): Observable<DatabaseObject> {
     console.log('AWS LAMBDA CALL');
-    return this.http.get<DatabaseObject>(`${this.baseUrl}`);
+    return this.http.get<DatabaseObject>(
+      `${this.environment.dynamoDBLambdaUrl}`
+    );
   }
 
   public setTransactions(
@@ -24,16 +28,19 @@ export class StateService {
   ): Observable<TransactionsAttributes> {
     console.log('AWS LAMBDA CALL');
     console.log(transactions);
-    return this.http.put<TransactionsAttributes>(`${this.baseUrl}`, {
-      TableName: 'table',
-      Key: {
-        partitionKey: 'pk-test',
-      },
-      UpdateExpression: 'set transactions = :t',
-      ExpressionAttributeValues: {
-        ':t': transactions,
-      },
-      ReturnValues: 'ALL_NEW',
-    });
+    return this.http.put<TransactionsAttributes>(
+      `${this.environment.dynamoDBLambdaUrl}`,
+      {
+        TableName: 'table',
+        Key: {
+          partitionKey: 'pk-test',
+        },
+        UpdateExpression: 'set transactions = :t',
+        ExpressionAttributeValues: {
+          ':t': transactions,
+        },
+        ReturnValues: 'ALL_NEW',
+      }
+    );
   }
 }
