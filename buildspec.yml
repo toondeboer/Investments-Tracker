@@ -30,10 +30,6 @@ phases:
       - aws lambda update-function-code --function-name yahoo_finance --zip-file fileb://yahoo.zip --region us-east-1
       - echo Deploying lambda function dynamodb...
       - aws lambda update-function-code --function-name microservice --zip-file fileb://dynamodb.zip --region us-east-1
-      - echo Updating environment variables...
-      - aws lambda update-function-configuration \
-        --function-name microservice \
-        --environment Variables="{ENVIRONMENT=prod}"
       - echo Deployment completed on `date`
 
 artifacts:
