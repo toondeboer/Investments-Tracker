@@ -13,6 +13,9 @@ import { UiModule } from '@aws/ui';
 import { YahooModule } from '@aws/yahoo';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { environment } from '../environments/environment';
+import { AuthModule } from 'angular-auth-oidc-client';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { JwtInterceptor } from '../auth/jwtInterceptor/JwtInterceptor';
 
 @NgModule({
   declarations: [AppComponent],
@@ -35,8 +38,22 @@ import { environment } from '../environments/environment';
        */
       echarts: () => import('echarts'), // or import('./path-to-my-custom-echarts')
     }),
+    AuthModule.forRoot({
+      config: {
+        authority:
+          'https://cognito-idp.us-east-1.amazonaws.com/us-east-1_liCB4LgDE',
+        redirectUrl: 'http://localhost:4200/callback',
+        clientId: '3o34bbl92faeo9ljo11eebtim2',
+        scope: 'email openid profile',
+        responseType: 'code',
+      },
+    }),
   ],
-  providers: [[{ provide: 'ENVIRONMENT', useValue: environment }]],
+  providers: [
+    { provide: 'ENVIRONMENT', useValue: environment },
+    { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
+  ],
   bootstrap: [AppComponent],
+  exports: [AuthModule],
 })
 export class AppModule {}

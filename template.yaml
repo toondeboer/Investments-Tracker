@@ -13,7 +13,7 @@ Resources:
       Handler: index.handler
       Runtime: nodejs22.x
       Architectures:
-      - x86_64
+        - x86_64
       Events:
         YahooFinance:
           Type: Api

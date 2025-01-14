@@ -4,7 +4,7 @@ import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 let dynamoDB;
 
 // Determine the current environment (default to 'dev')
-const currentEnv = process.env.environment || 'dev';
+const currentEnv = process.env.ENVIRONMENT || 'dev';
 
 if (currentEnv === 'dev') {
   console.log('Using local DynamoDB instance...');
