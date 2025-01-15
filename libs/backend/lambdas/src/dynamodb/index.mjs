@@ -36,7 +36,12 @@ export const handler = async (event) => {
   let statusCode = '200';
   const headers = {
     'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'OPTIONS,GET,POST',
+    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
   };
+
+  console.log('Received event', event)
 
   try {
     switch (event.httpMethod) {
