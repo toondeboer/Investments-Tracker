@@ -4,5 +4,5 @@ export const environment = {
   yahooLambdaUrl:
     'https://42zobgj5c7.execute-api.us-east-1.amazonaws.com/default/yahoo_finance',
   dynamoDBLambdaUrl:
-    'https://42zobgj5c7.execute-api.us-east-1.amazonaws.com/default/microservice',
+    'https://a19ewvryna.execute-api.us-east-1.amazonaws.com/prod/microservice',
 };
