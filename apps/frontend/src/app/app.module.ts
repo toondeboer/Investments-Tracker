@@ -42,7 +42,7 @@ import { JwtInterceptor } from '../auth/jwtInterceptor/JwtInterceptor';
       config: {
         authority:
           'https://cognito-idp.us-east-1.amazonaws.com/us-east-1_liCB4LgDE',
-        redirectUrl: 'http://localhost:4200/callback',
+        redirectUrl: `${environment.baseUrl}/callback`,
         clientId: '3o34bbl92faeo9ljo11eebtim2',
         scope: 'email openid profile',
         responseType: 'code',
