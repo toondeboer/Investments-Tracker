@@ -17,7 +17,7 @@ export class JwtInterceptor implements HttpInterceptor {
     req: HttpRequest<any>,
     next: HttpHandler
   ): Observable<HttpEvent<any>> {
-    return this.oidcSecurityService.geIdToken().pipe(
+    return this.oidcSecurityService.getIdToken().pipe(
       switchMap((token: string) => {
         if (token) {
           req = req.clone({
