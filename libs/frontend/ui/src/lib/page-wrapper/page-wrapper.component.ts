@@ -1,7 +1,17 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  Inject,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { MediaMatcher } from '@angular/cdk/layout';
 import { Router, RouterOutlet } from '@angular/router';
-import { MatSidenav, MatSidenavContainer, MatSidenavContent } from '@angular/material/sidenav';
+import {
+  MatSidenav,
+  MatSidenavContainer,
+  MatSidenavContent,
+} from '@angular/material/sidenav';
 import { Store } from '@ngrx/store';
 import { getData } from '@aws/state';
 import { ScrollingTextComponent } from '../scrolling-text/scrolling-text.component';
@@ -24,8 +34,8 @@ import { MatButton } from '@angular/material/button';
     MatNavList,
     CommonModule,
     MatButton,
-    MatListItem
-  ]
+    MatListItem,
+  ],
 })
 export class PageWrapperComponent implements OnInit, OnDestroy {
   mobileQuery: MediaQueryList;
@@ -46,7 +56,8 @@ export class PageWrapperComponent implements OnInit, OnDestroy {
     changeDetectorRef: ChangeDetectorRef,
     media: MediaMatcher,
     private readonly router: Router,
-    private store: Store
+    private store: Store,
+    @Inject('ENVIRONMENT') private environment: any
   ) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
@@ -64,5 +75,20 @@ export class PageWrapperComponent implements OnInit, OnDestroy {
   routeTo(route: string, snav: MatSidenav) {
     snav.close();
     this.router.navigate([route]);
+  }
+
+  logout(): void {
+    // Clear session storage
+    if (window.sessionStorage) {
+      window.sessionStorage.clear();
+    }
+
+    const clientId = '3o34bbl92faeo9ljo11eebtim2';
+    const logoutUri = `${this.environment.baseUrl}/callback`;
+    const cognitoDomain =
+      'https://us-east-1licb4lgde.auth.us-east-1.amazoncognito.com';
+    window.location.href = `${cognitoDomain}/logout?client_id=${clientId}&logout_uri=${encodeURIComponent(
+      logoutUri
+    )}`;
   }
 }

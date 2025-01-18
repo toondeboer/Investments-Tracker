@@ -1,21 +1,22 @@
-<div *ngIf="isAuthenticated; else noAuth">
-  <br />
+<div class="landing-page">
+  <header>
+    <h1>{{ title }}</h1>
+    <p>{{ description }}</p>
+    <button class="cta-button" (click)="login()">Get Started</button>
+  </header>
 
-  Is Authenticated: {{ isAuthenticated }}
+  <section class="features">
+    <h2>Key Features</h2>
+    <div class="feature-list">
+      <div *ngFor="let feature of features" class="feature">
+        <h3>{{ feature.title }}</h3>
+        <p>{{ feature.description }}</p>
 
-  <br />
-  userData
-  <pre>{{ userData$ | async | json }}</pre>
+      </div>
+    </div>
+  </section>
 
-  <br />
-  configuration
-  <pre>{{ configuration$ | async | json }}</pre>
-
-  <br />
-  <button (click)="logout()">Logout</button>
+  <footer>
+    <p>&copy; 2025 Investment Tracker. All rights reserved.</p>
+  </footer>
 </div>
-
-<ng-template #noAuth>
-  <button (click)="login()">Login</button>
-  <hr />
-</ng-template>

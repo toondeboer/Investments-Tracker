@@ -6,6 +6,7 @@ import {
 } from '@aws/ui';
 import { ProtectedComponent } from '../auth/protected/protected.component';
 import { CallbackComponent } from '../auth/callback/callback.component';
+import { AuthGuard } from '../auth/guard/auth.guard';
 
 export const appRoutes: Route[] = [
   { path: 'login', component: ProtectedComponent },
@@ -16,6 +17,7 @@ export const appRoutes: Route[] = [
   {
     path: '',
     component: PageWrapperComponent,
+    canActivate: [AuthGuard],
     children: [
       {
         path: 'dashboard',

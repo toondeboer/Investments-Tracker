@@ -21,6 +21,7 @@
           *ngFor="let nav of navigationOptions"
           >{{ nav.text }}</a
         >
+        <button (click)="logout()">Log out</button>
       </mat-nav-list>
     </mat-sidenav>
 
