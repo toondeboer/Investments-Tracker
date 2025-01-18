@@ -1,10 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import {
-  DatabaseObject,
-  Transactions,
-  TransactionsAttributes,
-} from '@aws/util';
+import { DatabaseDto, Transactions } from '@aws/util';
 import { Observable } from 'rxjs';
 
 @Injectable({
@@ -16,31 +12,16 @@ export class StateService {
     private http: HttpClient
   ) {}
 
-  public getData(): Observable<DatabaseObject> {
+  public getData(): Observable<DatabaseDto> {
     console.log('AWS LAMBDA CALL');
-    return this.http.get<DatabaseObject>(
-      `${this.environment.dynamoDBLambdaUrl}`
-    );
+    return this.http.get<DatabaseDto>(`${this.environment.dynamoDBLambdaUrl}`);
   }
 
-  public setTransactions(
-    transactions: Transactions
-  ): Observable<TransactionsAttributes> {
+  public setTransactions(transactions: Transactions): Observable<DatabaseDto> {
     console.log('AWS LAMBDA CALL');
     console.log(transactions);
-    return this.http.put<TransactionsAttributes>(
-      `${this.environment.dynamoDBLambdaUrl}`,
-      {
-        TableName: 'table',
-        Key: {
-          partitionKey: 'pk-test',
-        },
-        UpdateExpression: 'set transactions = :t',
-        ExpressionAttributeValues: {
-          ':t': transactions,
-        },
-        ReturnValues: 'ALL_NEW',
-      }
-    );
+    return this.http.put<DatabaseDto>(`${this.environment.dynamoDBLambdaUrl}`, {
+      transactions,
+    });
   }
 }

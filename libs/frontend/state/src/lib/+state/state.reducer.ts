@@ -97,9 +97,7 @@ export const reducer = createReducer(
   initialState,
   on(getDataSuccess, (state, action) => ({
     ...state,
-    transactions: transactionsDboToTransactions(
-      action.data.Items[0].transactions
-    ),
+    transactions: transactionsDboToTransactions(action.data),
   })),
   on(
     saveTransactionSuccess,

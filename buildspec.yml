@@ -9,19 +9,28 @@ phases:
       - yarn global add nx
   pre_build:
     commands:
-      - echo Installing dependencies...
+      - echo Installing frontend dependencies...
       - yarn install
+      - echo Installing dependencies for lambda functions yahoo...
+      - cd libs/backend/lambdas/src/yahoo
+      - yarn install
+      - cd ../../../../..
+      - echo Installing dependencies for lambda functions dynamodb...
+      - cd libs/backend/lambdas/src/dynamodb
+      - yarn install
+      - cd ../../../../..
+      - echo Installing dependencies completed
   build:
     commands:
       - echo Building frontend...
       - nx build frontend
       - echo Packaging Lambda function yahoo...
       - cd libs/backend/lambdas/src/yahoo
-      - zip -r ../../../../../yahoo.zip index.mjs
+      - zip -r ../../../../../yahoo.zip index.mjs node_modules
       - cd ../../../../..
       - echo Packaging Lambda function dynamo db...
       - cd libs/backend/lambdas/src/dynamodb
-      - zip -r ../../../../../dynamodb.zip index.mjs
+      - zip -r ../../../../../dynamodb.zip index.mjs node_modules
       - cd ../../../../..
       - echo Build completed on `date`
   post_build:

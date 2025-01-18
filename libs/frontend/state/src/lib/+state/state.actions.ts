@@ -1,16 +1,16 @@
 import {
-  CsvInput, CsvInputEnglish,
-  DatabaseObject,
+  CsvInput,
+  CsvInputEnglish,
   Ticker,
   Transactions,
-  TransactionsDbo
+  TransactionsDbo,
 } from '@aws/util';
 import { createAction, props } from '@ngrx/store';
 
 export const getData = createAction('[State] Get Data');
 export const getDataSuccess = createAction(
   '[State] Get Data Success',
-  props<{ data: DatabaseObject }>()
+  props<{ data: TransactionsDbo }>()
 );
 export const getDataFailure = createAction(
   '[State] Get Data Failure',

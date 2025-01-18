@@ -54,6 +54,10 @@ export type Transaction = {
   value: number;
 };
 
+export type DatabaseDto = {
+  transactions: TransactionsDbo;
+};
+
 export type TransactionsDbo = {
   stock: TransactionDbo[];
   dividend: TransactionDbo[];
@@ -65,21 +69,6 @@ export type TransactionDbo = {
   date: string;
   amount: number;
   value: number;
-};
-
-export type DatabaseObject = {
-  Items: [
-    {
-      partitionKey: string;
-      transactions: TransactionsDbo;
-    }
-  ];
-};
-
-export type TransactionsAttributes = {
-  Attributes: {
-    transactions: TransactionsDbo;
-  };
 };
 
 export type YahooObject = {
@@ -118,7 +107,7 @@ export type CsvInput = {
   Datum: string;
   Omschrijving: string;
   '': string;
-}[]
+}[];
 
 export type CsvInputEnglish = {
   Date: string;

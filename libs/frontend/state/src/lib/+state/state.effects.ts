@@ -36,8 +36,8 @@ export class StateEffects {
       ofType(getData),
       switchMap(() => {
         return this.service.getData().pipe(
-          map((databaseObject) => {
-            return getDataSuccess({ data: databaseObject });
+          map(({ transactions }) => {
+            return getDataSuccess({ data: transactions });
           }),
           catchError((error: HttpErrorResponse) =>
             of(getDataFailure({ error: error.message }))
@@ -52,9 +52,9 @@ export class StateEffects {
       ofType(saveTransaction),
       switchMap(({ transactions }) => {
         return this.service.setTransactions(transactions).pipe(
-          map(({ Attributes }) => {
+          map(({ transactions }) => {
             return saveTransactionSuccess({
-              transactions: Attributes.transactions,
+              transactions,
             });
           }),
           catchError((error: HttpErrorResponse) =>
@@ -70,9 +70,9 @@ export class StateEffects {
       ofType(deleteTransaction),
       switchMap(({ newTransactions }) => {
         return this.service.setTransactions(newTransactions).pipe(
-          map(({ Attributes }) => {
+          map(({ transactions }) => {
             return deleteTransactionSuccess({
-              transactions: Attributes.transactions,
+              transactions,
             });
           }),
           catchError((error: HttpErrorResponse) =>
@@ -90,9 +90,9 @@ export class StateEffects {
         return this.service
           .setTransactions({ stock: [], commission: [], dividend: [] })
           .pipe(
-            map(({ Attributes }) => {
+            map(({ transactions }) => {
               return deleteAllTransactionsSuccess({
-                transactions: Attributes.transactions,
+                transactions,
               });
             }),
             catchError((error: HttpErrorResponse) =>
@@ -111,9 +111,9 @@ export class StateEffects {
         const newTransactions: Transactions = parseCsvInput(data);
 
         return this.service.setTransactions(newTransactions).pipe(
-          map(({ Attributes }) => {
+          map(({ transactions }) => {
             return handleFileInputSuccess({
-              transactions: Attributes.transactions,
+              transactions,
             });
           }),
           catchError((error: HttpErrorResponse) =>

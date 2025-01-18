@@ -26,5 +26,9 @@
         ]
       }
     }
+    ,{
+      "files": ["*.mjs"],
+      "parser": "babel-eslint"
+    }
   ]
 }

@@ -8,16 +8,14 @@ const dynamoDB = new DynamoDB({
   secretAccessKey: 'fakeSecretAccessKey', // Placeholder for local testing
 });
 
-const tableName = 'table';
+const tableName = 'Investment_Tracker';
 
 const createTable = async () => {
   try {
     const command = new CreateTableCommand({
       TableName: tableName,
-      AttributeDefinitions: [
-        { AttributeName: 'partitionKey', AttributeType: 'S' },
-      ],
-      KeySchema: [{ AttributeName: 'partitionKey', KeyType: 'HASH' }],
+      KeySchema: [{ AttributeName: 'userId', KeyType: 'HASH' }], // Partition key
+      AttributeDefinitions: [{ AttributeName: 'userId', AttributeType: 'S' }],
       ProvisionedThroughput: {
         ReadCapacityUnits: 5,
         WriteCapacityUnits: 5,

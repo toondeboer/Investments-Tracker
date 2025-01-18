@@ -1,5 +1,6 @@
 import { DynamoDB } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
+import jwt from 'jsonwebtoken';
 
 let dynamoDB;
 
@@ -21,6 +22,15 @@ if (currentEnv === 'dev') {
   dynamoDB = DynamoDBDocument.from(new DynamoDB());
 }
 
+const headers = {
+  'Content-Type': 'application/json',
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'OPTIONS,GET,POST',
+  'Access-Control-Allow-Headers': 'Content-Type,Authorization',
+};
+
+const tableName = 'Investment_Tracker';
+
 /**
  * Demonstrates a simple HTTP endpoint using API Gateway. You have full
  * access to the request and response payload, including headers and
@@ -32,30 +42,63 @@ if (currentEnv === 'dev') {
  * DynamoDB API as a JSON body.
  */
 export const handler = async (event) => {
+  console.log('Received event', event);
+
   let body;
   let statusCode = '200';
-  const headers = {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'OPTIONS,GET,POST',
-    'Access-Control-Allow-Headers': 'Content-Type,Authorization',
-  };
 
-  console.log('Received event', event)
+  let userId;
+
+  try {
+    // Extract JWT from Authorization header
+    const token = event.headers.Authorization || event.headers.authorization;
+    if (!token) {
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ message: 'Unauthorized: Missing token' }),
+      };
+    }
+
+    // Decode and verify the token
+    const decodedToken = jwt.decode(token);
+
+    // Extract user information (e.g., sub, email, or custom claims)
+    userId = decodedToken.sub; // Cognito User Pool ID
+  } catch (error) {
+    return {
+      statusCode: '401',
+      body: err.message,
+      headers,
+    };
+  }
 
   try {
     switch (event.httpMethod) {
-      case 'DELETE':
-        body = await dynamoDB.delete(JSON.parse(event.body));
-        break;
       case 'GET':
-        body = await dynamoDB.scan({ TableName: 'table' });
-        break;
-      case 'POST':
-        body = await dynamoDB.put(JSON.parse(event.body));
+        body = (
+          await dynamoDB.query({
+            TableName: tableName,
+            KeyConditionExpression: 'userId = :userId',
+            ExpressionAttributeValues: {
+              ':userId': userId,
+            },
+          })
+        ).Items[0].transactions;
         break;
       case 'PUT':
-        body = await dynamoDB.update(JSON.parse(event.body));
+        body = (
+          await dynamoDB.update({
+            TableName: tableName,
+            Key: {
+              userId: userId,
+            },
+            UpdateExpression: 'set transactions = :t',
+            ExpressionAttributeValues: {
+              ':t': event.body,
+            },
+            ReturnValues: 'ALL_NEW',
+          })
+        ).Attributes.transactions;
         break;
       case 'OPTIONS':
         break;
@@ -65,8 +108,7 @@ export const handler = async (event) => {
   } catch (err) {
     statusCode = '400';
     body = err.message;
-  } finally {
-    body = JSON.stringify(body);
+    console.log(err);
   }
 
   return {
