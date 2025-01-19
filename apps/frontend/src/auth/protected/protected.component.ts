@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Inject, inject, OnInit } from '@angular/core';
 import { OidcSecurityService } from 'angular-auth-oidc-client';
 import { Router } from '@angular/router';
-import { LandingPageComponent } from '../../../../../libs/frontend/ui/src/lib/landing-page.component';
+import { LandingPageComponent } from '../../../../../libs/frontend/ui/src/lib/landing-page/landing-page.component';
 
 @Component({
   selector: 'aws-protected',

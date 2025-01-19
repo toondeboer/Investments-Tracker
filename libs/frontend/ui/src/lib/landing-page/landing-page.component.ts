@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ChartComponent } from './chart/chart.component';
+import { ChartComponent } from '../chart/chart.component';
 
 @Component({
   selector: 'aws-landing-page',
