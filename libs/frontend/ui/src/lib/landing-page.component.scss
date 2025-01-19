@@ -1,0 +1,301 @@
+// Variables
+$primary-color: #2563eb;
+$primary-dark: #1e40af;
+$text-primary: #111827;
+$text-secondary: #4b5563;
+$white: #ffffff;
+$gray-50: #f9fafb;
+$gray-900: #111827;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1rem;
+
+  @media (min-width: 640px) {
+    padding: 0 1.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    padding: 0 2rem;
+  }
+}
+
+// Global Styles
+.landing-page {
+  min-height: 100vh;
+  background-color: $gray-50;
+}
+
+// Header Styles
+header {
+  background-color: $white;
+
+  nav {
+    @include container;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: $primary-color;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 2rem;
+      align-items: center;
+
+      .nav-button {
+        color: $text-secondary;
+        background: none;
+        border: none;
+        cursor: pointer;
+
+        &:hover {
+          color: $text-primary;
+        }
+      }
+
+      .cta-button {
+        background-color: $primary-color;
+        color: $white;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        border: none;
+        cursor: pointer;
+
+        &:hover {
+          background-color: $primary-dark;
+        }
+      }
+    }
+  }
+}
+
+// Hero Section
+.hero {
+  @include container;
+  padding: 5rem 0;
+
+  .hero-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 3rem;
+
+    @media (min-width: 768px) {
+      grid-template-columns: 1fr 1fr;
+      align-items: center;
+    }
+
+    .hero-text {
+      h1 {
+        font-size: 3rem;
+        font-weight: bold;
+        color: $text-primary;
+        margin-bottom: 1.5rem;
+      }
+
+      p {
+        font-size: 1.25rem;
+        color: $text-secondary;
+        margin-bottom: 2rem;
+      }
+
+      .hero-buttons {
+        display: flex;
+        gap: 1rem;
+      }
+    }
+
+    .chart-container {
+      background-color: rgb(243, 239, 232);
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      height: 300px;
+      display: flex;
+      justify-content: center;
+
+    }
+  }
+}
+
+// Features Section
+.features {
+  background-color: $white;
+  padding: 5rem 0;
+
+  h2 {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 3rem;
+  }
+
+  .features-grid {
+    @include container;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .feature-card {
+      text-align: center;
+      padding: 1.5rem;
+
+      .feature-icon {
+        @include flex-center;
+        width: 3rem;
+        height: 3rem;
+        background-color: rgba($primary-color, 0.1);
+        border-radius: 50%;
+        margin: 0 auto 1rem;
+
+        i {
+          color: $primary-color;
+          font-size: 1.5rem;
+        }
+      }
+
+      h3 {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        color: $text-secondary;
+      }
+    }
+  }
+}
+
+// CTA Section
+.cta {
+  background-color: $primary-color;
+  color: $white;
+  padding: 5rem 0;
+  text-align: center;
+
+  h2 {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+  }
+
+  p {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+  }
+
+  .cta-button-large {
+    background-color: $white;
+    color: $primary-color;
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+
+    &:hover {
+      background-color: darken($white, 5%);
+    }
+  }
+}
+
+// Footer
+footer {
+  background-color: $gray-900;
+  color: $white;
+  padding: 3rem 0;
+
+  .footer-content {
+    @include container;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    .footer-brand {
+      h3 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+      }
+
+      p {
+        color: rgba($white, 0.7);
+      }
+    }
+
+    .footer-links {
+      h3 {
+        font-size: 1.25rem;
+        font-weight: bold;
+        margin-bottom: 1rem;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+
+        li {
+          color: rgba($white, 0.7);
+          margin-bottom: 0.5rem;
+          cursor: pointer;
+
+          &:hover {
+            color: $white;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Button Styles
+.primary-button {
+  background-color: $primary-color;
+  color: $white;
+  padding: 0.75rem 1.5rem;
+  font-size: 1.125rem;
+  border-radius: 0.5rem;
+  border: none;
+  cursor: pointer;
+
+  &:hover {
+    background-color: $primary-dark;
+  }
+}
+
+.secondary-button {
+  background-color: $white;
+  color: $text-primary;
+  padding: 0.75rem 1.5rem;
+  font-size: 1.125rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba($text-primary, 0.2);
+  cursor: pointer;
+
+  &:hover {
+    background-color: $gray-50;
+  }
+}

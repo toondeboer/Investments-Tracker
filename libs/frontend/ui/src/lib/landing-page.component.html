@@ -1,0 +1,58 @@
+<div class="landing-page">
+  <header>
+    <nav>
+      <div class="logo">Investments Tracker</div>
+      <div class="nav-links">
+        <button class="cta-button" (click)="onClick()">Log in</button>
+      </div>
+    </nav>
+  </header>
+
+  <main>
+    <!-- Hero Section -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-text">
+          <h1>Track Your Investments Like a Pro</h1>
+          <p>Monitor all your investments in one place. Get real-time updates, detailed analytics, and smart insights to make better investment decisions.</p>
+          <div class="hero-buttons">
+            <button class="primary-button" (click)="onClick()">Get Started</button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <aws-chart
+            [x]="chartData.x"
+            [y]="chartData.y" label="Track your profits" [showSymbols]="true"></aws-chart>
+        </div>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features">
+      <h2>Why Choose Investments Tracker?</h2>
+      <div class="features-grid">
+        <div class="feature-card" *ngFor="let feature of features">
+          <h3>{{ feature.title }}</h3>
+          <p>{{ feature.description }}</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+      <h2>Ready to Start Tracking?</h2>
+      <p>Join thousands of investors who trust Investments Tracker for their portfolio management.</p>
+      <button class="cta-button-large" (click)="onClick()">Get Started Now</button>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-brand">
+        <h3>Investments Tracker</h3>
+        <p>Making investment tracking simple and effective.</p>
+      </div>
+    </div>
+  </footer>
+</div>
