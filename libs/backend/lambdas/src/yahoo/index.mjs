@@ -21,10 +21,11 @@ export const handler = async (event) => {
   const options = {
     hostname: 'query1.finance.yahoo.com',
     path: apiUrl,
+    method: 'GET',
     headers: {
       Accept: '*/*',
       'User-Agent':
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
     },
   };
 
