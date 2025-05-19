@@ -8,7 +8,7 @@ import {
   TransactionsDbo,
   YahooObject,
   YearQuarter,
-  CsvInputEnglish
+  CsvInputEnglish,
 } from './types';
 
 export function transactionsDboToTransactions(
@@ -173,7 +173,7 @@ export function getDividendPerQuarterByYear(
 
   dividends.forEach((dividend) => {
     const year = dividend.date.getFullYear().toString();
-    const quarter = Math.floor(dividend.date.getMonth() / 3);
+    const quarter = Math.floor((dividend.date.getMonth() - 1) / 3);
     if (!dividendsByYear[year]) {
       dividendsByYear[year] = [0, 0, 0, 0];
     }
@@ -310,20 +310,28 @@ function getMostRecentValueAtIndex(values: number[], index: number) {
   return getMostRecentValueFromList(values.slice(0, index + 1)).value;
 }
 
-function isCsvInputEnglish(input: CsvInput | CsvInputEnglish): input is CsvInputEnglish {
-  return typeof input[0] == 'object' && input[0] != null && 'Date' in input[0] && 'Description' in input[0] && '' in input[0];
+function isCsvInputEnglish(
+  input: CsvInput | CsvInputEnglish
+): input is CsvInputEnglish {
+  return (
+    typeof input[0] == 'object' &&
+    input[0] != null &&
+    'Date' in input[0] &&
+    'Description' in input[0] &&
+    '' in input[0]
+  );
 }
 
 export function translateToDutch(csv: CsvInput | CsvInputEnglish): CsvInput {
   if (isCsvInputEnglish(csv)) {
     return csv.map((row) => ({
-      Omschrijving: row.Description ,
+      Omschrijving: row.Description,
       Datum: row.Date,
       '': row[''],
     }));
   }
 
-    return csv;
+  return csv;
 }
 
 export function parseCsvInput(csv: CsvInput): Transactions {
