@@ -25,17 +25,24 @@ import {
   Stock,
   addLists,
   getStartDate,
+  transactionsDboToTransactions,
 } from '@aws/util';
 
 export const featureKey = 'state';
 
 export interface FeatureState {
+  transactions: Transactions;
   stocks: { [ticker: string]: Stock };
   dates: Date[];
   summary: Summary;
 }
 
 export const initialState: FeatureState = {
+  transactions: {
+    stock: [],
+    dividend: [],
+    commission: [],
+  },
   stocks: {},
   dates: [],
   summary: {
@@ -67,6 +74,7 @@ export const reducer = createReducer(
   initialState,
   on(getDataSuccess, (state, action) => ({
     ...state,
+    transactions: transactionsDboToTransactions(action.data),
     stocks: transactionsDboToStocks(action.data),
   })),
   on(
@@ -76,6 +84,7 @@ export const reducer = createReducer(
     handleFileInputSuccess,
     (state, action) => ({
       ...state,
+      transactions: transactionsDboToTransactions(action.transactions),
       stocks: transactionsDboToStocks(action.transactions),
     })
   ),
@@ -116,7 +125,6 @@ export const reducer = createReducer(
           const commissionTransactionAmountsAndValues =
             getTransactionAmountsAndValues(dates, transactions.commission);
 
-          console.log(stockTransactionAmountsAndValues.aggregatedValues);
           const totalInvested = getMostRecentValueFromList(
             stockTransactionAmountsAndValues.aggregatedValues
           ).value;

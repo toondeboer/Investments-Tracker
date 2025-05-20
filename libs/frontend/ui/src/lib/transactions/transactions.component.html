@@ -1,5 +1,6 @@
 <div class="grid" *ngIf="state$ | async as state">
-<!--  Todo fix -->
   <aws-transactions-table
+    [stocks]="state.stocks"
+    [transactions]="state.transactions"
   ></aws-transactions-table>
 </div>

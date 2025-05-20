@@ -28,8 +28,7 @@ export class YahooService {
     names: string[],
     startDate: Date
   ): Observable<YahooObject[]> {
-    console.log('AWS LAMBDA CALL MULTIPLE TICKERS');
-    console.log(names);
+    console.log('AWS LAMBDA CALL MULTIPLE TICKERS: ', names);
     const start = Math.floor(startDate.getTime() / 1000);
     const end = Math.ceil(new Date().getTime() / 1000);
     const body = {

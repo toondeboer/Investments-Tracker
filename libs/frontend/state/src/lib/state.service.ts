@@ -13,12 +13,12 @@ export class StateService {
   ) {}
 
   public getData(): Observable<DatabaseDto> {
-    console.log('AWS LAMBDA CALL');
+    console.log('AWS LAMBDA CALL - Database - get data');
     return this.http.get<DatabaseDto>(`${this.environment.dynamoDBLambdaUrl}`);
   }
 
   public setTransactions(transactions: Transactions): Observable<DatabaseDto> {
-    console.log('AWS LAMBDA CALL');
+    console.log('AWS LAMBDA CALL - Database - set data');
     console.log(transactions);
     return this.http.put<DatabaseDto>(`${this.environment.dynamoDBLambdaUrl}`, {
       transactions,

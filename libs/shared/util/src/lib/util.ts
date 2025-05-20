@@ -74,6 +74,47 @@ function initDefaultStock(ticker: string): Stock {
   };
 }
 
+export function transactionsDboToTransactions(
+  transactions: TransactionsDbo
+): Transactions {
+  const stock: Transaction[] = [];
+  const dividend: Transaction[] = [];
+  const commission: Transaction[] = [];
+
+  transactions.stock.forEach((transaction) => {
+    const newTransaction: Transaction = {
+      ...transaction,
+      type: transaction.type as TransactionType,
+      date: new Date(transaction.date),
+    };
+    stock.push(newTransaction);
+  });
+
+  transactions.dividend.forEach((transaction) => {
+    const newTransaction: Transaction = {
+      ...transaction,
+      type: transaction.type as TransactionType,
+      date: new Date(transaction.date),
+    };
+    dividend.push(newTransaction);
+  });
+
+  transactions.commission.forEach((transaction) => {
+    const newTransaction: Transaction = {
+      ...transaction,
+      type: transaction.type as TransactionType,
+      date: new Date(transaction.date),
+    };
+    commission.push(newTransaction);
+  });
+
+  return {
+    stock: sortTransactions(stock),
+    dividend: sortTransactions(dividend),
+    commission: sortTransactions(commission),
+  };
+}
+
 export function transactionsDboToStocks(transactions: TransactionsDbo): {
   [ticker: string]: Stock;
 } {
@@ -140,7 +181,7 @@ export function sortTransactions(transactions: Transaction[]): Transaction[] {
 export function yahooObjectsToTickers(yahooObjects: YahooObject[]): {
   [ticker: string]: Ticker;
 } {
-  console.log(yahooObjects);
+  console.log('Results from Yahoo: ', yahooObjects);
   return yahooObjects.reduce((acc, yahooObject) => {
     acc[yahooObject.symbol] = yahooObjectToTicker(yahooObject);
     return acc;
@@ -194,11 +235,13 @@ export function getTransactionAmountsAndValues(
   let currentTransaction: Transaction = transactions[index];
 
   if (transactions.length === 0) {
+    const nanArray = Array(dates.length).fill(NaN);
+    const zerosArray = Array(dates.length).fill(0);
     return {
-      transactionAmounts: amounts,
-      transactionValues: values,
-      aggregatedAmounts,
-      aggregatedValues,
+      transactionAmounts: nanArray,
+      transactionValues: nanArray,
+      aggregatedAmounts: zerosArray,
+      aggregatedValues: zerosArray,
     };
   }
 

@@ -5,7 +5,13 @@ import {
   handleFileInput,
   saveTransaction,
 } from '@aws/state';
-import { Transaction, TransactionType, Transactions } from '@aws/util';
+import {
+  Transaction,
+  TransactionType,
+  Transactions,
+  Stock,
+  TransactionsDbo,
+} from '@aws/util';
 import { Store } from '@ngrx/store';
 import { Papa } from 'ngx-papaparse';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +24,7 @@ import { CommonModule, DecimalPipe, NgForOf, NgIf } from '@angular/common';
   imports: [FormsModule, DecimalPipe, CommonModule],
 })
 export class TransactionsTableComponent {
+  @Input() stocks: { [ticker: string]: Stock } = {};
   @Input() transactions: Transactions | undefined;
 
   constructor(
@@ -26,6 +33,7 @@ export class TransactionsTableComponent {
     private cdr: ChangeDetectorRef
   ) {}
 
+  ticker = '';
   type: TransactionType = 'stock';
   date = new Date();
   amount = 0;
@@ -33,39 +41,55 @@ export class TransactionsTableComponent {
 
   csvData: any[] = [];
 
-  saveTransaction(transactions: Transactions) {
-    // const newTransaction = {
-    //   type: this.type,
-    //   date: this.date,
-    //   amount: this.amount,
-    //   value: this.value,
-    // };
-    // const newTransactions = { ...transactions };
-    // switch (newTransaction.type) {
-    //   case 'stock':
-    //     transactions.stock.length > 0
-    //       ? newTransactions.stock.push(newTransaction)
-    //       : (newTransactions.stock = [newTransaction]);
-    //     break;
-    //   case 'dividend':
-    //     transactions.dividend.length > 0
-    //       ? newTransactions.dividend.push(newTransaction)
-    //       : (newTransactions.dividend = [newTransaction]);
-    //     break;
-    //   case 'commission':
-    //     transactions.commission.length > 0
-    //       ? newTransactions.commission.push(newTransaction)
-    //       : (newTransactions.commission = [newTransaction]);
-    //     break;
-    //   default:
-    //     console.log(`Invalid type: ${newTransaction.type}`);
-    //     return;
-    // }
-    // this.store.dispatch(
-    //   saveTransaction({
-    //     transactions: newTransactions,
-    //   })
-    // );
+  saveTransaction() {
+    if (!this.transactions) {
+      console.error('Transactions not initialized.');
+      return;
+    }
+    const newTransaction = {
+      ticker: this.ticker,
+      type: this.type,
+      date: new Date(this.date),
+      amount: this.amount,
+      value: this.value,
+    };
+    console.log('New transaction: ', newTransaction);
+    const newTransactions = {
+      stock: [...this.transactions.stock],
+      dividend: [...this.transactions.dividend],
+      commission: [...this.transactions.commission],
+    };
+    switch (newTransaction.type) {
+      case 'stock':
+        if (newTransactions.stock.length > 0) {
+          newTransactions.stock.push(newTransaction);
+        } else {
+          newTransactions.stock = [newTransaction];
+        }
+        break;
+      case 'dividend':
+        if (newTransactions.dividend.length > 0) {
+          newTransactions.dividend.push(newTransaction);
+        } else {
+          newTransactions.dividend = [newTransaction];
+        }
+        break;
+      case 'commission':
+        if (newTransactions.commission.length > 0) {
+          newTransactions.commission.push(newTransaction);
+        } else {
+          newTransactions.commission = [newTransaction];
+        }
+        break;
+      default:
+        console.log(`Invalid type: ${newTransaction.type}`);
+        return;
+    }
+    this.store.dispatch(
+      saveTransaction({
+        transactions: newTransactions,
+      })
+    );
   }
 
   deleteTransaction(transactions: Transactions, transaction: Transaction) {
@@ -91,4 +115,6 @@ export class TransactionsTableComponent {
       });
     }
   }
+
+  protected readonly Object = Object;
 }
