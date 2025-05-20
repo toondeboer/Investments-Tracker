@@ -1,9 +1,10 @@
 <div class="grid" *ngIf="state$ | async as state">
   <aws-summary [summary]="state.summary"></aws-summary>
 
-  <aws-yahoo
+  <aws-active-tickers
     *ngIf="state.summary.portfolioValue > 0"
     [dates]="state.dates"
-    [chartData]="state.stocks['VUSA.AS'].chartData"
-  ></aws-yahoo>
+    [stocks]="state.stocks"
+  ></aws-active-tickers>
+
 </div>

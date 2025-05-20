@@ -1,0 +1,15 @@
+<div>
+  <div>Select active tickers</div>
+  <div *ngFor="let ticker of tickers">
+    <label>
+    <input type="checkbox"  [checked]="activeStocks.includes(ticker)"   (change)="onCheckboxChange(ticker, $event )" />
+      {{ticker}}
+    </label>
+  </div>
+</div>
+
+<aws-yahoo
+  *ngIf="activeChartData"
+  [dates]="dates"
+  [chartData]="activeChartData"
+></aws-yahoo>

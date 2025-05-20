@@ -114,9 +114,11 @@ export const reducer = createReducer(
           const dividendTransactionAmountsAndValues =
             getTransactionAmountsAndValues(dates, transactions.dividend);
           const dividendPerQuarterByYear = getDividendPerQuarterByYear(
+            startDate,
             transactions.dividend
           );
           const dividendPerQuarter = getDividendPerQuarter(
+            startDate,
             dividendPerQuarterByYear
           );
           const dividendTtmPerQuarter =

@@ -29,12 +29,13 @@
     label="Aggregated Dividend"
   ></aws-chart>
 
-<!--  TODO: fix with all tickers -->
-<!--  <aws-chart-->
-<!--    [x]="yahoo.ticker.dates"-->
-<!--    [y]="yahoo.ticker.values"-->
-<!--    label="Yahoo Data Only"-->
-<!--  ></aws-chart>-->
+  <ng-container *ngFor="let ticker of Object.keys(yahoo.tickers)">
+    <aws-chart
+      [x]="yahoo.tickers[ticker].dates"
+      [y]="yahoo.tickers[ticker].values"
+      [label]="'Yahoo Data: ' + ticker"
+    ></aws-chart>
+  </ng-container>
 
   <aws-chart
     [x]="dates"

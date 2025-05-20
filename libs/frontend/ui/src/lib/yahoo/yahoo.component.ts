@@ -28,4 +28,6 @@ export class YahooComponent {
   yahoo$ = this.store.select(selectYahoo);
 
   constructor(private store: Store) {}
+
+  protected readonly Object = Object;
 }

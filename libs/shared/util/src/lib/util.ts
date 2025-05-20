@@ -294,35 +294,55 @@ export function getTransactionAmountsAndValues(
   };
 }
 
+export function getQuarter(month: number): number {
+  return Math.floor((month - 1) / 3);
+}
+
 export function getDividendPerQuarterByYear(
+  startDate: Date,
   dividends: Transaction[]
 ): { year: string; data: number[] }[] {
   const dividendsByYear: { [year: string]: number[] } = {};
 
   dividends.forEach((dividend) => {
     const year = dividend.date.getFullYear().toString();
-    const quarter = Math.floor((dividend.date.getMonth() - 1) / 3);
+    const quarter = getQuarter(dividend.date.getMonth());
     if (!dividendsByYear[year]) {
       dividendsByYear[year] = [0, 0, 0, 0];
     }
     dividendsByYear[year][quarter] += dividend.value;
   });
 
-  return Object.keys(dividendsByYear).map((year) => ({
-    year,
-    data: dividendsByYear[year],
-  }));
+  const startYear = startDate.getFullYear();
+  const endYear = new Date().getFullYear(); // Always go up to the current year
+
+  const result: { year: string; data: number[] }[] = [];
+  for (let year = startYear; year <= endYear; year++) {
+    result.push({
+      year: year.toString(),
+      data: dividendsByYear[year] ?? [0, 0, 0, 0],
+    });
+  }
+
+  return result;
 }
 
 export function getDividendPerQuarter(
+  startDate: Date,
   dividendPerQuarterByYear: { year: string; data: number[] }[]
 ): { yearQuarters: YearQuarter[]; dividends: number[] } {
+  const now = new Date();
   const yearQuarters: YearQuarter[] = [];
   const dividends: number[] = [];
 
   for (const dividendByYear of dividendPerQuarterByYear) {
     dividendByYear.data.forEach((dividend, quarter) => {
-      if (dividend > 0) {
+      if (
+        (dividendByYear.year !== startDate.getFullYear().toString() ||
+          quarter >= getQuarter(startDate.getMonth())) &&
+        (dividendByYear.year !== now.getFullYear().toString() ||
+          quarter <= getQuarter(now.getMonth()))
+      ) {
         yearQuarters.push({
           year: dividendByYear.year,
           quarter,
@@ -545,7 +565,11 @@ export function parseCsvInput(csv: CsvInput): Transactions {
   return { stock, dividend, commission };
 }
 
-export function addLists(list1: number[], list2: number[]): number[] {
+export function addLists(
+  list1: number[],
+  list2: number[],
+  nanAsZero = false
+): number[] {
   if (list1.length !== list2.length) {
     console.log(
       `WARNING: Lists are not the same size. (${list1.length}) - (${list2.length})`
@@ -553,7 +577,14 @@ export function addLists(list1: number[], list2: number[]): number[] {
   }
   const result = [];
   for (let i = 0; i < list1.length; i++) {
-    result.push(list1[i] + list2[i]);
+    if (nanAsZero && Number.isNaN(list1[i]) !== Number.isNaN(list2[i])) {
+      result.push(
+        (Number.isNaN(list1[i]) ? 0 : list1[i]) +
+          (Number.isNaN(list2[i]) ? 0 : list2[i])
+      );
+    } else {
+      result.push(list1[i] + list2[i]);
+    }
   }
   return result;
 }
@@ -567,6 +598,32 @@ export function subtractLists(list1: number[], list2: number[]): number[] {
   const result = [];
   for (let i = 0; i < list1.length; i++) {
     result.push(list1[i] - list2[i]);
+  }
+  return result;
+}
+
+export function addPerQuarterByYearLists(
+  list1: { year: string; data: number[] }[],
+  list2: { year: string; data: number[] }[]
+): { year: string; data: number[] }[] {
+  if (list1.length !== list2.length) {
+    console.log(
+      `WARNING: Lists are not the same size. (${list1.length}) - (${list2.length})`
+    );
+    console.log(list1);
+    console.log(list2);
+  }
+  const result = [];
+  for (let i = 0; i < list1.length; i++) {
+    if (list1[i].year !== list2[i].year) {
+      console.log(
+        `WARNING: years are not equal. (${list1[i].year}) - (${list2[i].year})`
+      );
+    }
+    result.push({
+      year: list1[i].year,
+      data: addLists(list1[i].data, list2[i].data),
+    });
   }
   return result;
 }
