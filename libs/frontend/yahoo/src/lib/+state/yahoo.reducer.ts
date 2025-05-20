@@ -1,24 +1,23 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
-import { getTickerSuccess } from './yahoo.actions';
+import { getTickersSuccess } from './yahoo.actions';
 import { Ticker } from '@aws/util';
 
 export const featureKey = 'yahoo';
 
 export interface FeatureState {
-  ticker: Ticker;
+  tickers: { [ticker: string]: Ticker };
 }
 
 export const initialState: FeatureState = {
-  ticker: {
-    name: '',
-    dates: [],
-    values: [],
-  },
+  tickers: {},
 };
 
 export const reducer = createReducer(
   initialState,
-  on(getTickerSuccess, (state, action) => ({ ...state, ticker: action.ticker }))
+  on(getTickersSuccess, (state, action) => ({
+    ...state,
+    tickers: action.tickers,
+  }))
 );
 
 export const feature = createFeature({ name: featureKey, reducer });

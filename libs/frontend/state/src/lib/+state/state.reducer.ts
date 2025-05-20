@@ -18,35 +18,32 @@ import {
   getReturn,
   getTransactionAmountsAndValues,
   subtractLists,
-  transactionsDboToTransactions,
+  transactionsDboToStocks,
   getDividendTtmPerQuarter,
   getDividendPerQuarter,
   getYieldPerYear,
+  Stock,
+  addLists,
+  getStartDate,
 } from '@aws/util';
 
 export const featureKey = 'state';
 
 export interface FeatureState {
-  transactions: Transactions;
-  summary: Summary;
+  stocks: { [ticker: string]: Stock };
   dates: Date[];
-  chartData: ChartData;
+  summary: Summary;
 }
 
 export const initialState: FeatureState = {
-  transactions: {
-    stock: [],
-    dividend: [],
-    commission: [],
-  },
+  stocks: {},
+  dates: [],
   summary: {
     portfolioValue: 0,
     totalInvested: 0,
-    amountOfShares: 0,
-    averageSharePrice: 0,
-    currentSharePrice: 0,
     totalDividend: 0,
     totalCommission: 0,
+    startDate: new Date(),
     dailyReturn: {
       absolute: 0,
       percentage: 0,
@@ -64,40 +61,13 @@ export const initialState: FeatureState = {
       percentage: 0,
     },
   },
-  dates: [],
-  chartData: {
-    stock: {
-      transactionAmounts: [],
-      transactionValues: [],
-      aggregatedAmounts: [],
-      aggregatedValues: [],
-    },
-    dividend: {
-      transactionAmounts: [],
-      transactionValues: [],
-      aggregatedAmounts: [],
-      aggregatedValues: [],
-      perQuarterByYear: [],
-      perQuarter: { yearQuarters: [], dividends: [] },
-      ttmPerQuarter: { yearQuarters: [], dividends: [] },
-    },
-    commission: {
-      transactionAmounts: [],
-      transactionValues: [],
-      aggregatedAmounts: [],
-      aggregatedValues: [],
-    },
-    portfolioValues: [],
-    profit: [],
-    yieldPerYear: { years: [], yields: [], profit: [] },
-  },
 };
 
 export const reducer = createReducer(
   initialState,
   on(getDataSuccess, (state, action) => ({
     ...state,
-    transactions: transactionsDboToTransactions(action.data),
+    stocks: transactionsDboToStocks(action.data),
   })),
   on(
     saveTransactionSuccess,
@@ -106,7 +76,7 @@ export const reducer = createReducer(
     handleFileInputSuccess,
     (state, action) => ({
       ...state,
-      transactions: transactionsDboToTransactions(action.transactions),
+      stocks: transactionsDboToStocks(action.transactions),
     })
   ),
   on(
@@ -116,113 +86,197 @@ export const reducer = createReducer(
     deleteAllTransactionsSuccess,
     handleFileInputSuccess,
     (state) => {
-      const transactions = state.transactions;
-      if (transactions.stock.length > 0) {
-        const dates = getDailyDates(transactions.stock[0].date, new Date());
+      const stocks = state.stocks;
+      const startDate: Date = getStartDate(stocks);
+      console.log('Started investing on: ', startDate);
 
-        const stockTransactionAmountsAndValues = getTransactionAmountsAndValues(
-          dates,
-          transactions.stock
-        );
-        const dividendTransactionAmountsAndValues =
-          getTransactionAmountsAndValues(dates, transactions.dividend);
-        const dividendPerQuarterByYear = getDividendPerQuarterByYear(
-          transactions.dividend
-        );
-        const dividendPerQuarter = getDividendPerQuarter(
-          dividendPerQuarterByYear
-        );
-        const dividendTtmPerQuarter =
-          getDividendTtmPerQuarter(dividendPerQuarter);
+      if (Object.keys(stocks).length > 0) {
+        const dates = getDailyDates(startDate, new Date());
 
-        const commissionTransactionAmountsAndValues =
-          getTransactionAmountsAndValues(dates, transactions.commission);
+        let totalInvestedSummary = 0;
+        let totalDividendSummary = 0;
+        let totalCommissionSummary = 0;
 
-        const totalInvested = getMostRecentValueFromList(
-          stockTransactionAmountsAndValues.aggregatedValues
-        ).value;
-        const amountOfShares = getMostRecentValueFromList(
-          stockTransactionAmountsAndValues.aggregatedAmounts
-        ).value;
+        for (const key in stocks) {
+          const stock = stocks[key];
+          const transactions = stock.transactions;
+          const stockTransactionAmountsAndValues =
+            getTransactionAmountsAndValues(dates, transactions.stock);
+          const dividendTransactionAmountsAndValues =
+            getTransactionAmountsAndValues(dates, transactions.dividend);
+          const dividendPerQuarterByYear = getDividendPerQuarterByYear(
+            transactions.dividend
+          );
+          const dividendPerQuarter = getDividendPerQuarter(
+            dividendPerQuarterByYear
+          );
+          const dividendTtmPerQuarter =
+            getDividendTtmPerQuarter(dividendPerQuarter);
 
-        const totalDividend = getMostRecentValueFromList(
-          dividendTransactionAmountsAndValues.aggregatedValues
-        ).value;
+          const commissionTransactionAmountsAndValues =
+            getTransactionAmountsAndValues(dates, transactions.commission);
 
-        const totalCommission = getMostRecentValueFromList(
-          commissionTransactionAmountsAndValues.aggregatedValues
-        ).value;
+          console.log(stockTransactionAmountsAndValues.aggregatedValues);
+          const totalInvested = getMostRecentValueFromList(
+            stockTransactionAmountsAndValues.aggregatedValues
+          ).value;
+          totalInvestedSummary += totalInvested;
+          const amountOfShares = getMostRecentValueFromList(
+            stockTransactionAmountsAndValues.aggregatedAmounts
+          ).value;
+
+          const totalDividend = getMostRecentValueFromList(
+            dividendTransactionAmountsAndValues.aggregatedValues
+          ).value;
+          totalDividendSummary += totalDividend;
+
+          const totalCommission = getMostRecentValueFromList(
+            commissionTransactionAmountsAndValues.aggregatedValues
+          ).value;
+          totalCommissionSummary += totalCommission;
+
+          stocks[key] = {
+            ...stock,
+            chartData: {
+              ...stock.chartData,
+              stock: {
+                ...stockTransactionAmountsAndValues,
+              },
+              dividend: {
+                ...dividendTransactionAmountsAndValues,
+                perQuarterByYear: dividendPerQuarterByYear,
+                perQuarter: dividendPerQuarter,
+                ttmPerQuarter: dividendTtmPerQuarter,
+              },
+              commission: { ...commissionTransactionAmountsAndValues },
+            },
+            summary: {
+              ...stock.summary,
+              totalInvested,
+              amountOfShares,
+              averageSharePrice: totalInvested / amountOfShares,
+              totalDividend,
+              totalCommission,
+            },
+          };
+        }
 
         return {
           ...state,
           dates,
-          chartData: {
-            ...state.chartData,
-            stock: {
-              ...stockTransactionAmountsAndValues,
-            },
-            dividend: {
-              ...dividendTransactionAmountsAndValues,
-              perQuarterByYear: dividendPerQuarterByYear,
-              perQuarter: dividendPerQuarter,
-              ttmPerQuarter: dividendTtmPerQuarter,
-            },
-            commission: { ...commissionTransactionAmountsAndValues },
-          },
+          stocks,
           summary: {
             ...state.summary,
-            totalInvested,
-            amountOfShares,
-            averageSharePrice: totalInvested / amountOfShares,
-            totalDividend,
-            totalCommission,
+            totalInvested: totalInvestedSummary,
+            totalDividend: totalDividendSummary,
+            totalCommission: totalCommissionSummary,
+            startDate,
           },
         };
       }
       return {
         ...state,
-        transactions,
       };
     }
   ),
   on(setChartData, (state, action) => {
-    const portfolioValues = getPortfolioValues(
-      state.dates,
-      state.chartData.stock.aggregatedAmounts,
-      action.ticker
-    );
-    const profit = subtractLists(
-      subtractLists(portfolioValues, state.chartData.stock.aggregatedValues),
-      state.chartData.commission.aggregatedValues
-    );
-    const dailyReturn = getReturn(portfolioValues, profit, 1);
-    const weeklyReturn = getReturn(portfolioValues, profit, 7);
-    const monthlyReturn = getReturn(portfolioValues, profit, 30);
-    const totalReturn = getReturn(
-      portfolioValues,
-      profit,
-      portfolioValues.length
-    );
+    const stocks = state.stocks;
 
-    const yieldPerYear = getYieldPerYear(state.dates, portfolioValues, profit);
-    return {
-      ...state,
-      summary: {
-        ...state.summary,
-        portfolioValue: getMostRecentValueFromList(portfolioValues).value,
-        currentSharePrice: getMostRecentValueFromList(action.ticker.values)
-          .value,
+    let portfolioValuesSummary = 0;
+    let aggregatedPortfolioValues: number[] = [];
+    let aggregatedProfit: number[] = [];
 
-        dailyReturn,
-        weeklyReturn,
-        monthlyReturn,
-        totalReturn,
-      },
-      chartData: {
-        ...state.chartData,
+    const updatedStocks: { [ticker: string]: Stock } = {};
+    for (const key of Object.keys(stocks)) {
+      const stock = stocks[key];
+      const ticker = action.tickers[key];
+
+      const portfolioValues = getPortfolioValues(
+        state.dates,
+        stock.chartData.stock.aggregatedAmounts,
+        ticker
+      );
+      aggregatedPortfolioValues =
+        aggregatedPortfolioValues.length > 0
+          ? addLists(aggregatedPortfolioValues, portfolioValues)
+          : portfolioValues;
+      const portfolioValue = getMostRecentValueFromList(portfolioValues).value;
+      portfolioValuesSummary += portfolioValue;
+
+      const profit = subtractLists(
+        subtractLists(portfolioValues, stock.chartData.stock.aggregatedValues),
+        stock.chartData.commission.aggregatedValues
+      );
+      aggregatedProfit =
+        aggregatedProfit.length > 0
+          ? addLists(aggregatedProfit, profit)
+          : profit;
+
+      const dailyReturn = getReturn(portfolioValues, profit, 1);
+      const weeklyReturn = getReturn(portfolioValues, profit, 7);
+      const monthlyReturn = getReturn(portfolioValues, profit, 30);
+      const totalReturn = getReturn(
         portfolioValues,
         profit,
-        yieldPerYear,
+        portfolioValues.length
+      );
+
+      const yieldPerYear = getYieldPerYear(
+        state.dates,
+        portfolioValues,
+        profit
+      );
+      updatedStocks[key] = {
+        ...stock,
+        summary: {
+          ...stock.summary,
+          portfolioValue,
+          currentSharePrice: getMostRecentValueFromList(ticker.values).value,
+          dailyReturn,
+          weeklyReturn,
+          monthlyReturn,
+          totalReturn,
+        },
+        chartData: {
+          ...stock.chartData,
+          portfolioValues,
+          profit,
+          yieldPerYear,
+        },
+      };
+    }
+
+    const dailyReturnSummary = getReturn(
+      aggregatedPortfolioValues,
+      aggregatedProfit,
+      1
+    );
+    const weeklyReturnSummary = getReturn(
+      aggregatedPortfolioValues,
+      aggregatedProfit,
+      7
+    );
+    const monthlyReturnSummary = getReturn(
+      aggregatedPortfolioValues,
+      aggregatedProfit,
+      30
+    );
+    const totalReturnSummary = getReturn(
+      aggregatedPortfolioValues,
+      aggregatedProfit,
+      aggregatedPortfolioValues.length
+    );
+
+    return {
+      ...state,
+      stocks: updatedStocks,
+      summary: {
+        ...state.summary,
+        portfolioValue: portfolioValuesSummary,
+        dailyReturn: dailyReturnSummary,
+        weeklyReturn: weeklyReturnSummary,
+        monthlyReturn: monthlyReturnSummary,
+        totalReturn: totalReturnSummary,
       },
     };
   })

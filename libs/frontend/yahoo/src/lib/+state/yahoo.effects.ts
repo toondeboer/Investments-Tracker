@@ -4,8 +4,12 @@ import { Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { switchMap, catchError, of, withLatestFrom, mergeMap } from 'rxjs';
 import { YahooService } from '../yahoo.service';
-import { getTicker, getTickerFailure, getTickerSuccess } from './yahoo.actions';
-import { yahooObjectToTicker } from '@aws/util';
+import {
+  getTicker,
+  getTickerFailure,
+  getTickersSuccess,
+} from './yahoo.actions';
+import { yahooObjectsToTickers } from '@aws/util';
 import {
   deleteTransactionSuccess,
   getDataSuccess,
@@ -27,13 +31,16 @@ export class YahooEffects {
     this.actions$.pipe(
       ofType(getDataSuccess),
       withLatestFrom(this.store.select(selectState)),
-      switchMap(([_, { transactions }]) => {
+      switchMap(([_, { stocks, summary }]) => {
         return this.service
-          .getTicker('VUSA.AS', transactions.stock[0].date)
+          .getTickers(Object.keys(stocks), summary.startDate)
           .pipe(
-            mergeMap((yahooObject) => {
-              const ticker = yahooObjectToTicker(yahooObject);
-              return [getTickerSuccess({ ticker }), setChartData({ ticker })];
+            mergeMap((yahooObjects) => {
+              const tickers = yahooObjectsToTickers(yahooObjects);
+              return [
+                getTickersSuccess({ tickers }),
+                setChartData({ tickers }),
+              ];
             }),
             catchError((error: HttpErrorResponse) =>
               of(getTickerFailure({ error: error.message }))
@@ -47,9 +54,9 @@ export class YahooEffects {
     this.actions$.pipe(
       ofType(getDataSuccess, saveTransactionSuccess, deleteTransactionSuccess),
       withLatestFrom(this.store.select(selectYahoo)),
-      switchMap(([_, { ticker }]) => {
-        if (ticker.dates.length > 0) {
-          return [setChartData({ ticker })];
+      switchMap(([_, { tickers }]) => {
+        if (Object.keys(tickers).length > 0) {
+          return [setChartData({ tickers })];
         } else {
           return [];
         }

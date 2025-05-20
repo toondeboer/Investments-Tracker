@@ -37,6 +37,7 @@ export class StateEffects {
       switchMap(() => {
         return this.service.getData().pipe(
           map(({ transactions }) => {
+            console.log('transactions', transactions);
             return getDataSuccess({ data: transactions });
           }),
           catchError((error: HttpErrorResponse) =>

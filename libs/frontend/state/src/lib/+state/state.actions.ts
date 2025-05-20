@@ -57,7 +57,7 @@ export const deleteAllTransactionsFailure = createAction(
 
 export const setChartData = createAction(
   '[State] Set Chart Data',
-  props<{ ticker: Ticker }>()
+  props<{ tickers: { [ticker: string]: Ticker } }>()
 );
 
 export const handleFileInput = createAction(

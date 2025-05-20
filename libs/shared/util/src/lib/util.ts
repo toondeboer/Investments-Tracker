@@ -9,14 +9,75 @@ import {
   YahooObject,
   YearQuarter,
   CsvInputEnglish,
+  Stock,
 } from './types';
 
-export function transactionsDboToTransactions(
-  transactions: TransactionsDbo
-): Transactions {
-  const stock: Transaction[] = [];
-  const dividend: Transaction[] = [];
-  const commission: Transaction[] = [];
+function initDefaultStock(ticker: string): Stock {
+  return {
+    ticker,
+    transactions: {
+      stock: [],
+      dividend: [],
+      commission: [],
+    },
+    summary: {
+      portfolioValue: 0,
+      totalInvested: 0,
+      totalDividend: 0,
+      totalCommission: 0,
+      amountOfShares: 0,
+      averageSharePrice: 0,
+      currentSharePrice: 0,
+      dailyReturn: {
+        absolute: 0,
+        percentage: 0,
+      },
+      weeklyReturn: {
+        absolute: 0,
+        percentage: 0,
+      },
+      monthlyReturn: {
+        absolute: 0,
+        percentage: 0,
+      },
+      totalReturn: {
+        absolute: 0,
+        percentage: 0,
+      },
+    },
+    chartData: {
+      stock: {
+        transactionAmounts: [],
+        transactionValues: [],
+        aggregatedAmounts: [],
+        aggregatedValues: [],
+      },
+      dividend: {
+        transactionAmounts: [],
+        transactionValues: [],
+        aggregatedAmounts: [],
+        aggregatedValues: [],
+        perQuarterByYear: [],
+        perQuarter: { yearQuarters: [], dividends: [] },
+        ttmPerQuarter: { yearQuarters: [], dividends: [] },
+      },
+      commission: {
+        transactionAmounts: [],
+        transactionValues: [],
+        aggregatedAmounts: [],
+        aggregatedValues: [],
+      },
+      portfolioValues: [],
+      profit: [],
+      yieldPerYear: { years: [], yields: [], profit: [] },
+    },
+  };
+}
+
+export function transactionsDboToStocks(transactions: TransactionsDbo): {
+  [ticker: string]: Stock;
+} {
+  const stocks: { [ticker: string]: Stock } = {};
 
   transactions.stock.forEach((transaction) => {
     const newTransaction: Transaction = {
@@ -24,7 +85,13 @@ export function transactionsDboToTransactions(
       type: transaction.type as TransactionType,
       date: new Date(transaction.date),
     };
-    stock.push(newTransaction);
+    if (!stocks[transaction.ticker]) {
+      stocks[transaction.ticker] = initDefaultStock(transaction.ticker);
+    }
+    stocks[transaction.ticker].transactions.stock.push(newTransaction);
+    stocks[transaction.ticker].transactions.stock = sortTransactions(
+      stocks[transaction.ticker].transactions.stock
+    );
   });
 
   transactions.dividend.forEach((transaction) => {
@@ -33,7 +100,13 @@ export function transactionsDboToTransactions(
       type: transaction.type as TransactionType,
       date: new Date(transaction.date),
     };
-    dividend.push(newTransaction);
+    if (!stocks[transaction.ticker]) {
+      stocks[transaction.ticker] = initDefaultStock(transaction.ticker);
+    }
+    stocks[transaction.ticker].transactions.dividend.push(newTransaction);
+    stocks[transaction.ticker].transactions.dividend = sortTransactions(
+      stocks[transaction.ticker].transactions.dividend
+    );
   });
 
   transactions.commission.forEach((transaction) => {
@@ -42,14 +115,16 @@ export function transactionsDboToTransactions(
       type: transaction.type as TransactionType,
       date: new Date(transaction.date),
     };
-    commission.push(newTransaction);
+    if (!stocks[transaction.ticker]) {
+      stocks[transaction.ticker] = initDefaultStock(transaction.ticker);
+    }
+    stocks[transaction.ticker].transactions.commission.push(newTransaction);
+    stocks[transaction.ticker].transactions.commission = sortTransactions(
+      stocks[transaction.ticker].transactions.commission
+    );
   });
 
-  return {
-    stock: sortTransactions(stock),
-    dividend: sortTransactions(dividend),
-    commission: sortTransactions(commission),
-  };
+  return stocks;
 }
 
 export function sortTransactions(transactions: Transaction[]): Transaction[] {
@@ -62,8 +137,18 @@ export function sortTransactions(transactions: Transaction[]): Transaction[] {
   });
 }
 
+export function yahooObjectsToTickers(yahooObjects: YahooObject[]): {
+  [ticker: string]: Ticker;
+} {
+  console.log(yahooObjects);
+  return yahooObjects.reduce((acc, yahooObject) => {
+    acc[yahooObject.symbol] = yahooObjectToTicker(yahooObject);
+    return acc;
+  }, {} as { [ticker: string]: Ticker });
+}
+
 export function yahooObjectToTicker(yahooObject: YahooObject): Ticker {
-  const result = yahooObject.chart.result[0];
+  const result = yahooObject.data.chart.result[0];
   return {
     name: result.meta.symbol,
     values: result.indicators.quote[0].close.map((v) => (v === null ? NaN : v)),
@@ -318,7 +403,8 @@ function isCsvInputEnglish(
     input[0] != null &&
     'Date' in input[0] &&
     'Description' in input[0] &&
-    '' in input[0]
+    '' in input[0] &&
+    'Product' in input[0]
   );
 }
 
@@ -328,10 +414,18 @@ export function translateToDutch(csv: CsvInput | CsvInputEnglish): CsvInput {
       Omschrijving: row.Description,
       Datum: row.Date,
       '': row[''],
+      Product: row.Product,
     }));
   }
 
   return csv;
+}
+
+function getTickerFromGiroProduct(product: string): string {
+  if (product == 'VANGUARD S&P 500 UCITS ETF USD') {
+    return 'VUSA.AS';
+  }
+  return 'VUSA.AS';
 }
 
 export function parseCsvInput(csv: CsvInput): Transactions {
@@ -343,8 +437,13 @@ export function parseCsvInput(csv: CsvInput): Transactions {
     if (!row.Omschrijving || !row.Datum || !row['']) {
       continue;
     }
+
+    const product = row.Product;
+    const ticker = getTickerFromGiroProduct(product);
+
     if (row.Omschrijving.startsWith('Koop ')) {
       stock.push({
+        ticker,
         type: 'stock',
         date: new Date(
           parseInt(row.Datum.split('-')[2]),
@@ -361,6 +460,7 @@ export function parseCsvInput(csv: CsvInput): Transactions {
       row.Omschrijving === 'DEGIRO Transactiekosten en/of kosten van derden'
     ) {
       commission.push({
+        ticker,
         type: 'commission',
         date: new Date(
           parseInt(row.Datum.split('-')[2]),
@@ -373,6 +473,7 @@ export function parseCsvInput(csv: CsvInput): Transactions {
     }
     if (row.Omschrijving === 'DEGIRO Verrekening Promotie') {
       commission.push({
+        ticker,
         type: 'commission',
         date: new Date(
           parseInt(row.Datum.split('-')[2]),
@@ -385,6 +486,7 @@ export function parseCsvInput(csv: CsvInput): Transactions {
     }
     if (row.Omschrijving === 'Valuta Creditering') {
       dividend.push({
+        ticker,
         type: 'dividend',
         date: new Date(
           parseInt(row.Datum.split('-')[2]),
@@ -400,9 +502,24 @@ export function parseCsvInput(csv: CsvInput): Transactions {
   return { stock, dividend, commission };
 }
 
+export function addLists(list1: number[], list2: number[]): number[] {
+  if (list1.length !== list2.length) {
+    console.log(
+      `WARNING: Lists are not the same size. (${list1.length}) - (${list2.length})`
+    );
+  }
+  const result = [];
+  for (let i = 0; i < list1.length; i++) {
+    result.push(list1[i] + list2[i]);
+  }
+  return result;
+}
+
 export function subtractLists(list1: number[], list2: number[]): number[] {
   if (list1.length !== list2.length) {
-    console.log(`WARNING: Lists are not the same size.`);
+    console.log(
+      `WARNING: Lists are not the same size. (${list1.length}) - (${list2.length})`
+    );
   }
   const result = [];
   for (let i = 0; i < list1.length; i++) {
@@ -430,4 +547,23 @@ export function getReturn(
     percentage:
       (absolute / getMostRecentValueFromList(portfolioValues).value) * 100,
   };
+}
+
+export function getStartDate(stocks: { [ticker: string]: Stock }): Date {
+  let startDate: Date = new Date();
+
+  for (const key in stocks) {
+    const transactions = stocks[key].transactions;
+    for (const transaction of transactions.stock) {
+      startDate = transaction.date < startDate ? transaction.date : startDate;
+    }
+    for (const transaction of transactions.dividend) {
+      startDate = transaction.date < startDate ? transaction.date : startDate;
+    }
+    for (const transaction of transactions.commission) {
+      startDate = transaction.date < startDate ? transaction.date : startDate;
+    }
+  }
+
+  return startDate;
 }

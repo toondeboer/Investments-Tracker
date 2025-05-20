@@ -29,29 +29,29 @@
       {{ summary.totalReturn.absolute | number : '1.2-2' }}
     </div>
   </div>
-  <div class="box">
-    <div>Shares</div>
-    <div class="bold">
-      {{ summary.amountOfShares }}
-    </div>
-  </div>
-  <div class="box">
-    <div>Avarage Price paid per share</div>
-    <div
-      [ngClass]="{
-        negative: summary.averageSharePrice > summary.currentSharePrice
-      }"
-      class="number-text bold"
-    >
-      {{ summary.averageSharePrice | number : '1.2-2' }}
-    </div>
-  </div>
-  <div class="box">
-    <div>Current Share price</div>
-    <div class="bold">
-      {{ summary.currentSharePrice | number : '1.2-2' }}
-    </div>
-  </div>
+<!--  <div class="box">-->
+<!--    <div>Shares</div>-->
+<!--    <div class="bold">-->
+<!--      {{ summary.amountOfShares }}-->
+<!--    </div>-->
+<!--  </div>-->
+<!--  <div class="box">-->
+<!--    <div>Avarage Price paid per share</div>-->
+<!--    <div-->
+<!--      [ngClass]="{-->
+<!--        negative: summary.averageSharePrice > summary.currentSharePrice-->
+<!--      }"-->
+<!--      class="number-text bold"-->
+<!--    >-->
+<!--      {{ summary.averageSharePrice | number : '1.2-2' }}-->
+<!--    </div>-->
+<!--  </div>-->
+<!--  <div class="box">-->
+<!--    <div>Current Share price</div>-->
+<!--    <div class="bold">-->
+<!--      {{ summary.currentSharePrice | number : '1.2-2' }}-->
+<!--    </div>-->
+<!--  </div>-->
   <div class="box">
     <div>Total Dividend</div>
     <div class="number-text bold">

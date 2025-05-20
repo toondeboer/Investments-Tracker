@@ -16,46 +16,47 @@ export const handler = async (event) => {
     };
   }
 
-  const { symbol, start, end } = JSON.parse(event.body);
-  const apiUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${start}&period2=${end}`;
-  const options = {
-    hostname: 'query1.finance.yahoo.com',
-    path: apiUrl,
-    method: 'GET',
-    headers: {
-      Accept: '*/*',
-      'User-Agent':
-        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    },
-  };
+  const { symbols, start, end } = JSON.parse(event.body);
 
-  return new Promise((resolve, reject) => {
-    const req = https.get(options, (res) => {
-      let data = '';
+  const results = await Promise.all(
+    symbols.map((symbol) => {
+      const apiUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${start}&period2=${end}`;
+      const options = {
+        hostname: 'query1.finance.yahoo.com',
+        path: apiUrl,
+        method: 'GET',
+        headers: {
+          Accept: '*/*',
+          'User-Agent':
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        },
+      };
 
-      res.on('data', (chunk) => {
-        data += chunk;
-      });
+      return new Promise((resolve, reject) => {
+        const req = https.get(options, (res) => {
+          let data = '';
 
-      res.on('end', () => {
-        resolve({
-          statusCode: 200,
-          headers,
-          body: data,
+          res.on('data', (chunk) => {
+            data += chunk;
+          });
+
+          res.on('end', () => {
+            resolve({ symbol, data: JSON.parse(data) });
+          });
         });
-      });
-    });
 
-    req.on('error', (error) => {
-      reject({
-        statusCode: 500,
-        headers,
-        body: JSON.stringify({
-          error: 'Failed to fetch data from Yahoo Finance',
-        }),
-      });
-    });
+        req.on('error', (error) => {
+          resolve({ symbol, error: 'Failed to parse response' });
+        });
 
-    req.end();
-  });
+        req.end();
+      });
+    })
+  );
+
+  return {
+    statusCode: 200,
+    headers,
+    body: JSON.stringify(results),
+  };
 };

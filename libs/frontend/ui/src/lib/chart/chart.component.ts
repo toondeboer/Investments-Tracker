@@ -7,10 +7,7 @@ import { CommonModule, NgIf } from '@angular/common';
   selector: 'aws-chart',
   templateUrl: './chart.component.html',
   styleUrls: ['./chart.component.scss'],
-  imports: [
-    NgxEchartsDirective,
-    CommonModule
-  ]
+  imports: [NgxEchartsDirective, CommonModule],
 })
 export class ChartComponent implements OnChanges {
   @Input() x: Date[] = [];
@@ -23,7 +20,9 @@ export class ChartComponent implements OnChanges {
 
   ngOnChanges() {
     if (this.x.length !== this.y.length) {
-      console.log(`WARNING: X and Y are not the same size.`);
+      console.log(
+        `WARNING: X and Y are not the same size. (${this.x.length}) - (${this.y.length})`
+      );
     }
     this.chartOptions = this.getChartOptions();
   }

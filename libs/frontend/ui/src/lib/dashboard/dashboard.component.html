@@ -2,8 +2,8 @@
   <aws-summary [summary]="state.summary"></aws-summary>
 
   <aws-yahoo
-    *ngIf="state.transactions.stock.length > 0"
+    *ngIf="state.summary.portfolioValue > 0"
     [dates]="state.dates"
-    [chartData]="state.chartData"
+    [chartData]="state.stocks['VUSA.AS'].chartData"
   ></aws-yahoo>
 </div>

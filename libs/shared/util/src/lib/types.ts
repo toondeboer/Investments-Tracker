@@ -3,9 +3,7 @@ export type Summary = {
   totalInvested: number;
   totalDividend: number;
   totalCommission: number;
-  amountOfShares: number;
-  averageSharePrice: number;
-  currentSharePrice: number;
+  startDate: Date;
   dailyReturn: Return;
   weeklyReturn: Return;
   monthlyReturn: Return;
@@ -15,6 +13,27 @@ export type Summary = {
 export type Return = {
   absolute: number;
   percentage: number;
+};
+
+export type StockSummary = {
+  portfolioValue: number;
+  totalInvested: number;
+  totalDividend: number;
+  totalCommission: number;
+  amountOfShares: number;
+  averageSharePrice: number;
+  currentSharePrice: number;
+  dailyReturn: Return;
+  weeklyReturn: Return;
+  monthlyReturn: Return;
+  totalReturn: Return;
+};
+
+export type Stock = {
+  ticker: string;
+  transactions: Transactions;
+  summary: StockSummary;
+  chartData: ChartData;
 };
 
 export type ChartData = {
@@ -48,6 +67,7 @@ export type Transactions = {
 };
 
 export type Transaction = {
+  ticker: string;
   type: TransactionType;
   date: Date;
   amount: number;
@@ -55,6 +75,7 @@ export type Transaction = {
 };
 
 export type DatabaseDto = {
+  startDate: string;
   transactions: TransactionsDbo;
 };
 
@@ -65,6 +86,7 @@ export type TransactionsDbo = {
 };
 
 export type TransactionDbo = {
+  ticker: string;
   type: string;
   date: string;
   amount: number;
@@ -72,28 +94,31 @@ export type TransactionDbo = {
 };
 
 export type YahooObject = {
-  chart: {
-    result: [
-      {
-        meta: {
-          currency: string;
-          symbol: string;
-        };
-        timestamp: number[];
-        indicators: {
-          quote: [
-            {
-              low: number[];
-              high: number[];
-              volume: number[];
-              close: number[];
-              open: number[];
-            }
-          ];
-          adjclose: [{ adjclose: number[] }];
-        };
-      }
-    ];
+  symbol: string;
+  data: {
+    chart: {
+      result: [
+        {
+          meta: {
+            currency: string;
+            symbol: string;
+          };
+          timestamp: number[];
+          indicators: {
+            quote: [
+              {
+                low: number[];
+                high: number[];
+                volume: number[];
+                close: number[];
+                open: number[];
+              }
+            ];
+            adjclose: [{ adjclose: number[] }];
+          };
+        }
+      ];
+    };
   };
 };
 
@@ -105,12 +130,14 @@ export type Ticker = {
 
 export type CsvInput = {
   Datum: string;
+  Product: string;
   Omschrijving: string;
   '': string;
 }[];
 
 export type CsvInputEnglish = {
   Date: string;
+  Product: string;
   Description: string;
   '': string;
 }[];

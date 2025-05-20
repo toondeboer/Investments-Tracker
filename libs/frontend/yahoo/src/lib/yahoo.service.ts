@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { YahooObject } from '@aws/util';
+import { Stock, YahooObject } from '@aws/util';
 
 @Injectable({
   providedIn: 'root',
@@ -22,5 +22,21 @@ export class YahooService {
       end: end,
     };
     return this.http.post<YahooObject>(this.environment.yahooLambdaUrl, body);
+  }
+
+  public getTickers(
+    names: string[],
+    startDate: Date
+  ): Observable<YahooObject[]> {
+    console.log('AWS LAMBDA CALL MULTIPLE TICKERS');
+    console.log(names);
+    const start = Math.floor(startDate.getTime() / 1000);
+    const end = Math.ceil(new Date().getTime() / 1000);
+    const body = {
+      symbols: names,
+      start: start,
+      end: end,
+    };
+    return this.http.post<YahooObject[]>(this.environment.yahooLambdaUrl, body);
   }
 }
