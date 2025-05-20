@@ -10,6 +10,7 @@ import {
   YearQuarter,
   CsvInputEnglish,
   Stock,
+  DividendTransactionChartData,
 } from './types';
 
 function initDefaultStock(ticker: string): Stock {
@@ -190,10 +191,16 @@ export function yahooObjectsToTickers(yahooObjects: YahooObject[]): {
 
 export function yahooObjectToTicker(yahooObject: YahooObject): Ticker {
   const result = yahooObject.data.chart.result[0];
+  const dividends = Object.keys(result.events.dividends).map((key) => ({
+    date: new Date(result.events.dividends[key].date * 1000),
+    amountPerShare: result.events.dividends[key].amount,
+  }));
   return {
     name: result.meta.symbol,
+    currency: result.meta.currency,
     values: result.indicators.quote[0].close.map((v) => (v === null ? NaN : v)),
     dates: result.timestamp.map((time) => new Date(time * 1000)),
+    dividends,
   };
 }
 
@@ -666,4 +673,81 @@ export function getStartDate(stocks: { [ticker: string]: Stock }): Date {
   }
 
   return startDate;
+}
+
+export function updateDividends(
+  dividend: DividendTransactionChartData,
+  amountOfShares: number[],
+  ticker: Ticker,
+  dates: Date[],
+  startDate: Date
+): DividendTransactionChartData {
+  const transactions: Transaction[] = ticker.dividends.map((dividend) => {
+    const amount = getAmountOfSharesForDate(
+      amountOfShares,
+      dates,
+      dividend.date
+    );
+    return {
+      ticker: ticker.name,
+      type: 'dividend',
+      date: dividend.date,
+      amount,
+      value: dividend.amountPerShare * amount,
+    };
+  });
+
+  const dividendTransactionAmountsAndValues = getTransactionAmountsAndValues(
+    dates,
+    transactions
+  );
+  const dividendPerQuarterByYear = getDividendPerQuarterByYear(
+    startDate,
+    transactions
+  );
+  const dividendPerQuarter = getDividendPerQuarter(
+    startDate,
+    dividendPerQuarterByYear
+  );
+  const dividendTtmPerQuarter = getDividendTtmPerQuarter(dividendPerQuarter);
+
+  const result = {
+    ...dividendTransactionAmountsAndValues,
+    perQuarterByYear: dividendPerQuarterByYear,
+    perQuarter: dividendPerQuarter,
+    ttmPerQuarter: dividendTtmPerQuarter,
+  };
+  console.log('OLD, ', dividend);
+  console.log('NEW', result);
+  return result;
+}
+
+function getAmountOfSharesForDate(
+  amountOfShares: number[],
+  dates: Date[],
+  date: Date
+): number {
+  if (amountOfShares.length !== dates.length) {
+    console.log(
+      `WARNING: Lists are not the same size. (${amountOfShares.length}) - (${dates.length})`
+    );
+  }
+  const targetYear = date.getFullYear();
+  const targetMonth = date.getMonth();
+  const targetDay = date.getDate();
+
+  for (let i = 0; i < dates.length; i++) {
+    const d = dates[i];
+    if (
+      d.getFullYear() === targetYear &&
+      d.getMonth() === targetMonth &&
+      d.getDate() === targetDay
+    ) {
+      return amountOfShares[i];
+    }
+  }
+
+  // If no match found
+  console.log(`No matching date found for ${date}`);
+  return 0;
 }

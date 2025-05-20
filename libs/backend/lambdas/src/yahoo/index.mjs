@@ -20,7 +20,8 @@ export const handler = async (event) => {
 
   const results = await Promise.all(
     symbols.map((symbol) => {
-      const apiUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${start}&period2=${end}`;
+      const apiUrl = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?interval=1d&period1=${start}&period2=${end}&events=div`;
+      console.log('[Yahoo] Api url: ', apiUrl);
       const options = {
         hostname: 'query1.finance.yahoo.com',
         path: apiUrl,

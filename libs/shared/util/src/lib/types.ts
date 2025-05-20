@@ -99,6 +99,11 @@ export type YahooObject = {
     chart: {
       result: [
         {
+          events: {
+            dividends: {
+              [timestamp: string]: { amount: number; date: number };
+            };
+          };
           meta: {
             currency: string;
             symbol: string;
@@ -124,8 +129,10 @@ export type YahooObject = {
 
 export type Ticker = {
   name: string;
+  currency: string;
   dates: Date[];
   values: number[];
+  dividends: { date: Date; amountPerShare: number }[];
 };
 
 export type CsvInput = {

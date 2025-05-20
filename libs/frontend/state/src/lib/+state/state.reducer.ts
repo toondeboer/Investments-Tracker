@@ -26,6 +26,7 @@ import {
   addLists,
   getStartDate,
   transactionsDboToTransactions,
+  updateDividends,
 } from '@aws/util';
 
 export const featureKey = 'state';
@@ -195,6 +196,7 @@ export const reducer = createReducer(
     let portfolioValuesSummary = 0;
     let aggregatedPortfolioValues: number[] = [];
     let aggregatedProfit: number[] = [];
+    let totalDividendSummary = 0;
 
     const updatedStocks: { [ticker: string]: Stock } = {};
     for (const key of Object.keys(stocks)) {
@@ -236,6 +238,20 @@ export const reducer = createReducer(
         portfolioValues,
         profit
       );
+
+      const updatedDividend = updateDividends(
+        stock.chartData.dividend,
+        stock.chartData.stock.aggregatedAmounts,
+        ticker,
+        state.dates,
+        state.summary.startDate
+      );
+
+      const totalDividend = getMostRecentValueFromList(
+        updatedDividend.aggregatedValues
+      ).value;
+      totalDividendSummary += totalDividend;
+
       updatedStocks[key] = {
         ...stock,
         summary: {
@@ -246,12 +262,14 @@ export const reducer = createReducer(
           weeklyReturn,
           monthlyReturn,
           totalReturn,
+          totalDividend,
         },
         chartData: {
           ...stock.chartData,
           portfolioValues,
           profit,
           yieldPerYear,
+          dividend: updatedDividend,
         },
       };
     }
@@ -287,6 +305,7 @@ export const reducer = createReducer(
         weeklyReturn: weeklyReturnSummary,
         monthlyReturn: monthlyReturnSummary,
         totalReturn: totalReturnSummary,
+        totalDividend: totalDividendSummary,
       },
     };
   })

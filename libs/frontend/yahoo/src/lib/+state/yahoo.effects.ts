@@ -37,6 +37,7 @@ export class YahooEffects {
           .pipe(
             mergeMap((yahooObjects) => {
               const tickers = yahooObjectsToTickers(yahooObjects);
+              console.log('Tickers', tickers);
               return [
                 getTickersSuccess({ tickers }),
                 setChartData({ tickers }),
