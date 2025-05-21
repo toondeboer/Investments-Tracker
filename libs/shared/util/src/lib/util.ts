@@ -326,7 +326,7 @@ export function getTransactionAmountsAndValues(
 }
 
 export function getQuarter(month: number): number {
-  return Math.floor((month - 1) / 3);
+  return Math.floor(month / 3);
 }
 
 export function getDividendPerQuarterByYear(
