@@ -34,6 +34,10 @@ export type Stock = {
   transactions: Transactions;
   summary: StockSummary;
   chartData: ChartData;
+  currency: {
+    value: string;
+    yahooTicker?: string;
+  };
 };
 
 export type ChartData = {
@@ -72,6 +76,7 @@ export type Transaction = {
   date: Date;
   amount: number;
   value: number;
+  currency: string;
 };
 
 export type DatabaseDto = {
@@ -91,6 +96,7 @@ export type TransactionDbo = {
   date: string;
   amount: number;
   value: number;
+  currency: string;
 };
 
 export type YahooObject = {
@@ -99,7 +105,7 @@ export type YahooObject = {
     chart: {
       result: [
         {
-          events: {
+          events?: {
             dividends: {
               [timestamp: string]: { amount: number; date: number };
             };

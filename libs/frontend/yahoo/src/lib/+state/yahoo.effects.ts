@@ -31,9 +31,9 @@ export class YahooEffects {
     this.actions$.pipe(
       ofType(getDataSuccess),
       withLatestFrom(this.store.select(selectState)),
-      switchMap(([_, { stocks, summary }]) => {
+      switchMap(([_, { stocks, summary, currencies }]) => {
         return this.service
-          .getTickers(Object.keys(stocks), summary.startDate)
+          .getTickers(Object.keys(stocks), summary.startDate, currencies)
           .pipe(
             mergeMap((yahooObjects) => {
               const tickers = yahooObjectsToTickers(yahooObjects);

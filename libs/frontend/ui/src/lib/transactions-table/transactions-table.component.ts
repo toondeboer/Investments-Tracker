@@ -38,6 +38,7 @@ export class TransactionsTableComponent {
   date = new Date();
   amount = 0;
   value = 0;
+  currency: 'EUR' | 'USD' = 'EUR'
 
   csvData: any[] = [];
 
@@ -52,6 +53,7 @@ export class TransactionsTableComponent {
       date: new Date(this.date),
       amount: this.amount,
       value: this.value,
+      currency: this.currency,
     };
     console.log('New transaction: ', newTransaction);
     const newTransactions = {

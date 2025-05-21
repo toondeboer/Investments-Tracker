@@ -26,7 +26,7 @@ import {
   addLists,
   getStartDate,
   transactionsDboToTransactions,
-  updateDividends,
+  updateDividends, getCurrencies
 } from '@aws/util';
 
 export const featureKey = 'state';
@@ -36,6 +36,7 @@ export interface FeatureState {
   stocks: { [ticker: string]: Stock };
   dates: Date[];
   summary: Summary;
+  currencies: string[];
 }
 
 export const initialState: FeatureState = {
@@ -69,25 +70,32 @@ export const initialState: FeatureState = {
       percentage: 0,
     },
   },
+  currencies: [],
 };
 
 export const reducer = createReducer(
   initialState,
-  on(getDataSuccess, (state, action) => ({
+  on(getDataSuccess, (state, action) => {
+    const stocks = transactionsDboToStocks(action.data)
+    return {
     ...state,
     transactions: transactionsDboToTransactions(action.data),
-    stocks: transactionsDboToStocks(action.data),
-  })),
+    stocks,
+    currencies: getCurrencies(stocks)
+  }}),
   on(
     saveTransactionSuccess,
     deleteTransactionSuccess,
     deleteAllTransactionsSuccess,
     handleFileInputSuccess,
-    (state, action) => ({
+    (state, action) => {
+      const stocks = transactionsDboToStocks(action.transactions)
+      return {
       ...state,
       transactions: transactionsDboToTransactions(action.transactions),
-      stocks: transactionsDboToStocks(action.transactions),
-    })
+      stocks,
+      currencies: getCurrencies(stocks)
+    }}
   ),
   on(
     getDataSuccess,

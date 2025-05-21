@@ -72,6 +72,7 @@ function initDefaultStock(ticker: string): Stock {
       profit: [],
       yieldPerYear: { years: [], yields: [], profit: [] },
     },
+    currency: { value: 'EUR' },
   };
 }
 
@@ -116,6 +117,22 @@ export function transactionsDboToTransactions(
   };
 }
 
+function getCurrency(currency: string): {
+  value: string;
+  yahooTicker: string | undefined;
+} {
+  const yahooTicker = (() => {
+    switch (currency) {
+      case 'USD':
+        return 'EUR=X';
+      case 'EUR':
+      default:
+        return undefined;
+    }
+  })();
+  return { value: currency, yahooTicker };
+}
+
 export function transactionsDboToStocks(transactions: TransactionsDbo): {
   [ticker: string]: Stock;
 } {
@@ -129,6 +146,7 @@ export function transactionsDboToStocks(transactions: TransactionsDbo): {
     };
     if (!stocks[transaction.ticker]) {
       stocks[transaction.ticker] = initDefaultStock(transaction.ticker);
+      stocks[transaction.ticker].currency = getCurrency(transaction.currency);
     }
     stocks[transaction.ticker].transactions.stock.push(newTransaction);
     stocks[transaction.ticker].transactions.stock = sortTransactions(
@@ -144,6 +162,7 @@ export function transactionsDboToStocks(transactions: TransactionsDbo): {
     };
     if (!stocks[transaction.ticker]) {
       stocks[transaction.ticker] = initDefaultStock(transaction.ticker);
+      stocks[transaction.ticker].currency = getCurrency(transaction.currency);
     }
     stocks[transaction.ticker].transactions.dividend.push(newTransaction);
     stocks[transaction.ticker].transactions.dividend = sortTransactions(
@@ -159,6 +178,7 @@ export function transactionsDboToStocks(transactions: TransactionsDbo): {
     };
     if (!stocks[transaction.ticker]) {
       stocks[transaction.ticker] = initDefaultStock(transaction.ticker);
+      stocks[transaction.ticker].currency = getCurrency(transaction.currency);
     }
     stocks[transaction.ticker].transactions.commission.push(newTransaction);
     stocks[transaction.ticker].transactions.commission = sortTransactions(
@@ -191,10 +211,14 @@ export function yahooObjectsToTickers(yahooObjects: YahooObject[]): {
 
 export function yahooObjectToTicker(yahooObject: YahooObject): Ticker {
   const result = yahooObject.data.chart.result[0];
-  const dividends = Object.keys(result.events.dividends).map((key) => ({
-    date: new Date(result.events.dividends[key].date * 1000),
-    amountPerShare: result.events.dividends[key].amount,
-  }));
+  let dividends: { date: Date; amountPerShare: number }[] = [];
+  if (result.events) {
+    const dividendEvents = result.events.dividends;
+    dividends = Object.keys(dividendEvents).map((key) => ({
+      date: new Date(dividendEvents[key].date * 1000),
+      amountPerShare: dividendEvents[key].amount,
+    }));
+  }
   return {
     name: result.meta.symbol,
     currency: result.meta.currency,
@@ -524,6 +548,7 @@ export function parseCsvInput(csv: CsvInput): Transactions {
           row.Omschrijving.replace('Koop ', '').split(' @')[0]
         ),
         value: Math.abs(parseFloat(row[''])),
+        currency: 'EUR',
       });
     }
     if (
@@ -539,6 +564,7 @@ export function parseCsvInput(csv: CsvInput): Transactions {
         ),
         amount: 1,
         value: Math.abs(parseFloat(row[''])),
+        currency: 'EUR',
       });
     }
     if (row.Omschrijving === 'DEGIRO Verrekening Promotie') {
@@ -552,6 +578,7 @@ export function parseCsvInput(csv: CsvInput): Transactions {
         ),
         amount: 1,
         value: -1 * Math.abs(parseFloat(row[''])),
+        currency: 'EUR',
       });
     }
     if (row.Omschrijving === 'Valuta Creditering') {
@@ -565,6 +592,7 @@ export function parseCsvInput(csv: CsvInput): Transactions {
         ),
         amount: 1,
         value: Math.abs(parseFloat(row[''])),
+        currency: 'EUR',
       });
     }
   }
@@ -694,6 +722,7 @@ export function updateDividends(
       date: dividend.date,
       amount,
       value: dividend.amountPerShare * amount,
+      currency: ticker.currency,
     };
   });
 
@@ -750,4 +779,17 @@ function getAmountOfSharesForDate(
   // If no match found
   console.log(`No matching date found for ${date}`);
   return 0;
+}
+
+export function getCurrencies(stocks: { [ticker: string]: Stock }): string[] {
+  console.log(stocks);
+  const currencies: string[] = [];
+  for (const key of Object.keys(stocks)) {
+    console.log(stocks[key]);
+    const currency = stocks[key].currency.yahooTicker;
+    if (currency && !currencies.includes(currency)) {
+      currencies.push(currency);
+    }
+  }
+  return currencies;
 }

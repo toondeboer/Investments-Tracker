@@ -83,6 +83,10 @@
   <input type="date" [(ngModel)]="date" />
   <input type="number" [(ngModel)]="amount" placeholder="amount" />
   <input type="number" [(ngModel)]="value" placeholder="value" />
+  <select [(ngModel)]="currency">
+    <option value="EUR">Euro</option>
+    <option value="USD">US Dollar</option>
+  </select>
   <button (click)="saveTransaction()">
     Save
   </button>
