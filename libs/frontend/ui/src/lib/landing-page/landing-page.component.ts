@@ -1,11 +1,10 @@
-// libs/frontend/ui/src/lib/landing-page/landing-page.component.ts
-
 import {
   Component,
   OnInit,
   HostListener,
   EventEmitter,
   Output,
+  OnDestroy,
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
 
@@ -28,11 +27,12 @@ interface Step {
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
 })
-export class LandingPageComponent implements OnInit {
+export class LandingPageComponent implements OnInit, OnDestroy {
   @Output() login = new EventEmitter();
 
   title = 'portfolio-tracker';
   isScrolled = false;
+  mobileMenuOpen = false;
   chartLoaded = false;
   portfolioReturn = 12.5;
   portfolioValue = 24856;
@@ -101,6 +101,29 @@ export class LandingPageComponent implements OnInit {
     this.login.emit();
   }
 
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+
+    // Prevent body scroll when menu is open
+    if (this.mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+
+  closeMobileMenu(): void {
+    this.mobileMenuOpen = false;
+    document.body.style.overflow = '';
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any): void {
+    if (event.target.innerWidth > 768 && this.mobileMenuOpen) {
+      this.closeMobileMenu();
+    }
+  }
+
   @HostListener('window:scroll', [])
   onWindowScroll() {
     this.isScrolled = window.pageYOffset > 100;
@@ -128,6 +151,11 @@ export class LandingPageComponent implements OnInit {
 
   onFeatureLeave(feature: Feature) {
     // Add any hover leave logic here
+  }
+
+  // Make sure to close mobile menu on component destroy
+  ngOnDestroy(): void {
+    document.body.style.overflow = '';
   }
 
   private animateValue(

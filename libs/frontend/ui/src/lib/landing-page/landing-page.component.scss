@@ -1,5 +1,3 @@
-// libs/frontend/ui/src/lib/landing-page/landing-page.component.scss
-
 * {
   margin: 0;
   padding: 0;
@@ -50,6 +48,7 @@ nav {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 0;
+  position: relative;
 }
 
 .logo {
@@ -61,6 +60,7 @@ nav {
   align-items: center;
   gap: 0.5rem;
   transition: color 0.3s ease;
+  z-index: 1001;
 }
 
 .logo-icon {
@@ -79,6 +79,7 @@ nav {
   display: flex;
   list-style: none;
   gap: 2rem;
+  transition: all 0.3s ease;
 
   a {
     color: white;
@@ -134,6 +135,88 @@ nav {
     &:hover {
       background: rgba(255, 255, 255, 0.2);
       transform: translateY(-2px);
+    }
+  }
+}
+
+/* Mobile Menu Styles */
+.mobile-menu {
+  display: none;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.75rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.2rem;
+  z-index: 1001;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  &.active {
+    background: rgba(255, 255, 255, 0.2);
+  }
+}
+
+/* Mobile Navigation Menu */
+.mobile-nav {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background: rgba(102, 126, 234, 0.95);
+  backdrop-filter: blur(20px);
+  z-index: 1000;
+  padding-top: 100px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+
+  &.active {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .mobile-nav-links {
+    list-style: none;
+    padding: 0 2rem;
+
+    li {
+      margin-bottom: 2rem;
+
+      a {
+        color: white;
+        text-decoration: none;
+        font-size: 1.5rem;
+        font-weight: 600;
+        display: block;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        transition: all 0.3s ease;
+
+        &:hover {
+          color: #feca57;
+          transform: translateX(10px);
+        }
+      }
+    }
+  }
+
+  .mobile-cta-buttons {
+    padding: 0 2rem;
+    margin-top: 2rem;
+
+    .btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      margin-bottom: 1rem;
     }
   }
 }
@@ -267,7 +350,7 @@ nav {
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
   margin-bottom: 3rem;
 }
@@ -419,23 +502,33 @@ footer {
 }
 
 /* Mobile Responsive */
-.mobile-menu {
-  display: none;
-  background: white;
-  color: #2c3e50;
-  border: none;
-  padding: 0.5rem;
-  border-radius: 4px;
-  cursor: pointer;
+@media (max-width: 1024px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
+  /* Mobile Header */
   .nav-links {
+    display: none;
+  }
+
+  .cta-buttons {
     display: none;
   }
 
   .mobile-menu {
     display: block;
+  }
+
+  .mobile-nav {
+    display: block;
+  }
+
+  /* Hero Section Mobile */
+  .hero {
+    padding: 6rem 0 3rem;
   }
 
   .hero-title {
@@ -457,4 +550,66 @@ footer {
   .chart-placeholder {
     height: 150px;
   }
+
+  /* Features Mobile */
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .feature-card {
+    padding: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 2rem;
+  }
+
+  /* CTA Mobile */
+  .cta-section h2 {
+    font-size: 2rem;
+  }
+
+  .cta-section p {
+    font-size: 1.1rem;
+  }
 }
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 15px;
+  }
+
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .btn.btn-large {
+    padding: 0.875rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  .feature-card {
+    padding: 1.25rem;
+  }
+
+  .feature-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 1.75rem;
+  }
+
+  .cta-section h2 {
+    font-size: 1.75rem;
+  }
+}
+
+
