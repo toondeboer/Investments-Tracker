@@ -1,58 +1,106 @@
-<div class="landing-page">
-  <header>
-    <nav>
-      <div class="logo">Investments Tracker</div>
-      <div class="nav-links">
-        <button class="cta-button" (click)="onClick()">Log in</button>
+<div class="app-container">
+  <!-- Header -->
+  <header [class.scrolled]="isScrolled">
+    <nav class="container">
+      <a href="#" class="logo">
+        <div class="logo-icon">PT</div>
+        PortfolioTracker
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features" (click)="scrollTo('features', $event)">Features</a></li>
+        <li><a href="#how-it-works" (click)="scrollTo('how-it-works', $event)">How It Works</a></li>
+        <li><a href="#pricing" (click)="scrollTo('pricing', $event)">Pricing</a></li>
+      </ul>
+      <div class="cta-buttons">
+        <button class="btn btn-secondary" (click)="onClick()">Sign In</button>
+        <button class="btn btn-primary" (click)="onClick()">Get Started</button>
       </div>
+      <button class="mobile-menu">☰</button>
     </nav>
   </header>
 
-  <main>
-    <!-- Hero Section -->
-    <section class="hero">
-      <div class="hero-content">
-        <div class="hero-text">
-          <h1>Track Your Investments Like a Pro</h1>
-          <p>Monitor all your investments in one place. Get real-time updates, detailed analytics, and smart insights to make better investment decisions.</p>
-          <div class="hero-buttons">
-            <button class="primary-button" (click)="onClick()">Get Started</button>
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1 class="hero-title">Track Your Investments Like a Pro</h1>
+      <p class="hero-subtitle">
+        Powerful analytics, seamless DeGiro integration, and real-time data to help you make smarter investment decisions.
+      </p>
+      <div class="hero-cta">
+        <button class="btn btn-primary btn-large"  (click)="onClick()">Start Tracking for Free</button>
+      </div>
+
+      <div class="dashboard-preview">
+        <div class="chart-container">
+          <div class="chart-placeholder" [class.loaded]="chartLoaded">
+            <span *ngIf="!chartLoaded">📊 Loading Analytics...</span>
+            <span *ngIf="chartLoaded">📈 Live Portfolio Performance</span>
           </div>
         </div>
-        <div class="chart-container">
-          <aws-chart
-            [x]="chartData.x"
-            [y]="chartData.y" label="Track your profits" [showSymbols]="true"></aws-chart>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-value positive">+{{ portfolioReturn }}%</div>
+            <div class="stat-label">Total Return</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">€{{ portfolioValue | number:'1.0-0' }}</div>
+            <div class="stat-label">Portfolio Value</div>
+          </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- Features Section -->
-    <section class="features">
-      <h2>Why Choose Investments Tracker?</h2>
+  <!-- Features Section -->
+  <section id="features" class="features">
+    <div class="container">
+      <h2 class="section-title">Everything You Need to Track Your Investments</h2>
       <div class="features-grid">
-        <div class="feature-card" *ngFor="let feature of features">
+        <div
+          class="feature-card"
+          *ngFor="let feature of features; trackBy: trackByFeature"
+          (mouseenter)="onFeatureHover(feature)"
+          (mouseleave)="onFeatureLeave(feature)"
+        >
+          <div class="feature-icon" [innerHTML]="feature.icon"></div>
           <h3>{{ feature.title }}</h3>
           <p>{{ feature.description }}</p>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- CTA Section -->
-    <section class="cta">
-      <h2>Ready to Start Tracking?</h2>
-      <p>Join thousands of investors who trust Investments Tracker for their portfolio management.</p>
-      <button class="cta-button-large" (click)="onClick()">Get Started Now</button>
-    </section>
-  </main>
+  <!-- How It Works Section -->
+  <section id="how-it-works" class="how-it-works">
+    <div class="container">
+      <h2 class="section-title">Get Started in Minutes</h2>
+      <div class="steps">
+        <div
+          class="step"
+          *ngFor="let step of steps; trackBy: trackByStep"
+          [style.animation-delay]="(step.number * 0.2) + 's'"
+        >
+          <div class="step-number">{{ step.number }}</div>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to Take Control of Your Investments?</h2>
+      <p>Join thousands of investors who trust PortfolioTracker for their investment analytics.</p>
+      <button class="btn btn-primary btn-large" (click)="onClick()">Start Tracking</button>
+    </div>
+  </section>
 
   <!-- Footer -->
   <footer>
-    <div class="footer-content">
-      <div class="footer-brand">
-        <h3>Investments Tracker</h3>
-        <p>Making investment tracking simple and effective.</p>
-      </div>
+    <div class="container">
+      <p>&copy; {{ currentYear }} PortfolioTracker. All rights reserved. | Privacy Policy | Terms of Service</p>
     </div>
   </footer>
 </div>

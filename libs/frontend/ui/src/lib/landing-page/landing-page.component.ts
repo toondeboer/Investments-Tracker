@@ -1,73 +1,158 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ChartComponent } from '../chart/chart.component';
+import {
+  Component,
+  OnInit,
+  HostListener,
+  EventEmitter,
+  Output,
+} from '@angular/core';
+import { CommonModule, DecimalPipe } from '@angular/common';
+
+interface Feature {
+  icon: string;
+  title: string;
+  description: string;
+}
+
+interface Step {
+  number: number;
+  title: string;
+  description: string;
+}
 
 @Component({
   selector: 'aws-landing-page',
   standalone: true,
-  imports: [CommonModule, ChartComponent],
+  imports: [CommonModule, DecimalPipe],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
 })
 export class LandingPageComponent implements OnInit {
   @Output() login = new EventEmitter();
 
-  features = [
+  title = 'portfolio-tracker';
+  isScrolled = false;
+  chartLoaded = false;
+  portfolioReturn = 12.5;
+  portfolioValue = 24856;
+  currentYear = new Date().getFullYear();
+
+  features: Feature[] = [
     {
-      title: 'Real-time Analytics',
+      icon: '👤',
+      title: 'Secure Account Management',
       description:
-        'Get instant insights into your portfolio performance with advanced analytics tools.',
+        'Create your personal account with enterprise-grade security. Your data is encrypted and protected at all times.',
     },
     {
-      title: 'Global Markets',
+      icon: '📊',
+      title: 'Advanced Analytics',
       description:
-        'Track investments across multiple markets and currencies in one place.',
+        'Beautiful line and bar charts that visualize your portfolio performance over time with detailed insights and trends.',
     },
     {
-      title: 'Bank-grade Security',
+      icon: '🔗',
+      title: 'DeGiro Integration',
       description:
-        'Your data is protected with enterprise-level security and encryption.',
+        'Seamlessly upload CSV files from DeGiro. Our smart parser automatically imports and organizes your trading data.',
+    },
+    {
+      icon: '⚡',
+      title: 'Real-Time Data',
+      description:
+        'Live market data powered by Yahoo Finance API. Stay updated with real-time prices and market movements.',
     },
   ];
 
-  chartData = {
-    x: [new Date()],
-    y: [1],
-  };
-
-  chartDat = [
-    { month: 'Jan', value: 1000 },
-    { month: 'Feb', value: 1200 },
-    { month: 'Mar', value: 1100 },
-    { month: 'Apr', value: 1400 },
-    { month: 'May', value: 1800 },
-    { month: 'Jun', value: 2200 },
+  steps: Step[] = [
+    {
+      number: 1,
+      title: 'Create Account',
+      description:
+        'Sign up with your email and create a secure password. It takes less than 30 seconds.',
+    },
+    {
+      number: 2,
+      title: 'Upload Data',
+      description:
+        "Download your CSV from DeGiro and upload it to our platform. We'll handle the rest automatically.",
+    },
+    {
+      number: 3,
+      title: 'Track Performance',
+      description:
+        'Watch your portfolio come to life with real-time analytics and beautiful visualizations.',
+    },
   ];
+
+  ngOnInit() {
+    // Simulate chart loading
+    setTimeout(() => {
+      this.chartLoaded = true;
+    }, 2000);
+
+    // Animate portfolio values
+    this.animateValue('portfolioReturn', 0, 12.5, 2000);
+    this.animateValue('portfolioValue', 20000, 24856, 2500);
+  }
 
   onClick() {
     this.login.emit();
   }
 
-  ngOnInit(): void {
-    const dates = [];
-    const values = [];
-    const today = new Date();
-    const min = 100;
-    const max = 1000;
-    let currentValue = Math.floor(Math.random() * (max - min) + min);
+  @HostListener('window:scroll', [])
+  onWindowScroll() {
+    this.isScrolled = window.pageYOffset > 100;
+  }
 
-    for (let i = 12; i > 0; i--) {
-      const firstDay = new Date(today.getFullYear(), today.getMonth() - i, 1);
-      dates.push(firstDay);
-
-      // Generate a small random step, allowing some backward steps but favoring upward.
-      const step = Math.floor(Math.random() * 200 - 50); // Range: -50 to +150
-      currentValue = currentValue + step;
-      values.push(currentValue);
+  scrollTo(elementId: string, event: Event) {
+    event.preventDefault();
+    const element = document.getElementById(elementId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
-    this.chartData = {
-      x: dates,
-      y: values,
+  }
+
+  trackByFeature(index: number, feature: Feature): string {
+    return feature.title;
+  }
+
+  trackByStep(index: number, step: Step): number {
+    return step.number;
+  }
+
+  onFeatureHover(feature: Feature) {
+    // Add any hover logic here
+  }
+
+  onFeatureLeave(feature: Feature) {
+    // Add any hover leave logic here
+  }
+
+  private animateValue(
+    property: string,
+    start: number,
+    end: number,
+    duration: number
+  ) {
+    const startTime = performance.now();
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const currentValue = start + (end - start) * this.easeOutCubic(progress);
+
+      (this as any)[property] =
+        property === 'portfolioReturn'
+          ? Math.round(currentValue * 10) / 10
+          : Math.round(currentValue);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
     };
+    requestAnimationFrame(animate);
+  }
+
+  private easeOutCubic(t: number): number {
+    return 1 - Math.pow(1 - t, 3);
   }
 }
