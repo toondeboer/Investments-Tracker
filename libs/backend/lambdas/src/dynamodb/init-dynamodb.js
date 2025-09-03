@@ -3,9 +3,11 @@ import { CreateTableCommand, DynamoDB } from '@aws-sdk/client-dynamodb';
 // Setup DynamoDB Local connection
 const dynamoDB = new DynamoDB({
   endpoint: 'http://localhost:8000',
-  region: 'us-east-1', // Use the same region as your local setup
-  accessKeyId: 'fakeAccessKeyId', // Placeholder for local testing
-  secretAccessKey: 'fakeSecretAccessKey', // Placeholder for local testing
+  region: 'us-east-1', // Same region as your local setup
+  credentials: {
+    accessKeyId: 'fakeAccessKeyId', // Placeholder for local testing
+    secretAccessKey: 'fakeSecretAccessKey', // Placeholder for local testing
+  },
 });
 
 const tableName = 'Investment_Tracker';
@@ -14,7 +16,7 @@ const createTable = async () => {
   try {
     const command = new CreateTableCommand({
       TableName: tableName,
-      KeySchema: [{ AttributeName: 'userId', KeyType: 'HASH' }], // Partition key
+      KeySchema: [{ AttributeName: 'userId', KeyType: 'HASH' }],
       AttributeDefinitions: [{ AttributeName: 'userId', AttributeType: 'S' }],
       ProvisionedThroughput: {
         ReadCapacityUnits: 5,
