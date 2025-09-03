@@ -3,13 +3,12 @@
   <header [class.scrolled]="isScrolled">
     <nav class="container">
       <a href="#" class="logo">
-        <div class="logo-icon">PT</div>
-        PortfolioTracker
+        <div class="logo-icon">📈</div>
+        Investments Tracker
       </a>
       <ul class="nav-links">
         <li><a href="#features" (click)="scrollTo('features', $event)">Features</a></li>
         <li><a href="#how-it-works" (click)="scrollTo('how-it-works', $event)">How It Works</a></li>
-        <li><a href="#pricing" (click)="scrollTo('pricing', $event)">Pricing</a></li>
       </ul>
       <div class="cta-buttons">
         <button class="btn btn-secondary" (click)="onClick()">Sign In</button>
@@ -25,7 +24,6 @@
       <ul class="mobile-nav-links">
         <li><a href="#features" (click)="scrollTo('features', $event); closeMobileMenu()">Features</a></li>
         <li><a href="#how-it-works" (click)="scrollTo('how-it-works', $event); closeMobileMenu()">How It Works</a></li>
-        <li><a href="#pricing" (click)="scrollTo('pricing', $event); closeMobileMenu()">Pricing</a></li>
       </ul>
       <div class="mobile-cta-buttons">
         <button class="btn btn-secondary" (click)="onClick(); closeMobileMenu()">Sign In</button>
@@ -107,7 +105,7 @@
   <section class="cta-section">
     <div class="container">
       <h2>Ready to Take Control of Your Investments?</h2>
-      <p>Join thousands of investors who trust PortfolioTracker for their investment analytics.</p>
+      <p>Join thousands of investors who trust Investments Tracker for their investment analytics.</p>
       <button class="btn btn-primary btn-large" (click)="onClick()">Start Tracking</button>
     </div>
   </section>
@@ -115,7 +113,7 @@
   <!-- Footer -->
   <footer>
     <div class="container">
-      <p>&copy; {{ currentYear }} PortfolioTracker. All rights reserved. | Privacy Policy | Terms of Service</p>
+      <p>&copy; {{ currentYear }} Investments Tracker. All rights reserved. | Privacy Policy | Terms of Service</p>
     </div>
   </footer>
 </div>
