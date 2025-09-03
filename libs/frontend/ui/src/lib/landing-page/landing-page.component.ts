@@ -1,3 +1,5 @@
+// libs/frontend/ui/src/lib/landing-page/landing-page.component.ts
+
 import {
   Component,
   OnInit,
