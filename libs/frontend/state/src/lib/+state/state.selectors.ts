@@ -1,5 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { computeAllPortfolios, computePortfolioState, mergeTransactionsDbo } from '@aws/util';
+import { computeAllPortfolios, computePortfolioStateSafe, mergeTransactionsDbo } from '@aws/util';
 import { FeatureState, featureKey } from './state.reducer';
 
 export const selectFeature = createFeatureSelector<FeatureState>(featureKey);
@@ -66,33 +66,19 @@ const selectAggregatePortfolioResult = createSelector(
   selectTimeRange,
   (portfolios, tickers, baseCurrency, timeRange) => {
     const merged = mergeTransactionsDbo(portfolios.map((p) => p.transactions));
-    try {
-      return {
-        portfolio: computePortfolioState(merged, tickers, baseCurrency, timeRange),
-        fxError: null as string | null,
-      };
-    } catch (err) {
-      return {
-        portfolio: computePortfolioState(merged, tickers, undefined, timeRange),
-        fxError: err instanceof Error ? err.message : 'FX conversion failed',
-      };
-    }
+    return computePortfolioStateSafe(merged, tickers, baseCurrency, timeRange);
   }
 );
 
 // Per-portfolio computed states keyed by portfolio ID.
 // Always uses '1Y' range so per-portfolio summary cards show accurate returns.
+// FX errors are isolated per portfolio inside computeAllPortfolios.
 export const selectAllPortfolioStates = createSelector(
   selectPortfoliosDbo,
   selectTickers,
   selectBaseCurrency,
-  (portfolios, tickers, baseCurrency) => {
-    try {
-      return computeAllPortfolios(portfolios, tickers, baseCurrency, '1Y');
-    } catch {
-      return computeAllPortfolios(portfolios, tickers, undefined, '1Y');
-    }
-  }
+  (portfolios, tickers, baseCurrency) =>
+    computeAllPortfolios(portfolios, tickers, baseCurrency, '1Y')
 );
 
 // Public view-model — same shape as before (transactions, stocks, dates, summary,

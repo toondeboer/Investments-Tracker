@@ -1,6 +1,7 @@
 import { Ticker, TransactionsDbo } from './types';
 import { getDailyDates, getStartDate, transactionsDboToStocks } from './util';
-import { computePortfolioState } from './portfolio';
+import { computeAllPortfolios, computePortfolioState, computePortfolioStateSafe } from './portfolio';
+import { PortfolioDbo } from './types';
 
 describe('computePortfolioState', () => {
   const dbo: TransactionsDbo = {
@@ -537,5 +538,79 @@ describe('computePortfolioState', () => {
     expect(result.stocks['LLOY.L'].summary.portfolioValue).toBeCloseTo(69);
     // Current share price: 60p = £0.60 * 1.15 = €0.69
     expect(result.stocks['LLOY.L'].summary.currentSharePrice).toBeCloseTo(0.69);
+  });
+});
+
+describe('computePortfolioStateSafe', () => {
+  const usdDbo: TransactionsDbo = {
+    stock: [{ ticker: 'AAPL', type: 'stock', date: '2023-01-10', amount: 1, value: 100, currency: 'USD' }],
+    dividend: [],
+    commission: [],
+  };
+
+  function usdTicker(): Ticker {
+    const dates = getDailyDates(getStartDate(transactionsDboToStocks(usdDbo)), new Date());
+    return { name: 'AAPL', currency: 'USD', dates, values: dates.map(() => 200), dividends: [] };
+  }
+
+  it('returns fxError and a native fallback when FX data is missing', () => {
+    const emptyFx: Ticker = { name: 'EUR=X', currency: 'EUR', dates: [], values: [], dividends: [] };
+
+    const { portfolio, fxError } = computePortfolioStateSafe(
+      usdDbo,
+      { AAPL: usdTicker(), 'EUR=X': emptyFx },
+      'EUR'
+    );
+
+    expect(fxError).toContain('No FX rate data available');
+    // Fallback computes without conversion: 1 * $200 unconverted = 200.
+    expect(portfolio.summary.portfolioValue).toBeCloseTo(200);
+  });
+
+  it('returns null fxError when conversion succeeds', () => {
+    const dates = usdTicker().dates;
+    const fx: Ticker = { name: 'EUR=X', currency: 'EUR', dates, values: dates.map(() => 0.9), dividends: [] };
+
+    const { fxError } = computePortfolioStateSafe(usdDbo, { AAPL: usdTicker(), 'EUR=X': fx }, 'EUR');
+    expect(fxError).toBeNull();
+  });
+});
+
+describe('computeAllPortfolios FX isolation', () => {
+  it('a missing FX rate in one portfolio does not strip FX from the others', () => {
+    const dates = getDailyDates(new Date('2023-01-09T00:00:00.000Z'), new Date());
+    const aapl: Ticker = { name: 'AAPL', currency: 'USD', dates, values: dates.map(() => 200), dividends: [] };
+    const eurx: Ticker = { name: 'EUR=X', currency: 'EUR', dates, values: dates.map(() => 0.9), dividends: [] };
+
+    const portfolios: PortfolioDbo[] = [
+      {
+        id: 'good',
+        name: 'Good',
+        transactions: {
+          stock: [{ ticker: 'AAPL', type: 'stock', date: '2023-01-10', amount: 1, value: 100, currency: 'USD' }],
+          dividend: [],
+          commission: [],
+        },
+      },
+      {
+        id: 'bad',
+        name: 'Bad (FX missing)',
+        transactions: {
+          // GBP needs GBPEUR=X which is absent -> this portfolio falls back to native.
+          stock: [{ ticker: 'BP.L', type: 'stock', date: '2023-01-10', amount: 10, value: 500, currency: 'GBP' }],
+          dividend: [],
+          commission: [],
+        },
+      },
+    ];
+
+    // BP.L price ticker present but no GBPEUR=X, so 'bad' can't convert.
+    const bpl: Ticker = { name: 'BP.L', currency: 'GBP', dates, values: dates.map(() => 60), dividends: [] };
+    const result = computeAllPortfolios(portfolios, { AAPL: aapl, 'EUR=X': eurx, 'BP.L': bpl }, 'EUR', '1Y');
+
+    // 'good' is still FX-converted: 1 * $200 * 0.9 = €180.
+    expect(result['good'].summary.portfolioValue).toBeCloseTo(180);
+    // 'bad' falls back to native (no GBPEUR=X): 10 * £60 = 600 unconverted.
+    expect(result['bad'].summary.portfolioValue).toBeCloseTo(600);
   });
 });

@@ -593,8 +593,37 @@ export function computePortfolioState(
 }
 
 /**
+ * Computes the portfolio state, falling back to an unconverted (native) view if
+ * FX conversion fails (e.g. a required FX rate hasn't loaded). Returns the
+ * fxError message alongside so callers can surface it without the selector
+ * chain throwing. This is the single place the FX try/catch lives.
+ */
+export function computePortfolioStateSafe(
+  transactionsDbo: TransactionsDbo,
+  tickers: { [ticker: string]: Ticker },
+  displayCurrency?: string,
+  range: TimeRange = 'ALL'
+): { portfolio: PortfolioState; fxError: string | null } {
+  try {
+    return {
+      portfolio: computePortfolioState(transactionsDbo, tickers, displayCurrency, range),
+      fxError: null,
+    };
+  } catch (err) {
+    return {
+      portfolio: computePortfolioState(transactionsDbo, tickers, undefined, range),
+      fxError: err instanceof Error ? err.message : 'FX conversion failed',
+    };
+  }
+}
+
+/**
  * Runs computePortfolioState for each portfolio and returns a map keyed by
  * portfolio ID. Used by per-portfolio selectors and the Portfolios page.
+ *
+ * FX errors are isolated per portfolio: a missing FX rate in one portfolio
+ * falls that portfolio back to its native view without stripping conversion
+ * from the others.
  */
 export function computeAllPortfolios(
   portfoliosDbo: PortfolioDbo[],
@@ -605,7 +634,7 @@ export function computeAllPortfolios(
   const result: { [id: string]: PortfolioComputedState } = {};
   for (const portfolio of portfoliosDbo) {
     result[portfolio.id] = {
-      ...computePortfolioState(portfolio.transactions, tickers, baseCurrency, range),
+      ...computePortfolioStateSafe(portfolio.transactions, tickers, baseCurrency, range).portfolio,
       portfolioId: portfolio.id,
       portfolioName: portfolio.name,
     };
