@@ -218,6 +218,13 @@ export function computePortfolioState(
     dates = getDailyDates(effectiveRangeStart, today);
   }
 
+  // The daily pre-range snapshot baseline must be everything STRICTLY BEFORE the
+  // first chart date. getDailyDates starts one day before effectiveRangeStart,
+  // so the baseline cutoff is dates[0] (not effectiveRangeStart) — otherwise a
+  // transaction landing exactly on dates[0] is counted both in the snapshot and
+  // in-window, making the summary totals wrongly depend on the selected range.
+  const windowStart = dates[0] ?? effectiveRangeStart;
+
   // 30-day daily window used for return calculations (always accurate).
   const returnWindowStart = new Date(today);
   returnWindowStart.setUTCDate(returnWindowStart.getUTCDate() - 30);
@@ -237,9 +244,9 @@ export function computePortfolioState(
 
     // For daily ranges, pre-compute historical holdings before the range window
     // so that aggregatedAmounts/aggregatedValues start from the correct baseline.
-    const stockSnapshot = computePreRangeSnapshot(t.stock, effectiveRangeStart);
-    const dividendSnapshot = computePreRangeSnapshot(t.dividend, effectiveRangeStart);
-    const commissionSnapshot = computePreRangeSnapshot(t.commission, effectiveRangeStart);
+    const stockSnapshot = computePreRangeSnapshot(t.stock, windowStart);
+    const dividendSnapshot = computePreRangeSnapshot(t.dividend, windowStart);
+    const commissionSnapshot = computePreRangeSnapshot(t.commission, windowStart);
 
     // Chart-resolution data for this stock.
     const stockAmountsAndValues = granularity === 'daily'
@@ -399,8 +406,8 @@ export function computePortfolioState(
       allTimePortfolioValues = multiplyLists(allTimePortfolioValuesNative, allTimeScaledRates);
 
       // Cost basis: re-aggregate from the spot-at-purchase transaction values.
-      const stockSnapFx = computePreRangeSnapshot(stockTxFx, effectiveRangeStart);
-      const commissionSnapFx = computePreRangeSnapshot(commissionTxFx, effectiveRangeStart);
+      const stockSnapFx = computePreRangeSnapshot(stockTxFx, windowStart);
+      const commissionSnapFx = computePreRangeSnapshot(commissionTxFx, windowStart);
       const stockAggFx = granularity === 'daily'
         ? getTransactionAmountsAndValues(dates, stockTxFx, stockSnapFx.amount, stockSnapFx.value)
         : getTransactionAmountsAndValuesByPeriod(dates, stockTxFx, effectiveRangeStart);

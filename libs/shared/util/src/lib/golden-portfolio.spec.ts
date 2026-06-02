@@ -98,6 +98,18 @@ describe('golden portfolio (characterization)', () => {
       }
     });
 
+    it('summary point-in-time totals are range-independent (EUR)', () => {
+      const ranges2: TimeRange[] = ['1M', '3M', '6M', '1Y', '5Y', 'ALL'];
+      const summaries = ranges2.map((r) => computePortfolioState(goldenDbo, goldenTickers, 'EUR', r).summary);
+      const base = summaries[0];
+      for (const s of summaries) {
+        expect(s.portfolioValue).toBeCloseTo(base.portfolioValue);
+        expect(s.totalInvested).toBeCloseTo(base.totalInvested);
+        expect(s.totalCommission).toBeCloseTo(base.totalCommission);
+        expect(s.totalDividend).toBeCloseTo(base.totalDividend);
+      }
+    });
+
     it.each(ranges)('no summary number is NaN or Infinity (range %s)', (range) => {
       for (const cur of currencies) {
         const { summary } = computePortfolioState(goldenDbo, goldenTickers, cur, range);

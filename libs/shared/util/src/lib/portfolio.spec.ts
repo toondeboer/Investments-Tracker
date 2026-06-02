@@ -116,6 +116,43 @@ describe('computePortfolioState', () => {
     expect(result.summary.portfolioValue).toBe(0);
   });
 
+  it('does not double-count a transaction landing on the range-window boundary', () => {
+    // Regression: getDailyDates starts one day before the range start, so the
+    // pre-range snapshot must exclude that first chart day. A buy/commission on
+    // exactly (rangeStart - 1) must not be counted both in the baseline and the
+    // window, which previously made summary totals depend on the selected range.
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2024-06-03T12:00:00.000Z'));
+    try {
+      // For '3M' at this clock, rangeStart = 2024-03-03 and dates[0] = 2024-03-02.
+      const dbo: TransactionsDbo = {
+        stock: [
+          { ticker: 'VUSA.AS', type: 'stock', date: '2023-01-10', amount: 10, value: 1000, currency: 'EUR' },
+          { ticker: 'VUSA.AS', type: 'stock', date: '2024-03-02', amount: 1, value: 120, currency: 'EUR' },
+        ],
+        dividend: [],
+        commission: [
+          { ticker: 'VUSA.AS', type: 'commission', date: '2024-03-02', amount: 0, value: 7, currency: 'EUR' },
+        ],
+      };
+      const dates = getDailyDates(getStartDate(transactionsDboToStocks(dbo)), new Date());
+      const tickers = {
+        'VUSA.AS': { name: 'VUSA.AS', currency: 'EUR', dates, values: dates.map(() => 150), dividends: [] } as Ticker,
+      };
+
+      const all = computePortfolioState(dbo, tickers, undefined, 'ALL').summary;
+      const m3 = computePortfolioState(dbo, tickers, undefined, '3M').summary;
+
+      // 11 shares * 150 = 1650; commission 7; invested 1120 — in every range.
+      expect(all.totalCommission).toBeCloseTo(7);
+      expect(m3.totalCommission).toBeCloseTo(7);
+      expect(m3.totalInvested).toBeCloseTo(all.totalInvested);
+      expect(m3.portfolioValue).toBeCloseTo(all.portfolioValue);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('returns an empty portfolio for no transactions', () => {
     const result = computePortfolioState(
       { stock: [], dividend: [], commission: [] },
