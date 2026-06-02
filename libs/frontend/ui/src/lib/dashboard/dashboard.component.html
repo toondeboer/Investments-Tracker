@@ -59,7 +59,7 @@
     <aws-active-tickers
       [dates]="vm.state?.dates ?? []"
       [stocks]="vm.state?.stocks ?? {}"
-      [currencySymbol]="vm.currency === 'USD' ? '$' : '€'"
+      [currencySymbol]="currencySymbol(vm.currency)"
     ></aws-active-tickers>
   </section>
 

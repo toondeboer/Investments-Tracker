@@ -11,6 +11,7 @@ import {
 import {
   addLists,
   getCurrencies,
+  getCurrencySymbol,
   getDailyDates,
   getDividendPerQuarterByYear,
   getDividendTtmPerQuarter,
@@ -487,6 +488,15 @@ describe('transactionsDboToStocks / getStartDate / getCurrencies', () => {
     // GBP and GBp share the same FX ticker base — deduplicated to just 2.
     expect(getCurrencies(stocks)).toEqual(expect.arrayContaining(['GBPEUR=X', 'GBPUSD=X']));
     expect(getCurrencies(stocks)).toHaveLength(2);
+  });
+});
+
+describe('getCurrencySymbol', () => {
+  it('maps USD to $ and falls back to € otherwise', () => {
+    expect(getCurrencySymbol('USD')).toBe('$');
+    expect(getCurrencySymbol('EUR')).toBe('€');
+    expect(getCurrencySymbol(undefined)).toBe('€');
+    expect(getCurrencySymbol(null)).toBe('€');
   });
 });
 

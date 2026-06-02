@@ -3,6 +3,7 @@ import { selectBaseCurrency, selectState } from '@aws/state';
 import { Store } from '@ngrx/store';
 import { AsyncPipe, CommonModule, DecimalPipe, NgClass, NgIf } from '@angular/common';
 import { map } from 'rxjs';
+import { getCurrencySymbol } from '@aws/util';
 
 @Component({
   selector: 'aws-scrolling-text',
@@ -18,7 +19,7 @@ import { map } from 'rxjs';
 export class ScrollingTextComponent {
   state$ = this.store.select(selectState);
   currencySymbol$ = this.store.select(selectBaseCurrency).pipe(
-    map(c => c === 'USD' ? '$' : '€')
+    map((c) => getCurrencySymbol(c))
   );
 
   constructor(private store: Store) {}
