@@ -179,6 +179,42 @@ describe('computePortfolioState', () => {
     expect(result.stocks['AAPL'].summary.currentSharePrice).toBeCloseTo(180);
   });
 
+  it('locks cost basis at the purchase-date FX rate (spot-at-purchase)', () => {
+    const usdDbo: TransactionsDbo = {
+      stock: [
+        { ticker: 'AAPL', type: 'stock', date: '2023-01-10', amount: 1, value: 100, currency: 'USD' },
+      ],
+      dividend: [],
+      commission: [
+        { ticker: 'AAPL', type: 'commission', date: '2023-01-10', amount: 0, value: 10, currency: 'USD' },
+      ],
+    };
+
+    const dates = getDailyDates(getStartDate(transactionsDboToStocks(usdDbo)), new Date());
+    const stockTicker: Ticker = {
+      name: 'AAPL', currency: 'USD', dates, values: dates.map(() => 200), dividends: [],
+    };
+    // FX rate was 0.8 at purchase (first 5 days) and 1.0 now (rest).
+    const fxTicker: Ticker = {
+      name: 'EUR=X', currency: 'EUR', dates,
+      values: dates.map((_, i) => (i < 5 ? 0.8 : 1.0)),
+      dividends: [],
+    };
+
+    const result = computePortfolioState(usdDbo, { AAPL: stockTicker, 'EUR=X': fxTicker }, 'EUR');
+    const s = result.stocks['AAPL'].summary;
+
+    // Market value uses today's spot (1.0): 1 * $200 * 1.0 = €200.
+    expect(s.portfolioValue).toBeCloseTo(200);
+    // Cost basis is frozen at the purchase-date rate (0.8), NOT today's:
+    //   invested  = $100 * 0.8 = €80   (would be €100 under per-date spot)
+    //   commission= $10  * 0.8 = €8
+    expect(s.totalInvested).toBeCloseTo(80);
+    expect(s.totalCommission).toBeCloseTo(8);
+    // Total return captures both the price move and the FX move: 200 - 80 - 8 = 112.
+    expect(s.totalReturn.absolute).toBeCloseTo(112);
+  });
+
   it('skips FX conversion when displayCurrency matches stock currency', () => {
     const eurDbo: TransactionsDbo = {
       stock: [

@@ -157,16 +157,21 @@ export function updateDividendsByPeriod(
   ticker: Ticker,
   periodDates: Date[],
   rangeStart: Date,
-  startDate: Date
+  startDate: Date,
+  // Optional converter applied to each dividend's value at its own ex-date, so
+  // dividends received are expressed in the display currency at the rate that
+  // applied when the cash was paid (spot-at-receipt).
+  fxConvert?: (value: number, date: Date) => number
 ): DividendTransactionChartData {
   const transactions: Transaction[] = ticker.dividends.map((div) => {
     const amount = getAmountOfSharesForDate(amountOfShares, periodDates, div.date);
+    const nativeValue = div.amountPerShare * amount;
     return {
       ticker: ticker.name,
       type: 'dividend',
       date: div.date,
       amount,
-      value: div.amountPerShare * amount,
+      value: fxConvert ? fxConvert(nativeValue, div.date) : nativeValue,
       currency: ticker.currency,
     };
   });

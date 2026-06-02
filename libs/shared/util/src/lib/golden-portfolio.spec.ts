@@ -58,11 +58,12 @@ describe('golden portfolio (characterization)', () => {
       expect(result.stocks['LLOY.L'].summary.portfolioValue).toBeCloseTo(69);
     });
 
-    it('cost basis uses the CURRENT-spot scheme (pre-Phase-3 behaviour)', () => {
-      // NOTE: Phase 3 (spot-at-purchase) will change these to eur.spotAtPurchase
-      // — update this assertion and the fixture in that same commit.
-      expect(result.summary.totalInvested).toBeCloseTo(eur.currentSpot.totalInvested);
-      expect(result.summary.totalCommission).toBeCloseTo(eur.currentSpot.totalCommission);
+    it('cost basis uses the SPOT-AT-PURCHASE scheme (Phase 3)', () => {
+      // Each purchase/commission is converted at its own transaction-date FX
+      // rate (AAPL bought 4@$100 at 0.90 + 2@$110 at 1.00), so invested no
+      // longer drifts with today's rate. See eur.spotAtPurchase in the fixture.
+      expect(result.summary.totalInvested).toBeCloseTo(eur.spotAtPurchase.totalInvested);
+      expect(result.summary.totalCommission).toBeCloseTo(eur.spotAtPurchase.totalCommission);
     });
   });
 
