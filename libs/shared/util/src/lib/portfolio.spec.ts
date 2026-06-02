@@ -215,14 +215,13 @@ describe('computePortfolioState', () => {
 
     const summary = computePortfolioState(dbo, tickers).summary;
 
-    // Absolute profit is unchanged/correct: 100 (active) + 4000 (realized) - 100 invested-net handled in profit.
     expect(summary.portfolioValue).toBeCloseTo(100); // only the active position has value
     expect(summary.totalReturn.absolute).toBeCloseTo(4000);
-    // The percentage is now a time-weighted blend bounded by the real gains —
-    // finite and nowhere near the old ~4000% blow-up.
+    // Return on gross invested capital: profit 4000 / (100 + 1000) invested.
+    // Finite and reconciles with the euro profit — not the old ~4000% blow-up
+    // from dividing by the tiny remaining current value.
     expect(Number.isFinite(summary.totalReturn.percentage)).toBe(true);
-    expect(summary.totalReturn.percentage).toBeGreaterThan(0);
-    expect(summary.totalReturn.percentage).toBeLessThan(1000);
+    expect(summary.totalReturn.percentage).toBeCloseTo((4000 / 1100) * 100, 6);
   });
 
   it('keeps aggregate weekly/monthly returns sane across mixed market-calendar gaps (regression)', () => {

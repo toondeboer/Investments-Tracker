@@ -172,10 +172,16 @@ export function getPortfolioValuesByPeriod(
   return values;
 }
 
+/**
+ * Return over the trailing `days` window.
+ *   absolute   = change in cumulative profit across the window.
+ *   percentage = that change as a fraction of gross invested capital (cost
+ *                basis), so it reconciles with the euro figure and never blows
+ *                up when a position has been sold (gross invested only grows).
+ */
 export function getReturn(
-  portfolioValues: number[],
-  invested: number[],
   profit: number[],
+  grossInvested: number,
   days: number
 ): Return {
   const mostRecentProfit = getMostRecentValueFromList(profit);
@@ -184,15 +190,11 @@ export function getReturn(
   const profitDaysAgo = getMostRecentValueFromList(profit.slice(0, startIndex));
   const absolute = mostRecentProfit.value - profitDaysAgo.value;
 
-  // Percentage is the time-weighted return over the trailing window
-  // [startIndex, mostRecentProfit.index]; cash flows in the window are stripped
-  // out so a buy/sell inside it can't distort the figure.
-  const end = mostRecentProfit.index + 1;
-  const percentage =
-    timeWeightedReturn(
-      portfolioValues.slice(startIndex, end),
-      invested.slice(startIndex, end)
-    ) * 100;
-
-  return { absolute, percentage };
+  return {
+    absolute,
+    percentage:
+      Number.isFinite(grossInvested) && grossInvested !== 0
+        ? (absolute / grossInvested) * 100
+        : 0,
+  };
 }

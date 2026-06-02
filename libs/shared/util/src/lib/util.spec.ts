@@ -233,32 +233,22 @@ describe('timeWeightedReturn', () => {
 });
 
 describe('getReturn', () => {
-  // value grows 200 -> 220 with no cash flows in the window (invested flat).
-  const portfolioValues = [200, 200, 220];
-  const invested = [100, 100, 100];
-  const profit = [100, 100, 120];
+  const profit = [100, 110, 130];
 
-  it('1-day: TWR over the last sub-period; absolute is the profit change', () => {
-    const r = getReturn(portfolioValues, invested, profit, 1);
-    expect(r.absolute).toBe(20); // 120 - 100
-    expect(r.percentage).toBeCloseTo(10, 10); // 220 / 200 - 1
+  it('absolute is the profit change over the window; % is over gross invested', () => {
+    const r = getReturn(profit, 1000, 1);
+    expect(r.absolute).toBe(30); // 130 (index 2) - 100 (index 0)
+    expect(r.percentage).toBeCloseTo(3, 10); // 30 / 1000 * 100
   });
 
-  it('strips a buy inside the window out of the percentage', () => {
-    // value jumps 100 -> 240, but 120 of that is a fresh buy, not a market gain.
-    const values = [100, 240];
-    const inv = [100, 220];
-    const prof = [0, 20];
-    const r = getReturn(values, inv, prof, 1);
-    expect(r.absolute).toBe(20);
-    expect(r.percentage).toBeCloseTo(20, 10); // (240 - 120) / 100 - 1 = +20%
+  it('uses a baseline of 0 when the window reaches before the first point', () => {
+    const r = getReturn(profit, 1000, 5); // startIndex clamps to 0 -> baseline 0
+    expect(r.absolute).toBe(130);
+    expect(r.percentage).toBeCloseTo(13, 10); // 130 / 1000 * 100
   });
 
-  it('returns 0% (not NaN) for a zero-capital window', () => {
-    expect(getReturn([0, 0, 0], [0, 0, 0], [5, 10], 1)).toEqual({
-      absolute: 10,
-      percentage: 0,
-    });
+  it('returns 0% (not NaN) when gross invested is 0', () => {
+    expect(getReturn([5, 10], 0, 1)).toEqual({ absolute: 10, percentage: 0 });
   });
 });
 

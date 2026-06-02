@@ -26,7 +26,6 @@ import {
   isSameDay,
   multiplyLists,
   subtractLists,
-  timeWeightedReturn,
   transactionsDboToStocks,
   transactionsDboToTransactions,
   updateDividendsByPeriod,
@@ -323,14 +322,13 @@ export function computePortfolioState(
   let chartTotalInvestedSummary = 0;
   let chartTotalCommissionSummary = 0;
 
-  // Aggregated full-history monthly value/cost series — drive the lifetime
-  // time-weighted total return (range-independent).
-  let aggregatedAllTimePortfolioValues: number[] = [];
-  let aggregatedAllTimeInvested: number[] = [];
+  // Gross invested capital (sum of buy values, never reduced by sells) — the
+  // denominator for return-on-invested-capital percentages. It only grows, so a
+  // sold position can't collapse it to zero, and the % reconciles with profit.
+  let grossInvestedSummary = 0;
 
   // Aggregated portfolio values over the 30-day return window (always daily).
   let returnWindowPortfolioValues: number[] = [];
-  let returnWindowInvested: number[] = [];
   let returnWindowProfit: number[] = [];
 
   // Full-history monthly dates — used for yield and dividend bar charts so they
@@ -465,16 +463,11 @@ export function computePortfolioState(
     );
     const yieldPerYear = getYieldPerYear(allTimeDates, allTimePortfolioValues, allTimeInvested, allTimeProfit);
 
-    // Aggregate the full-history value/cost series for the lifetime TWR total
-    // return. nanAsZero so a single stock's missing price never poisons the sum.
-    aggregatedAllTimePortfolioValues =
-      aggregatedAllTimePortfolioValues.length > 0
-        ? addLists(aggregatedAllTimePortfolioValues, allTimePortfolioValues, true)
-        : allTimePortfolioValues;
-    aggregatedAllTimeInvested =
-      aggregatedAllTimeInvested.length > 0
-        ? addLists(aggregatedAllTimeInvested, allTimeInvested, true)
-        : allTimeInvested;
+    // Gross invested capital for this stock: sum of buy values only (sells are
+    // negative and excluded), at spot-at-purchase FX. This is the denominator
+    // for the return-on-invested-capital percentage.
+    const stockGrossInvested = stockTxFx.reduce((s, tx) => s + (tx.value > 0 ? tx.value : 0), 0);
+    grossInvestedSummary += stockGrossInvested;
 
     // --- 30-day daily return window (always accurate regardless of chart granularity) ---
     const preReturnStockSnapshot = computePreRangeSnapshot(t.stock, returnDates[0] ?? today);
@@ -528,29 +521,28 @@ export function computePortfolioState(
       returnWindowPortfolioValues.length > 0
         ? addLists(returnWindowPortfolioValues, returnPortfolioValues, true)
         : returnPortfolioValues;
-    returnWindowInvested =
-      returnWindowInvested.length > 0
-        ? addLists(returnWindowInvested, returnInvestedForProfit, true)
-        : returnInvestedForProfit;
     returnWindowProfit =
       returnWindowProfit.length > 0
         ? addLists(returnWindowProfit, returnProfit, true)
         : returnProfit;
 
     // --- Per-stock return figures from the 30-day window ---
-    const dailyReturn = getReturn(returnPortfolioValues, returnInvestedForProfit, returnProfit, 1);
-    const weeklyReturn = getReturn(returnPortfolioValues, returnInvestedForProfit, returnProfit, 7);
-    const monthlyReturn = getReturn(returnPortfolioValues, returnInvestedForProfit, returnProfit, 30);
+    // absolute = profit change over the window; percentage = that change as a
+    // fraction of gross invested capital (return on invested capital).
+    const dailyReturn = getReturn(returnProfit, stockGrossInvested, 1);
+    const weeklyReturn = getReturn(returnProfit, stockGrossInvested, 7);
+    const monthlyReturn = getReturn(returnProfit, stockGrossInvested, 30);
 
     // Total return: absolute is point-in-time (currentValue - invested -
-    // commission); percentage is the lifetime time-weighted return so it stays
-    // sane even after the position is partly or fully sold.
+    // commission); percentage is return on gross invested capital, so it
+    // reconciles with the euro profit and stays sane after a sale.
     const stockTotalInvested = getMostRecentValueFromList(investedForProfit).value;
     const stockTotalCommission = getMostRecentValueFromList(commissionForProfit).value;
     const totalReturnAbsolute = portfolioValue - stockTotalInvested - stockTotalCommission;
     const totalReturn = {
       absolute: totalReturnAbsolute,
-      percentage: timeWeightedReturn(allTimePortfolioValues, allTimeInvested) * 100,
+      percentage:
+        stockGrossInvested !== 0 ? (totalReturnAbsolute / stockGrossInvested) * 100 : 0,
     };
 
     chartTotalInvestedSummary += stockTotalInvested;
@@ -600,17 +592,19 @@ export function computePortfolioState(
   }
 
   // Aggregate summary returns from the 30-day daily window.
-  const dailyReturn = getReturn(returnWindowPortfolioValues, returnWindowInvested, returnWindowProfit, 1);
-  const weeklyReturn = getReturn(returnWindowPortfolioValues, returnWindowInvested, returnWindowProfit, 7);
-  const monthlyReturn = getReturn(returnWindowPortfolioValues, returnWindowInvested, returnWindowProfit, 30);
+  const dailyReturn = getReturn(returnWindowProfit, grossInvestedSummary, 1);
+  const weeklyReturn = getReturn(returnWindowProfit, grossInvestedSummary, 7);
+  const monthlyReturn = getReturn(returnWindowProfit, grossInvestedSummary, 30);
 
-  // Total return: absolute is the point-in-time sum; percentage is the lifetime
-  // time-weighted return over the aggregated full-history series, so a fully-sold
-  // position (zero current value, real realized profit) can't blow it up.
+  // Total return: absolute is the point-in-time sum; percentage is return on
+  // gross invested capital, so it reconciles with the euro profit and a
+  // fully-sold position (zero current value, real realized profit) can't blow
+  // it up. (The Yield chart still uses time-weighted return per year.)
   const totalReturnAbsolute = portfolioValuesSummary - chartTotalInvestedSummary - chartTotalCommissionSummary;
   const totalReturn = {
     absolute: totalReturnAbsolute,
-    percentage: timeWeightedReturn(aggregatedAllTimePortfolioValues, aggregatedAllTimeInvested) * 100,
+    percentage:
+      grossInvestedSummary !== 0 ? (totalReturnAbsolute / grossInvestedSummary) * 100 : 0,
   };
 
   summary = {
