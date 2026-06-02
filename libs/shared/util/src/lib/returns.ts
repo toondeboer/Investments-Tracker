@@ -18,10 +18,10 @@ export function getYieldPerYear(
   let profitLastYear = 0;
   dates.forEach((date, index) => {
     if (
-      (date.getMonth() === 11 && date.getDate() === 31) ||
+      (date.getUTCMonth() === 11 && date.getUTCDate() === 31) ||
       index + 1 === dates.length
     ) {
-      years.push(date.getFullYear().toString());
+      years.push(date.getUTCFullYear().toString());
       const profitThisYear =
         getMostRecentValueAtIndex(profitValues, index) - profitLastYear;
       profit.push(profitThisYear);

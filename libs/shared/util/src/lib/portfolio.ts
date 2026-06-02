@@ -168,7 +168,7 @@ export function computePortfolioState(
 
   // 30-day daily window used for return calculations (always accurate).
   const returnWindowStart = new Date(today);
-  returnWindowStart.setDate(returnWindowStart.getDate() - 30);
+  returnWindowStart.setUTCDate(returnWindowStart.getUTCDate() - 30);
   const returnDates = getDailyDates(
     isBeforeDay(startDate, returnWindowStart) ? returnWindowStart : startDate,
     today

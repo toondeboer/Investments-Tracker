@@ -14,16 +14,16 @@ export function getDividendPerQuarterByYear(
   const dividendsByYear: { [year: string]: number[] } = {};
 
   dividends.forEach((dividend) => {
-    const year = dividend.date.getFullYear().toString();
-    const quarter = getQuarter(dividend.date.getMonth());
+    const year = dividend.date.getUTCFullYear().toString();
+    const quarter = getQuarter(dividend.date.getUTCMonth());
     if (!dividendsByYear[year]) {
       dividendsByYear[year] = [0, 0, 0, 0];
     }
     dividendsByYear[year][quarter] += dividend.value;
   });
 
-  const startYear = startDate.getFullYear();
-  const endYear = new Date().getFullYear(); // Always go up to the current year
+  const startYear = startDate.getUTCFullYear();
+  const endYear = new Date().getUTCFullYear(); // Always go up to the current year
 
   const result: { year: string; data: number[] }[] = [];
   for (let year = startYear; year <= endYear; year++) {
@@ -47,10 +47,10 @@ export function getDividendPerQuarter(
   for (const dividendByYear of dividendPerQuarterByYear) {
     dividendByYear.data.forEach((dividend, quarter) => {
       if (
-        (dividendByYear.year !== startDate.getFullYear().toString() ||
-          quarter >= getQuarter(startDate.getMonth())) &&
-        (dividendByYear.year !== now.getFullYear().toString() ||
-          quarter <= getQuarter(now.getMonth()))
+        (dividendByYear.year !== startDate.getUTCFullYear().toString() ||
+          quarter >= getQuarter(startDate.getUTCMonth())) &&
+        (dividendByYear.year !== now.getUTCFullYear().toString() ||
+          quarter <= getQuarter(now.getUTCMonth()))
       ) {
         yearQuarters.push({
           year: dividendByYear.year,

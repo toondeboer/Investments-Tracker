@@ -226,11 +226,19 @@ describe('getQuarter', () => {
 });
 
 describe('isSameDay', () => {
-  it('ignores the time component', () => {
+  it('ignores the time component within the same UTC day', () => {
     expect(
-      isSameDay(new Date(2023, 0, 2, 9, 30), new Date(2023, 0, 2, 23, 59))
+      isSameDay(
+        new Date('2023-01-02T09:30:00.000Z'),
+        new Date('2023-01-02T23:59:00.000Z')
+      )
     ).toBe(true);
-    expect(isSameDay(new Date(2023, 0, 2), new Date(2023, 0, 3))).toBe(false);
+    expect(
+      isSameDay(
+        new Date('2023-01-02T00:00:00.000Z'),
+        new Date('2023-01-03T00:00:00.000Z')
+      )
+    ).toBe(false);
   });
 });
 
