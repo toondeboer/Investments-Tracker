@@ -12,6 +12,7 @@ import { TransactionsTableComponent } from '../transactions-table/transactions-t
 export class PortfolioDetailComponent {
   @Input() portfolio: PortfolioDbo | null = null;
   @Input() stocks: { [ticker: string]: Stock } = {};
+  @Input() baseCurrency = 'EUR';
 
   @Output() importCsv = new EventEmitter<string>();
 

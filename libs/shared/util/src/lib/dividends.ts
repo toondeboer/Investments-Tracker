@@ -4,8 +4,8 @@ import {
   Transaction,
   YearQuarter,
 } from './types';
-import { getQuarter } from './core';
-import { getTransactionAmountsAndValues } from './transactions';
+import { getQuarter, isOnOrBeforeDay } from './core';
+import { getTransactionAmountsAndValues, getTransactionAmountsAndValuesByPeriod } from './transactions';
 
 export function getDividendPerQuarterByYear(
   startDate: Date,
@@ -127,25 +127,63 @@ export function updateDividends(
   return result;
 }
 
+/**
+ * Returns the share count from the last period date that is on or before the
+ * given date. Works correctly for both daily dates (exact match) and for
+ * weekly/monthly period dates (last period before the dividend date).
+ */
 function getAmountOfSharesForDate(
   amountOfShares: number[],
   dates: Date[],
   date: Date
 ): number {
-  const targetYear = date.getFullYear();
-  const targetMonth = date.getMonth();
-  const targetDay = date.getDate();
-
+  let result = 0;
   for (let i = 0; i < dates.length; i++) {
-    const d = dates[i];
-    if (
-      d.getFullYear() === targetYear &&
-      d.getMonth() === targetMonth &&
-      d.getDate() === targetDay
-    ) {
-      return amountOfShares[i];
+    if (isOnOrBeforeDay(dates[i], date)) {
+      result = amountOfShares[i];
+    } else {
+      break;
     }
   }
+  return result;
+}
 
-  return 0;
+/**
+ * Period-based variant of updateDividends for weekly/monthly granularity.
+ * Uses getTransactionAmountsAndValuesByPeriod instead of the daily version.
+ */
+export function updateDividendsByPeriod(
+  amountOfShares: number[],
+  ticker: Ticker,
+  periodDates: Date[],
+  rangeStart: Date,
+  startDate: Date
+): DividendTransactionChartData {
+  const transactions: Transaction[] = ticker.dividends.map((div) => {
+    const amount = getAmountOfSharesForDate(amountOfShares, periodDates, div.date);
+    return {
+      ticker: ticker.name,
+      type: 'dividend',
+      date: div.date,
+      amount,
+      value: div.amountPerShare * amount,
+      currency: ticker.currency,
+    };
+  });
+
+  const dividendTransactionAmountsAndValues = getTransactionAmountsAndValuesByPeriod(
+    periodDates,
+    transactions,
+    rangeStart
+  );
+  const dividendPerQuarterByYear = getDividendPerQuarterByYear(startDate, transactions);
+  const dividendPerQuarter = getDividendPerQuarter(startDate, dividendPerQuarterByYear);
+  const dividendTtmPerQuarter = getDividendTtmPerQuarter(dividendPerQuarter);
+
+  return {
+    ...dividendTransactionAmountsAndValues,
+    perQuarterByYear: dividendPerQuarterByYear,
+    perQuarter: dividendPerQuarter,
+    ttmPerQuarter: dividendTtmPerQuarter,
+  };
 }

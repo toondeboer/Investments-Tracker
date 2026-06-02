@@ -44,6 +44,11 @@ export const selectSelectedPortfolioIds = createSelector(
   (state) => state.selectedPortfolioIds
 );
 
+export const selectTimeRange = createSelector(
+  selectFeature,
+  (state) => state.timeRange
+);
+
 // The portfolios that are currently visible on the dashboard.
 export const selectVisiblePortfoliosDbo = createSelector(
   selectPortfoliosDbo,
@@ -58,17 +63,17 @@ const selectAggregatePortfolioResult = createSelector(
   selectVisiblePortfoliosDbo,
   selectTickers,
   selectBaseCurrency,
-  (portfolios, tickers, baseCurrency) => {
+  selectTimeRange,
+  (portfolios, tickers, baseCurrency, timeRange) => {
     const merged = mergeTransactionsDbo(portfolios.map((p) => p.transactions));
     try {
       return {
-        portfolio: computePortfolioState(merged, tickers, baseCurrency),
+        portfolio: computePortfolioState(merged, tickers, baseCurrency, timeRange),
         fxError: null as string | null,
       };
     } catch (err) {
-      // Fall back to native-currency values and report the FX error to the UI.
       return {
-        portfolio: computePortfolioState(merged, tickers),
+        portfolio: computePortfolioState(merged, tickers, undefined, timeRange),
         fxError: err instanceof Error ? err.message : 'FX conversion failed',
       };
     }
@@ -76,15 +81,16 @@ const selectAggregatePortfolioResult = createSelector(
 );
 
 // Per-portfolio computed states keyed by portfolio ID.
+// Always uses '1Y' range so per-portfolio summary cards show accurate returns.
 export const selectAllPortfolioStates = createSelector(
   selectPortfoliosDbo,
   selectTickers,
   selectBaseCurrency,
   (portfolios, tickers, baseCurrency) => {
     try {
-      return computeAllPortfolios(portfolios, tickers, baseCurrency);
+      return computeAllPortfolios(portfolios, tickers, baseCurrency, '1Y');
     } catch {
-      return computeAllPortfolios(portfolios, tickers);
+      return computeAllPortfolios(portfolios, tickers, undefined, '1Y');
     }
   }
 );

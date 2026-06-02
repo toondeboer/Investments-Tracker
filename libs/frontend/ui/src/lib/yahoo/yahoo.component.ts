@@ -24,6 +24,7 @@ import { AsyncPipe, CommonModule } from '@angular/common';
 export class YahooComponent {
   @Input() dates: Date[] = [];
   @Input() chartData: ChartData | undefined;
+  @Input() currencySymbol = '€';
 
   yahoo$ = this.store.select(selectYahoo);
 

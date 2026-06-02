@@ -4,6 +4,7 @@ import {
   DatabaseDto,
   PortfolioDbo,
   Ticker,
+  TimeRange,
   Transaction,
   TransactionKey,
   TransactionsDbo,
@@ -146,6 +147,11 @@ export const importYahooCsvFailure = createAction(
 export const setSelectedPortfolios = createAction(
   '[State] Set Selected Portfolios',
   props<{ ids: string[] | 'all' }>()
+);
+
+export const setTimeRange = createAction(
+  '[State] Set Time Range',
+  props<{ range: TimeRange }>()
 );
 
 // --- Settings ---

@@ -20,6 +20,7 @@ export class ChartComponent implements OnChanges {
   @Input() label: string | undefined;
   @Input() money = true;
   @Input() showSymbols = false;
+  @Input() currencySymbol = '€';
 
   chartOptions: EChartsOption | undefined;
 
@@ -80,7 +81,7 @@ export class ChartComponent implements OnChanges {
       yAxis: {
         type: 'value',
         axisLabel: {
-          formatter: `{value}${this.money ? ' €' : ''}`,
+          formatter: `{value}${this.money ? ' ' + this.currencySymbol : ''}`,
           color: NAUTICAL_MUTED,
         },
         axisLine: { lineStyle: { color: NAUTICAL_GRID } },

@@ -28,6 +28,7 @@ const colors = [
 })
 export class BarChartPerQuarterByYearComponent implements OnChanges {
   @Input() series: { year: string; data: number[] }[] = [];
+  @Input() currencySymbol = '€';
 
   chartOptions: EChartsOption | undefined;
 
@@ -66,7 +67,7 @@ export class BarChartPerQuarterByYearComponent implements OnChanges {
       },
       yAxis: {
         type: 'value',
-        axisLabel: { formatter: '{value} €', color: NAUTICAL_MUTED },
+        axisLabel: { formatter: `{value} ${this.currencySymbol}`, color: NAUTICAL_MUTED },
         axisLine: { lineStyle: { color: NAUTICAL_GRID } },
         splitLine: { lineStyle: { color: NAUTICAL_GRID } },
       },

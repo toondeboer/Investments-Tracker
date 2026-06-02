@@ -34,14 +34,7 @@ export type Stock = {
   transactions: Transactions;
   summary: StockSummary;
   chartData: ChartData;
-  currency: {
-    value: string;
-    yahooTicker?: string;
-    // Multiplier applied after the FX rate conversion. Used for sub-unit
-    // currencies where Yahoo prices differ from the exchange rate unit:
-    // GBp (pence) = 0.01 × GBP, so fxMultiplier is 0.01.
-    fxMultiplier?: number;
-  };
+  currency: { value: string };
 };
 
 export type ChartData = {
@@ -51,6 +44,10 @@ export type ChartData = {
   portfolioValues: number[];
   profit: number[];
   yieldPerYear: { years: string[]; yields: number[]; profit: number[] };
+  // Full-history monthly data (independent of selected range) for yield/dividend charts.
+  allTimeDates: Date[];
+  allTimePortfolioValues: number[];
+  allTimeProfit: number[];
 };
 
 export type TransactionChartData = {
@@ -128,6 +125,19 @@ export type TransactionDbo = {
   amount: number;
   value: number;
   currency: string;
+};
+
+export type TimeRange = '1M' | '3M' | '6M' | 'YTD' | '1Y' | '5Y' | 'ALL';
+export type ChartGranularity = 'daily' | 'weekly' | 'monthly';
+
+export const TIME_RANGE_LABELS: Record<TimeRange, string> = {
+  '1M': '1M',
+  '3M': '3M',
+  '6M': '6M',
+  'YTD': 'YTD',
+  '1Y': '1Y',
+  '5Y': '5Y',
+  'ALL': 'All',
 };
 
 export type YahooObject = {

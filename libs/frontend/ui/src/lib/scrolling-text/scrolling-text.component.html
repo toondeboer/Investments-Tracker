@@ -1,19 +1,19 @@
-<div *ngIf="state$ | async as state" class="ticker-viewport">
-  <ng-container *ngIf="state.summary.totalReturn.absolute !== 0">
+<div *ngIf="{ state: state$ | async, symbol: currencySymbol$ | async } as vm" class="ticker-viewport">
+  <ng-container *ngIf="vm.state?.summary?.totalReturn?.absolute !== 0">
     <div class="ticker-track">
-      <ng-container *ngTemplateOutlet="items; context: { $implicit: state }"></ng-container>
-      <ng-container *ngTemplateOutlet="items; context: { $implicit: state }"></ng-container>
-      <ng-container *ngTemplateOutlet="items; context: { $implicit: state }"></ng-container>
-      <ng-container *ngTemplateOutlet="items; context: { $implicit: state }"></ng-container>
+      <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
+      <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
+      <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
+      <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
     </div>
   </ng-container>
 </div>
 
-<ng-template #items let-state>
+<ng-template #items let-state let-symbol="symbol">
 
   <span class="ticker-item">
     <span class="ticker-label">TOTAL</span>
-    <span class="ticker-value">€{{ state.summary.portfolioValue | number:'1.0-0' }}</span>
+    <span class="ticker-value">{{ symbol }}{{ state.summary.portfolioValue | number:'1.0-0' }}</span>
     <span class="ticker-change"
       [ngClass]="state.summary.totalReturn.absolute >= 0 ? 'ticker-pos' : 'ticker-neg'">
       {{ state.summary.totalReturn.absolute >= 0 ? '▲' : '▼' }}

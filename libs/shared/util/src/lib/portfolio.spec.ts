@@ -82,7 +82,8 @@ describe('computePortfolioState', () => {
 
     // Stage-1 totals are preserved through stage 2.
     expect(stock.summary.totalInvested).toBe(200);
-    expect(stock.chartData.portfolioValues).toHaveLength(dates.length);
+    // portfolioValues must always be aligned with the dates array returned.
+    expect(stock.chartData.portfolioValues).toHaveLength(result.dates.length);
   });
 
   it('returns an empty portfolio for no transactions', () => {
@@ -286,6 +287,139 @@ describe('computePortfolioState', () => {
         'EUR'
       )
     ).toThrow('No FX rate data available for EUR=X');
+  });
+
+  it('converts EUR stock to USD display using EURUSD=X', () => {
+    const eurDbo: TransactionsDbo = {
+      stock: [
+        {
+          ticker: 'VUSA.AS',
+          type: 'stock',
+          date: '2023-01-10',
+          amount: 1,
+          value: 100,
+          currency: 'EUR',
+        },
+      ],
+      dividend: [],
+      commission: [],
+    };
+
+    const dates = getDailyDates(
+      getStartDate(transactionsDboToStocks(eurDbo)),
+      new Date()
+    );
+
+    const stockTicker: Ticker = {
+      name: 'VUSA.AS',
+      currency: 'EUR',
+      dates,
+      values: dates.map(() => 150),
+      dividends: [],
+    };
+
+    // EURUSD=X: 1 EUR = 1.1 USD
+    const fxTicker: Ticker = {
+      name: 'EURUSD=X',
+      currency: 'USD',
+      dates,
+      values: dates.map(() => 1.1),
+      dividends: [],
+    };
+
+    const result = computePortfolioState(
+      eurDbo,
+      { 'VUSA.AS': stockTicker, 'EURUSD=X': fxTicker },
+      'USD'
+    );
+
+    // 1 share * €150 * 1.1 EURUSD = $165
+    expect(result.summary.portfolioValue).toBeCloseTo(165);
+    expect(result.stocks['VUSA.AS'].summary.currentSharePrice).toBeCloseTo(165);
+  });
+
+  it('converts GBP stock to USD display using GBPUSD=X', () => {
+    const gbpDbo: TransactionsDbo = {
+      stock: [
+        {
+          ticker: 'BP.L',
+          type: 'stock',
+          date: '2023-01-10',
+          amount: 10,
+          value: 500,
+          currency: 'GBP',
+        },
+      ],
+      dividend: [],
+      commission: [],
+    };
+
+    const dates = getDailyDates(
+      getStartDate(transactionsDboToStocks(gbpDbo)),
+      new Date()
+    );
+
+    const stockTicker: Ticker = {
+      name: 'BP.L',
+      currency: 'GBP',
+      dates,
+      values: dates.map(() => 60),
+      dividends: [],
+    };
+
+    // GBPUSD=X: 1 GBP = 1.25 USD
+    const fxTicker: Ticker = {
+      name: 'GBPUSD=X',
+      currency: 'USD',
+      dates,
+      values: dates.map(() => 1.25),
+      dividends: [],
+    };
+
+    const result = computePortfolioState(
+      gbpDbo,
+      { 'BP.L': stockTicker, 'GBPUSD=X': fxTicker },
+      'USD'
+    );
+
+    // 10 shares * £60 * 1.25 GBPUSD = $750
+    expect(result.summary.portfolioValue).toBeCloseTo(750);
+    expect(result.stocks['BP.L'].summary.currentSharePrice).toBeCloseTo(75);
+  });
+
+  it('skips FX for USD stock when display currency is USD', () => {
+    const usdDbo: TransactionsDbo = {
+      stock: [
+        {
+          ticker: 'AAPL',
+          type: 'stock',
+          date: '2023-01-10',
+          amount: 2,
+          value: 300,
+          currency: 'USD',
+        },
+      ],
+      dividend: [],
+      commission: [],
+    };
+
+    const dates = getDailyDates(
+      getStartDate(transactionsDboToStocks(usdDbo)),
+      new Date()
+    );
+
+    const stockTicker: Ticker = {
+      name: 'AAPL',
+      currency: 'USD',
+      dates,
+      values: dates.map(() => 200),
+      dividends: [],
+    };
+
+    const result = computePortfolioState(usdDbo, { AAPL: stockTicker }, 'USD');
+
+    // No FX applied: 2 shares * $200 = $400
+    expect(result.summary.portfolioValue).toBe(400);
   });
 
   it('applies GBp (pence) fxMultiplier: divides by 100 before EUR conversion', () => {

@@ -24,6 +24,7 @@ export class BarChartComponent implements OnChanges {
     yields: [],
     profit: [],
   };
+  @Input() currencySymbol = '€';
 
   chartOptions: EChartsOption | undefined;
 
@@ -69,7 +70,7 @@ export class BarChartComponent implements OnChanges {
         {
           type: 'value',
           position: 'right',
-          axisLabel: { formatter: '{value} €', color: NAUTICAL_MUTED },
+          axisLabel: { formatter: `{value} ${this.currencySymbol}`, color: NAUTICAL_MUTED },
           axisLine: { lineStyle: { color: NAUTICAL_GRID } },
           splitLine: { show: false },
         },

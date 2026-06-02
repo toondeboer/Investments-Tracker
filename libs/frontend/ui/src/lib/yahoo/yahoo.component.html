@@ -8,6 +8,7 @@
         [x]="dates"
         [y]="chartData?.portfolioValues ?? []"
         label="Portfolio Value"
+        [currencySymbol]="currencySymbol"
       ></aws-chart>
     </div>
 
@@ -16,12 +17,14 @@
         [x]="dates"
         [y]="chartData?.profit ?? []"
         label="Profit"
+        [currencySymbol]="currencySymbol"
       ></aws-chart>
     </div>
 
     <div class="chart-card">
       <aws-bar-chart
         [series]="chartData?.yieldPerYear ?? { years: [], yields: [], profit: [] }"
+        [currencySymbol]="currencySymbol"
       ></aws-bar-chart>
     </div>
 
@@ -36,29 +39,33 @@
     <div class="chart-card">
       <aws-bar-chart-per-quarter-by-year
         [series]="chartData?.dividend?.perQuarterByYear ?? []"
+        [currencySymbol]="currencySymbol"
       ></aws-bar-chart-per-quarter-by-year>
     </div>
 
     <div class="chart-card">
       <aws-bar-and-line-chart
         [series]="chartData?.dividend?.ttmPerQuarter ?? { yearQuarters: [], dividends: [] }"
+        [currencySymbol]="currencySymbol"
       ></aws-bar-and-line-chart>
     </div>
 
     <div class="chart-card">
       <aws-chart
-        [x]="dates"
+        [x]="chartData?.allTimeDates ?? []"
         [y]="chartData?.dividend?.transactionValues ?? []"
         label="Dividend per Quarter"
         [showSymbols]="true"
+        [currencySymbol]="currencySymbol"
       ></aws-chart>
     </div>
 
     <div class="chart-card">
       <aws-chart
-        [x]="dates"
+        [x]="chartData?.allTimeDates ?? []"
         [y]="chartData?.dividend?.aggregatedValues ?? []"
         label="Cumulative Dividend"
+        [currencySymbol]="currencySymbol"
       ></aws-chart>
     </div>
 
@@ -92,6 +99,7 @@
         [y]="chartData?.stock?.transactionValues ?? []"
         label="Buy / Sell Values"
         [showSymbols]="true"
+        [currencySymbol]="currencySymbol"
       ></aws-chart>
     </div>
 
@@ -100,6 +108,7 @@
         [x]="dates"
         [y]="chartData?.stock?.aggregatedValues ?? []"
         label="Cumulative Invested"
+        [currencySymbol]="currencySymbol"
       ></aws-chart>
     </div>
 
@@ -127,6 +136,7 @@
         [x]="dates"
         [y]="chartData?.commission?.aggregatedValues ?? []"
         label="Cumulative Commission"
+        [currencySymbol]="currencySymbol"
       ></aws-chart>
     </div>
 

@@ -1,4 +1,4 @@
-<div class="portfolios-layout" *ngIf="{ portfolios: portfolios$ | async, allStates: allPortfolioStates$ | async } as vm">
+<div class="portfolios-layout" *ngIf="{ portfolios: portfolios$ | async, allStates: allPortfolioStates$ | async, baseCurrency: baseCurrency$ | async } as vm">
   <aside class="portfolios-sidebar">
     <aws-portfolio-list
       [portfolios]="vm.portfolios ?? []"
@@ -14,6 +14,7 @@
     <aws-portfolio-detail
       [portfolio]="getSelectedPortfolio(vm.portfolios ?? [])"
       [stocks]="getSelectedPortfolioStocks(vm.allStates)"
+      [baseCurrency]="vm.baseCurrency ?? 'EUR'"
       (importCsv)="onImportCsv($event)"
     ></aws-portfolio-detail>
   </main>

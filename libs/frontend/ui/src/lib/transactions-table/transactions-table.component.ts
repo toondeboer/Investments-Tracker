@@ -27,6 +27,7 @@ export class TransactionsTableComponent {
   @Input() stocks: { [ticker: string]: Stock } = {};
   @Input() transactions: Transactions | undefined;
   @Input() portfolioId = 'default';
+  @Input() baseCurrency = 'EUR';
 
   constructor(
     private readonly store: Store,

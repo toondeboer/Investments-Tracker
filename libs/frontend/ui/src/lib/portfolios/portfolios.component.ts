@@ -9,6 +9,7 @@ import {
   importYahooCsv,
   renamePortfolio,
   selectAllPortfolioStates,
+  selectBaseCurrency,
   selectPortfoliosDbo,
 } from '@aws/state';
 import { PortfolioDbo, Stock } from '@aws/util';
@@ -38,6 +39,7 @@ import { DialogService } from '../dialog/dialog.service';
 export class PortfoliosComponent implements OnInit {
   portfolios$ = this.store.select(selectPortfoliosDbo);
   allPortfolioStates$ = this.store.select(selectAllPortfolioStates);
+  baseCurrency$ = this.store.select(selectBaseCurrency);
   selectedPortfolioId: string | null = null;
 
   constructor(private store: Store, private dialog: DialogService) {}

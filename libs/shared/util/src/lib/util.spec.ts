@@ -398,11 +398,7 @@ describe('transactionsDboToStocks / getStartDate / getCurrencies', () => {
     const stocks = transactionsDboToStocks(input);
     expect(Object.keys(stocks)).toEqual(['VUSA.AS']);
     expect(stocks['VUSA.AS'].transactions.stock).toHaveLength(2);
-    // USD maps to the EUR=X FX ticker used to convert prices.
-    expect(stocks['VUSA.AS'].currency).toEqual({
-      value: 'USD',
-      yahooTicker: 'EUR=X',
-    });
+    expect(stocks['VUSA.AS'].currency).toEqual({ value: 'USD' });
   });
 
   it('getStartDate returns the earliest transaction date across stocks', () => {
@@ -412,37 +408,47 @@ describe('transactionsDboToStocks / getStartDate / getCurrencies', () => {
     );
   });
 
-  it('getCurrencies returns the unique FX tickers needed', () => {
-    const stocks = transactionsDboToStocks(input);
+  it('getCurrencies returns EUR=X for a USD stock (only EUR display needs conversion)', () => {
+    const stocks = transactionsDboToStocks(input); // USD stock
+    // EUR display: USD→EUR via EUR=X. USD display: no conversion needed.
     expect(getCurrencies(stocks)).toEqual(['EUR=X']);
   });
 
-  it('resolves GBP to GBPEUR=X', () => {
+  it('getCurrencies returns EURUSD=X for a EUR stock (only USD display needs conversion)', () => {
+    const eurInput: TransactionsDbo = {
+      stock: [dbo('2023-01-10', 1, 100, 'stock', 'EUR')],
+      dividend: [],
+      commission: [],
+    };
+    const stocks = transactionsDboToStocks(eurInput);
+    // EUR display: no conversion. USD display: EUR→USD via EURUSD=X.
+    expect(getCurrencies(stocks)).toEqual(['EURUSD=X']);
+  });
+
+  it('resolves GBP to { value: "GBP" } and returns both GBP FX tickers', () => {
     const gbpInput: TransactionsDbo = {
       stock: [dbo('2023-01-10', 10, 100, 'stock', 'GBP')],
       dividend: [],
       commission: [],
     };
     const stocks = transactionsDboToStocks(gbpInput);
-    expect(stocks['VUSA.AS'].currency).toEqual({ value: 'GBP', yahooTicker: 'GBPEUR=X' });
-    expect(getCurrencies(stocks)).toEqual(['GBPEUR=X']);
+    expect(stocks['VUSA.AS'].currency).toEqual({ value: 'GBP' });
+    // EUR display: GBPEUR=X. USD display: GBPUSD=X.
+    expect(getCurrencies(stocks)).toEqual(expect.arrayContaining(['GBPEUR=X', 'GBPUSD=X']));
+    expect(getCurrencies(stocks)).toHaveLength(2);
   });
 
-  it('resolves GBp (pence) to GBPEUR=X with fxMultiplier 0.01', () => {
+  it('resolves GBp (pence) to { value: "GBp" }', () => {
     const gbpInput: TransactionsDbo = {
       stock: [dbo('2023-01-10', 1000, 5000, 'stock', 'GBp')],
       dividend: [],
       commission: [],
     };
     const stocks = transactionsDboToStocks(gbpInput);
-    expect(stocks['VUSA.AS'].currency).toEqual({
-      value: 'GBp',
-      yahooTicker: 'GBPEUR=X',
-      fxMultiplier: 0.01,
-    });
+    expect(stocks['VUSA.AS'].currency).toEqual({ value: 'GBp' });
   });
 
-  it('getCurrencies deduplicates GBP and GBp under the same GBPEUR=X ticker', () => {
+  it('getCurrencies deduplicates GBP and GBp — both use the same base FX tickers', () => {
     const mixed: TransactionsDbo = {
       stock: [
         dbo('2023-01-10', 1, 100, 'stock', 'GBP'),
@@ -452,7 +458,9 @@ describe('transactionsDboToStocks / getStartDate / getCurrencies', () => {
       commission: [],
     };
     const stocks = transactionsDboToStocks(mixed);
-    expect(getCurrencies(stocks)).toEqual(['GBPEUR=X']);
+    // GBP and GBp share the same FX ticker base — deduplicated to just 2.
+    expect(getCurrencies(stocks)).toEqual(expect.arrayContaining(['GBPEUR=X', 'GBPUSD=X']));
+    expect(getCurrencies(stocks)).toHaveLength(2);
   });
 });
 

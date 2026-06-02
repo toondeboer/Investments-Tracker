@@ -43,6 +43,24 @@
   gap: 8px;
 }
 
+.range-section {
+  margin-top: 16px;
+}
+
+.computing-bar {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba($color-gold, 0.8), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 1.2s infinite;
+  border-radius: 1px;
+  margin-top: 12px;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
 .chip {
   padding: 6px 14px;
   border-radius: 20px;

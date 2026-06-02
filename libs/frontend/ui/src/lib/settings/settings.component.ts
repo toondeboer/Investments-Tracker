@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { selectBaseCurrency, updateSettings } from '@aws/state';
 
-const SUPPORTED_CURRENCIES = ['EUR', 'USD', 'GBP', 'CHF', 'JPY', 'AUD', 'CAD'];
+const SUPPORTED_CURRENCIES = ['EUR', 'USD'];
 
 @Component({
   selector: 'aws-settings',

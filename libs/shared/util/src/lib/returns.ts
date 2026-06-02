@@ -2,6 +2,8 @@ import { Return, Ticker } from './types';
 import {
   getMostRecentValueAtIndex,
   getMostRecentValueFromList,
+  isBeforeDay,
+  isOnOrBeforeDay,
   isSameDay,
 } from './core';
 
@@ -40,31 +42,57 @@ export function getPortfolioValues(
 ): number[] {
   const values: number[] = [];
   let index = 0;
-  let currentDate: Date = ticker.dates[index];
-  let currentValue: number = ticker.values[index];
+  let lastKnownPrice = 0;
 
   for (let i = 0; i < dates.length; i++) {
-    if (!isSameDay(dates[i], currentDate)) {
-      if (values.length === 0 || values[values.length - 1] === 0) {
-        values.push(0);
-      } else {
-        values.push(NaN);
-      }
-    } else {
-      let newValue = 0;
-      while (isSameDay(dates[i], currentDate)) {
-        newValue += currentValue * aggregatedAmounts[i];
-        index += 1;
-        if (index >= ticker.values.length) {
-          break;
-        }
-        currentDate = ticker.dates[index];
-        currentValue = ticker.values[index];
-      }
+    // Advance past all ticker dates strictly before dates[i], tracking last known price.
+    while (index < ticker.dates.length && isBeforeDay(ticker.dates[index], dates[i])) {
+      if (ticker.values[index] > 0) lastKnownPrice = ticker.values[index];
+      index++;
+    }
 
-      values.push(newValue);
+    if (index < ticker.dates.length && isSameDay(ticker.dates[index], dates[i])) {
+      // Exact date match — use this price.
+      let price = ticker.values[index];
+      index++;
+      // Consume any duplicate entries for the same date (edge case).
+      while (index < ticker.dates.length && isSameDay(ticker.dates[index], dates[i])) {
+        price = ticker.values[index];
+        index++;
+      }
+      if (price > 0) lastKnownPrice = price;
+      values.push(price * aggregatedAmounts[i]);
+    } else {
+      // No ticker entry for this date (weekend / holiday / before ticker starts).
+      values.push(lastKnownPrice === 0 ? 0 : NaN);
     }
   }
+  return values;
+}
+
+/**
+ * Period-based portfolio value computation for weekly/monthly granularity.
+ * For each period date, finds the last available ticker price on or before
+ * that date and multiplies by the aggregated share count.
+ */
+export function getPortfolioValuesByPeriod(
+  periodDates: Date[],
+  aggregatedAmounts: number[],
+  ticker: Ticker
+): number[] {
+  const values: number[] = [];
+  let tickerIdx = 0;
+  let lastKnownPrice = 0;
+
+  for (let i = 0; i < periodDates.length; i++) {
+    const periodDate = periodDates[i];
+    while (tickerIdx < ticker.dates.length && isOnOrBeforeDay(ticker.dates[tickerIdx], periodDate)) {
+      if (ticker.values[tickerIdx] > 0) lastKnownPrice = ticker.values[tickerIdx];
+      tickerIdx++;
+    }
+    values.push(lastKnownPrice * aggregatedAmounts[i]);
+  }
+
   return values;
 }
 
