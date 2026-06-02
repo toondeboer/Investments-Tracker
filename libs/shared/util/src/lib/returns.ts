@@ -55,6 +55,22 @@ export function getPortfolioValues(
       index++;
     }
 
+    // Holding nothing is worth exactly 0 on any date, regardless of whether a
+    // price is available — e.g. after a position is fully sold. (Without this a
+    // missing price would make 0-share days NaN and corrupt profit.)
+    if (aggregatedAmounts[i] === 0) {
+      if (index < ticker.dates.length && isSameDay(ticker.dates[index], dates[i])) {
+        const price = ticker.values[index];
+        index++;
+        while (index < ticker.dates.length && isSameDay(ticker.dates[index], dates[i])) {
+          index++;
+        }
+        if (price > 0) lastKnownPrice = price;
+      }
+      values.push(0);
+      continue;
+    }
+
     if (index < ticker.dates.length && isSameDay(ticker.dates[index], dates[i])) {
       // Exact date match — use this price.
       let price = ticker.values[index];

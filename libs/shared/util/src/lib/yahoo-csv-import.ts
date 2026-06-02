@@ -64,8 +64,14 @@ export function parseYahooCsvInput(rawRows: unknown[]): TransactionsDbo {
     const isSell = txType === 'SHORT';
 
     if (isBuy || isSell) {
+      // Signed convention: a buy adds shares and cost (positive amount/value),
+      // a sell removes shares and recovers cash (negative amount/value). Cost
+      // basis is the running sum of these values, so a sell must reduce it —
+      // otherwise selling inflates "invested" and profit goes wrong, most
+      // visibly once a position is fully sold.
+      const magnitude = Math.abs(purchasePrice * quantity);
       const amount = isBuy ? quantity : -quantity;
-      const value = Math.abs(purchasePrice * quantity);
+      const value = isBuy ? magnitude : -magnitude;
       stock.push({
         ticker: symbol,
         type: 'stock',

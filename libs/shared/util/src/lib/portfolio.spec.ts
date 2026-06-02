@@ -153,6 +153,40 @@ describe('computePortfolioState', () => {
     }
   });
 
+  it('computes realized profit correctly after a position is fully sold', () => {
+    // Buy 10 @ €100 (cost €1000), later sell all 10 @ €120 (proceeds €1200,
+    // recorded with a negative value per the signed convention), €5 commission.
+    // Fully sold -> 0 shares, €0 market value, realized profit = 1200-1000-5 = 195.
+    const dbo: TransactionsDbo = {
+      stock: [
+        { ticker: 'VUSA.AS', type: 'stock', date: '2023-01-10', amount: 10, value: 1000, currency: 'EUR' },
+        { ticker: 'VUSA.AS', type: 'stock', date: '2023-06-10', amount: -10, value: -1200, currency: 'EUR' },
+      ],
+      dividend: [],
+      commission: [
+        { ticker: 'VUSA.AS', type: 'commission', date: '2023-01-10', amount: 0, value: 5, currency: 'EUR' },
+      ],
+    };
+    const dates = getDailyDates(getStartDate(transactionsDboToStocks(dbo)), new Date());
+    const ticker: Ticker = {
+      name: 'VUSA.AS', currency: 'EUR', dates, values: dates.map(() => 130), dividends: [],
+    };
+
+    const result = computePortfolioState(dbo, { 'VUSA.AS': ticker });
+    const stock = result.stocks['VUSA.AS'];
+
+    expect(stock.summary.amountOfShares).toBe(0);
+    expect(stock.summary.portfolioValue).toBe(0);
+    expect(stock.summary.totalReturn.absolute).toBeCloseTo(195);
+    expect(result.summary.totalReturn.absolute).toBeCloseTo(195);
+
+    // Profit on every sold-out day must be the realized 195 — never NaN from a
+    // missing price multiplied by 0 shares.
+    const lastProfit = stock.chartData.profit[stock.chartData.profit.length - 1];
+    expect(Number.isFinite(lastProfit)).toBe(true);
+    expect(lastProfit).toBeCloseTo(195);
+  });
+
   it('returns an empty portfolio for no transactions', () => {
     const result = computePortfolioState(
       { stock: [], dividend: [], commission: [] },

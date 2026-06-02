@@ -313,6 +313,24 @@ describe('getPortfolioValues', () => {
       660, // 110 * 6 shares
     ]);
   });
+
+  it('values a 0-share (sold-out) day at 0 even with a missing or absent price', () => {
+    const dates = [
+      new Date('2023-01-02T00:00:00.000Z'),
+      new Date('2023-01-03T00:00:00.000Z'), // no ticker entry (gap)
+      new Date('2023-01-04T00:00:00.000Z'), // ticker entry but NaN close
+    ];
+    const aggregatedAmounts = [0, 0, 0]; // fully sold throughout
+    const ticker: Ticker = {
+      name: 'X',
+      currency: 'EUR',
+      dates: [new Date('2023-01-02T00:00:00.000Z'), new Date('2023-01-04T00:00:00.000Z')],
+      values: [100, NaN],
+      dividends: [],
+    };
+    // No NaN must leak in: holding nothing is worth 0 on every day.
+    expect(getPortfolioValues(dates, aggregatedAmounts, ticker)).toEqual([0, 0, 0]);
+  });
 });
 
 describe('getDividendPerQuarterByYear', () => {
