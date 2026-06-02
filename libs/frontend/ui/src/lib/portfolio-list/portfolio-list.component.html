@@ -16,6 +16,9 @@
       <div class="portfolio-info">
         <div class="portfolio-name">{{ portfolio.name }}</div>
         <div class="portfolio-count">{{ transactionCount(portfolio) }} transactions</div>
+        <div class="portfolio-value" *ngIf="portfolioStates?.[portfolio.id]?.summary?.portfolioValue">
+          {{ portfolioStates![portfolio.id].summary.portfolioValue | currency:baseCurrency:'symbol':'1.0-0' }}
+        </div>
       </div>
 
       <div class="portfolio-actions" (click)="$event.stopPropagation()">

@@ -1,5 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { MediaMatcher } from '@angular/cdk/layout';
 import { Store } from '@ngrx/store';
 import {
   createPortfolio,
@@ -29,20 +30,34 @@ import {
   CsvUploadResult,
 } from '../csv-upload-dialog/csv-upload-dialog.component';
 import { DialogService } from '../dialog/dialog.service';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'aws-portfolios',
   templateUrl: './portfolios.component.html',
   styleUrls: ['./portfolios.component.scss'],
-  imports: [CommonModule, PortfolioListComponent, PortfolioDetailComponent],
+  imports: [CommonModule, PortfolioListComponent, PortfolioDetailComponent, LucideAngularModule],
 })
-export class PortfoliosComponent implements OnInit {
+export class PortfoliosComponent implements OnInit, OnDestroy {
   portfolios$ = this.store.select(selectPortfoliosDbo);
   allPortfolioStates$ = this.store.select(selectAllPortfolioStates);
   baseCurrency$ = this.store.select(selectBaseCurrency);
   selectedPortfolioId: string | null = null;
+  showDetail = false;
 
-  constructor(private store: Store, private dialog: DialogService) {}
+  mobileQuery: MediaQueryList;
+  private _mobileQueryListener: () => void;
+
+  constructor(
+    private store: Store,
+    private dialog: DialogService,
+    changeDetectorRef: ChangeDetectorRef,
+    media: MediaMatcher,
+  ) {
+    this.mobileQuery = media.matchMedia('(max-width: 768px)');
+    this._mobileQueryListener = () => changeDetectorRef.detectChanges();
+    this.mobileQuery.addListener(this._mobileQueryListener);
+  }
 
   ngOnInit() {
     this.store.dispatch(getData());
@@ -51,6 +66,14 @@ export class PortfoliosComponent implements OnInit {
         this.selectedPortfolioId = portfolios[0].id;
       }
     });
+  }
+
+  ngOnDestroy() {
+    this.mobileQuery.removeListener(this._mobileQueryListener);
+  }
+
+  onBackToList() {
+    this.showDetail = false;
   }
 
   getSelectedPortfolio(portfolios: PortfolioDbo[]): PortfolioDbo | null {
@@ -66,6 +89,7 @@ export class PortfoliosComponent implements OnInit {
 
   onSelectPortfolio(id: string) {
     this.selectedPortfolioId = id;
+    this.showDetail = true;
   }
 
   onCreatePortfolio() {
