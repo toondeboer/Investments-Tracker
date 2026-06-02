@@ -2,6 +2,7 @@ import { PortfolioDbo, Stock, Summary, Ticker, TimeRange, Transaction, Transacti
 import {
   addLists,
   getCurrencies,
+  forwardFillValues,
   getDailyDates,
   getDividendPerQuarter,
   getDividendPerQuarterByYear,
@@ -509,6 +510,12 @@ export function computePortfolioState(
         returnDates, commissionTxFx, 0, preCommissionFx.value
       ).aggregatedValues;
     }
+
+    // Carry the last known value across the stock's own market-closed days, so
+    // that summing stocks on different calendars (e.g. NYSE vs Euronext) doesn't
+    // momentarily zero out the ones that are merely closed and corrupt the
+    // time-weighted return over the window.
+    returnPortfolioValues = forwardFillValues(returnPortfolioValues);
 
     const returnProfit = subtractLists(
       subtractLists(returnPortfolioValues, returnInvestedForProfit),
