@@ -187,6 +187,44 @@ describe('computePortfolioState', () => {
     expect(lastProfit).toBeCloseTo(195);
   });
 
+  it('keeps the aggregate return % sane when one position is fully sold at a large gain', () => {
+    // Regression: an active position worth little, aggregated with a fully-sold
+    // position carrying a large realized gain, used to divide total profit by the
+    // tiny current value -> thousands of percent. Time-weighted return fixes it.
+    //
+    //   ACTIVE:   buy 1 @ €100, still worth ~€100 (flat).
+    //   SOLD:     buy 10 @ €100 (€1000), price rises to €500, sell all @ €500
+    //             (€5000) -> realized €4000.
+    // Aggregate current value ≈ €100; total profit ≈ €4000. Old %: ~4000%.
+    const dbo: TransactionsDbo = {
+      stock: [
+        { ticker: 'ACTIVE', type: 'stock', date: '2023-01-10', amount: 1, value: 100, currency: 'EUR' },
+        { ticker: 'SOLD', type: 'stock', date: '2023-01-10', amount: 10, value: 1000, currency: 'EUR' },
+        { ticker: 'SOLD', type: 'stock', date: '2023-06-10', amount: -10, value: -5000, currency: 'EUR' },
+      ],
+      dividend: [],
+      commission: [],
+    };
+    const dates = getDailyDates(getStartDate(transactionsDboToStocks(dbo)), new Date());
+    const beforeJune = (d: Date) => d < new Date('2023-06-01T00:00:00.000Z');
+    const tickers = {
+      ACTIVE: { name: 'ACTIVE', currency: 'EUR', dates, values: dates.map(() => 100), dividends: [] } as Ticker,
+      // Price rises 100 -> 500 before the June sale, so the gain is a real market move.
+      SOLD: { name: 'SOLD', currency: 'EUR', dates, values: dates.map((d) => (beforeJune(d) ? 100 : 500)), dividends: [] } as Ticker,
+    };
+
+    const summary = computePortfolioState(dbo, tickers).summary;
+
+    // Absolute profit is unchanged/correct: 100 (active) + 4000 (realized) - 100 invested-net handled in profit.
+    expect(summary.portfolioValue).toBeCloseTo(100); // only the active position has value
+    expect(summary.totalReturn.absolute).toBeCloseTo(4000);
+    // The percentage is now a time-weighted blend bounded by the real gains —
+    // finite and nowhere near the old ~4000% blow-up.
+    expect(Number.isFinite(summary.totalReturn.percentage)).toBe(true);
+    expect(summary.totalReturn.percentage).toBeGreaterThan(0);
+    expect(summary.totalReturn.percentage).toBeLessThan(1000);
+  });
+
   it('returns an empty portfolio for no transactions', () => {
     const result = computePortfolioState(
       { stock: [], dividend: [], commission: [] },

@@ -67,6 +67,7 @@ export class ActiveTickersComponent implements OnChanges {
     // Merge full-history data (same monthly dates for all stocks in the portfolio).
     const allTimeDates = chartData1.allTimeDates;
     const allTimePortfolioValues = addLists(chartData1.allTimePortfolioValues, chartData2.allTimePortfolioValues);
+    const allTimeInvested = addLists(chartData1.allTimeInvested, chartData2.allTimeInvested);
     const allTimeProfit = addLists(chartData1.allTimeProfit, chartData2.allTimeProfit);
 
     return {
@@ -149,9 +150,10 @@ export class ActiveTickersComponent implements OnChanges {
       profit,
       allTimeDates,
       allTimePortfolioValues,
+      allTimeInvested,
       allTimeProfit,
       // Yield always computed from full-history monthly data regardless of range.
-      yieldPerYear: getYieldPerYear(allTimeDates, allTimePortfolioValues, allTimeProfit),
+      yieldPerYear: getYieldPerYear(allTimeDates, allTimePortfolioValues, allTimeInvested, allTimeProfit),
     };
   }
 }

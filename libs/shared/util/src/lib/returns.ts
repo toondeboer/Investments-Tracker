@@ -7,33 +7,89 @@ import {
   isSameDay,
 } from './core';
 
+/**
+ * Growth factor of one TWR sub-period [i-1, i]. Returns 1 (a no-op for the
+ * chained product) when the period can't contribute a market return:
+ *   - no capital at the start (Vprev <= 0): a position is being established or
+ *     was previously fully sold — the deposit itself is not a return;
+ *   - any input is non-finite (e.g. a missing price in an aggregate series).
+ * Otherwise strips the external cash flow out of the end value so only the
+ * price-driven change is measured:  factor = (Vcurr - flow) / Vprev.
+ *
+ *   flow  = invested[i] - invested[i-1]   (buy +, sell −)
+ */
+function subPeriodFactor(
+  values: number[],
+  invested: number[],
+  i: number
+): number {
+  const vPrev = values[i - 1];
+  const vCurr = values[i];
+  const flow = invested[i] - invested[i - 1];
+  if (
+    !Number.isFinite(vPrev) ||
+    !Number.isFinite(vCurr) ||
+    !Number.isFinite(flow) ||
+    vPrev <= 0
+  ) {
+    return 1;
+  }
+  return (vCurr - flow) / vPrev;
+}
+
+/**
+ * Time-weighted return (TWR) over a value series with external cash flows.
+ *   values[i]   = holdings market value at point i (display currency)
+ *   invested[i] = cumulative net capital invested up to point i (the
+ *                 stock-transaction aggregate), so Δinvested[i] is the external
+ *                 cash flow into holdings at point i (buy +, sell −).
+ *
+ * Chains each sub-period's growth factor and returns the cumulative return as a
+ * fraction (0.2 = +20%) over [0, n-1]. Insensitive to the timing/size of cash
+ * flows, so it never divides cumulative profit by a tiny current value — a
+ * fully-sold position's realized gain is captured in its sale-period factor and
+ * later zero-holding periods are skipped. Empty/single-point/no-capital → 0.
+ */
+export function timeWeightedReturn(
+  values: number[],
+  invested: number[]
+): number {
+  if (values.length < 2) return 0;
+  let product = 1;
+  for (let i = 1; i < values.length; i++) {
+    product *= subPeriodFactor(values, invested, i);
+  }
+  return product - 1;
+}
+
 export function getYieldPerYear(
   dates: Date[],
   portfolioValues: number[],
+  invested: number[],
   profitValues: number[]
 ): { years: string[]; yields: number[]; profit: number[] } {
   const years: string[] = [];
   const yields: number[] = [];
   const profit: number[] = [];
   let profitLastYear = 0;
+  // Running TWR product for the current calendar year. Sub-period factors are
+  // computed across the year boundary (point i-1 may be in the prior year), so
+  // each year's return chains correctly from the prior year-end value.
+  let yearProduct = 1;
   dates.forEach((date, index) => {
-    if (
-      (date.getUTCMonth() === 11 && date.getUTCDate() === 31) ||
-      index + 1 === dates.length
-    ) {
+    if (index > 0) {
+      yearProduct *= subPeriodFactor(portfolioValues, invested, index);
+    }
+    const isLast = index + 1 === dates.length;
+    const isYearEnd = isLast || dates[index + 1].getUTCFullYear() !== date.getUTCFullYear();
+    if (isYearEnd) {
       years.push(date.getUTCFullYear().toString());
       const profitThisYear =
         getMostRecentValueAtIndex(profitValues, index) - profitLastYear;
       profit.push(profitThisYear);
-      // Guard the denominator: a zero/non-finite portfolio value (no holdings
-      // that year, or missing prices) yields 0% rather than Infinity/NaN.
-      const portfolioValueAtIndex = getMostRecentValueAtIndex(portfolioValues, index);
-      yields.push(
-        Number.isFinite(portfolioValueAtIndex) && portfolioValueAtIndex !== 0
-          ? (100 * profitThisYear) / portfolioValueAtIndex
-          : 0
-      );
-      profitLastYear = profitThisYear;
+      yields.push((yearProduct - 1) * 100);
+      profitLastYear = getMostRecentValueAtIndex(profitValues, index);
+      yearProduct = 1;
     }
   });
   return { years, yields, profit };
@@ -118,25 +174,25 @@ export function getPortfolioValuesByPeriod(
 
 export function getReturn(
   portfolioValues: number[],
+  invested: number[],
   profit: number[],
   days: number
 ): Return {
   const mostRecentProfit = getMostRecentValueFromList(profit);
-  const profitDaysAgo = getMostRecentValueFromList(
-    profit.slice(
-      0,
-      mostRecentProfit.index - days < 0 ? 0 : mostRecentProfit.index - days
-    )
-  );
+  const startIndex =
+    mostRecentProfit.index - days < 0 ? 0 : mostRecentProfit.index - days;
+  const profitDaysAgo = getMostRecentValueFromList(profit.slice(0, startIndex));
   const absolute = mostRecentProfit.value - profitDaysAgo.value;
-  const mostRecentPortfolioValue =
-    getMostRecentValueFromList(portfolioValues).value;
 
-  return {
-    absolute,
-    percentage:
-      Number.isFinite(mostRecentPortfolioValue) && mostRecentPortfolioValue !== 0
-        ? (absolute / mostRecentPortfolioValue) * 100
-        : 0,
-  };
+  // Percentage is the time-weighted return over the trailing window
+  // [startIndex, mostRecentProfit.index]; cash flows in the window are stripped
+  // out so a buy/sell inside it can't distort the figure.
+  const end = mostRecentProfit.index + 1;
+  const percentage =
+    timeWeightedReturn(
+      portfolioValues.slice(startIndex, end),
+      invested.slice(startIndex, end)
+    ) * 100;
+
+  return { absolute, percentage };
 }

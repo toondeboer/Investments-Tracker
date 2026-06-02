@@ -47,6 +47,7 @@ export type ChartData = {
   // Full-history monthly data (independent of selected range) for yield/dividend charts.
   allTimeDates: Date[];
   allTimePortfolioValues: number[];
+  allTimeInvested: number[];
   allTimeProfit: number[];
 };
 
