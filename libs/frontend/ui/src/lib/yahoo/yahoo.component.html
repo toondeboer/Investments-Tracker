@@ -52,7 +52,7 @@
 
     <div class="chart-card">
       <aws-chart
-        [x]="dates"
+        [x]="chartData?.allTimeDates ?? []"
         [y]="chartData?.dividend?.transactionValues ?? []"
         label="Dividend per Quarter"
         [showSymbols]="true"
@@ -62,7 +62,7 @@
 
     <div class="chart-card">
       <aws-chart
-        [x]="dates"
+        [x]="chartData?.allTimeDates ?? []"
         [y]="chartData?.dividend?.aggregatedValues ?? []"
         label="Cumulative Dividend"
         [currencySymbol]="currencySymbol"

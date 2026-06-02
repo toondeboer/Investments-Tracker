@@ -44,6 +44,10 @@ export type ChartData = {
   portfolioValues: number[];
   profit: number[];
   yieldPerYear: { years: string[]; yields: number[]; profit: number[] };
+  // Full-history monthly data (independent of selected range) for yield/dividend charts.
+  allTimeDates: Date[];
+  allTimePortfolioValues: number[];
+  allTimeProfit: number[];
 };
 
 export type TransactionChartData = {
@@ -121,6 +125,19 @@ export type TransactionDbo = {
   amount: number;
   value: number;
   currency: string;
+};
+
+export type TimeRange = '1M' | '3M' | '6M' | 'YTD' | '1Y' | '5Y' | 'ALL';
+export type ChartGranularity = 'daily' | 'weekly' | 'monthly';
+
+export const TIME_RANGE_LABELS: Record<TimeRange, string> = {
+  '1M': '1M',
+  '3M': '3M',
+  '6M': '6M',
+  'YTD': 'YTD',
+  '1Y': '1Y',
+  '5Y': '5Y',
+  'ALL': 'All',
 };
 
 export type YahooObject = {

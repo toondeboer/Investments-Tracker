@@ -33,11 +33,12 @@ import {
   saveTransactionSuccess,
   setChartData,
   setSelectedPortfolios,
+  setTimeRange,
   updateSettings,
   updateSettingsFailure,
   updateSettingsSuccess,
 } from './state.actions';
-import { PortfolioDbo, Ticker, UserSettingsDbo } from '@aws/util';
+import { PortfolioDbo, Ticker, TimeRange, UserSettingsDbo } from '@aws/util';
 
 export const featureKey = 'state';
 
@@ -51,8 +52,9 @@ export interface FeatureState {
   loading: boolean;
   error: string | null;
   lastFetched: number | null;
-  // UI-only filter: which portfolios are shown on dashboard (not persisted).
+  // UI-only filters: not persisted to the backend.
   selectedPortfolioIds: string[] | 'all';
+  timeRange: TimeRange;
 }
 
 export const initialState: FeatureState = {
@@ -63,6 +65,7 @@ export const initialState: FeatureState = {
   error: null,
   lastFetched: null,
   selectedPortfolioIds: 'all',
+  timeRange: '1Y',
 };
 
 export const reducer = createReducer(
@@ -93,6 +96,10 @@ export const reducer = createReducer(
   on(setSelectedPortfolios, (state, { ids }) => ({
     ...state,
     selectedPortfolioIds: ids,
+  })),
+  on(setTimeRange, (state, { range }) => ({
+    ...state,
+    timeRange: range,
   })),
   // --- loading / error tracking ---
   on(

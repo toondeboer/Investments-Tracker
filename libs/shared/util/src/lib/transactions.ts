@@ -7,7 +7,7 @@ import {
   Transactions,
   TransactionsDbo,
 } from './types';
-import { isSameDay } from './core';
+import { isBeforeDay, isOnOrBeforeDay, isSameDay } from './core';
 
 function initDefaultStock(ticker: string): Stock {
   return {
@@ -67,6 +67,9 @@ function initDefaultStock(ticker: string): Stock {
       portfolioValues: [],
       profit: [],
       yieldPerYear: { years: [], yields: [], profit: [] },
+      allTimeDates: [],
+      allTimePortfolioValues: [],
+      allTimeProfit: [],
     },
     currency: { value: 'EUR' },
   };
@@ -222,7 +225,9 @@ export function sortTransactions(transactions: Transaction[]): Transaction[] {
 
 export function getTransactionAmountsAndValues(
   dates: Date[],
-  transactions: Transaction[]
+  transactions: Transaction[],
+  initialAmount = 0,
+  initialValue = 0
 ): {
   transactionAmounts: number[];
   transactionValues: number[];
@@ -233,27 +238,34 @@ export function getTransactionAmountsAndValues(
   const values: number[] = [];
   const aggregatedAmounts: number[] = [];
   const aggregatedValues: number[] = [];
-  let index = 0;
-  let currentTransaction: Transaction = transactions[index];
 
   if (transactions.length === 0) {
     const nanArray = Array(dates.length).fill(NaN);
-    const zerosArray = Array(dates.length).fill(0);
     return {
       transactionAmounts: nanArray,
       transactionValues: nanArray,
-      aggregatedAmounts: zerosArray,
-      aggregatedValues: zerosArray,
+      aggregatedAmounts: Array(dates.length).fill(initialAmount),
+      aggregatedValues: Array(dates.length).fill(initialValue),
     };
   }
 
+  // Skip pre-range transactions (those before the first date in the window).
+  let index = 0;
+  if (dates.length > 0) {
+    while (index < transactions.length && isBeforeDay(transactions[index].date, dates[0])) {
+      index++;
+    }
+  }
+
+  let currentTransaction: Transaction = transactions[index];
+
   for (const date of dates) {
-    if (!isSameDay(date, currentTransaction.date)) {
+    if (index >= transactions.length || !isSameDay(date, currentTransaction.date)) {
       if (aggregatedAmounts.length === 0) {
         amounts.push(0);
         values.push(0);
-        aggregatedAmounts.push(0);
-        aggregatedValues.push(0);
+        aggregatedAmounts.push(initialAmount);
+        aggregatedValues.push(initialValue);
       } else {
         amounts.push(NaN);
         values.push(NaN);
@@ -263,29 +275,20 @@ export function getTransactionAmountsAndValues(
     } else {
       let newAmount = 0;
       let newValue = 0;
-      while (isSameDay(date, currentTransaction.date)) {
+      while (index < transactions.length && isSameDay(date, currentTransaction.date)) {
         newAmount += currentTransaction.amount;
         newValue += currentTransaction.value;
-
         index += 1;
-        if (index >= transactions.length) {
-          break;
+        if (index < transactions.length) {
+          currentTransaction = transactions[index];
         }
-        currentTransaction = transactions[index];
       }
       amounts.push(newAmount);
       values.push(newValue);
-      if (aggregatedAmounts.length === 0) {
-        aggregatedAmounts.push(newAmount);
-        aggregatedValues.push(newValue);
-      } else {
-        aggregatedAmounts.push(
-          aggregatedAmounts[aggregatedAmounts.length - 1] + newAmount
-        );
-        aggregatedValues.push(
-          aggregatedValues[aggregatedValues.length - 1] + newValue
-        );
-      }
+      const prevAmount = aggregatedAmounts.length === 0 ? initialAmount : aggregatedAmounts[aggregatedAmounts.length - 1];
+      const prevValue = aggregatedValues.length === 0 ? initialValue : aggregatedValues[aggregatedValues.length - 1];
+      aggregatedAmounts.push(prevAmount + newAmount);
+      aggregatedValues.push(prevValue + newValue);
     }
   }
   return {
@@ -294,6 +297,82 @@ export function getTransactionAmountsAndValues(
     aggregatedAmounts,
     aggregatedValues,
   };
+}
+
+/**
+ * Period-based variant of getTransactionAmountsAndValues for weekly/monthly
+ * granularity. Each periodDate is the END of a period; transactions are
+ * accumulated across the whole period rather than matched to an exact day.
+ * Transactions before rangeStart are captured in the initial snapshot so
+ * aggregatedAmounts/Values start from the correct historical baseline.
+ */
+export function getTransactionAmountsAndValuesByPeriod(
+  periodDates: Date[],
+  transactions: Transaction[],
+  rangeStart: Date
+): {
+  transactionAmounts: number[];
+  transactionValues: number[];
+  aggregatedAmounts: number[];
+  aggregatedValues: number[];
+} {
+  const transactionAmounts: number[] = [];
+  const transactionValues: number[] = [];
+  const aggregatedAmounts: number[] = [];
+  const aggregatedValues: number[] = [];
+
+  if (periodDates.length === 0) {
+    return { transactionAmounts, transactionValues, aggregatedAmounts, aggregatedValues };
+  }
+
+  // Accumulate all pre-range transactions into the running snapshot.
+  let runningAmount = 0;
+  let runningValue = 0;
+  let txIdx = 0;
+  while (txIdx < transactions.length && isBeforeDay(transactions[txIdx].date, rangeStart)) {
+    runningAmount += transactions[txIdx].amount;
+    runningValue += transactions[txIdx].value;
+    txIdx++;
+  }
+
+  let prevRunningAmount = runningAmount;
+  let prevRunningValue = runningValue;
+
+  for (const periodDate of periodDates) {
+    while (txIdx < transactions.length && isOnOrBeforeDay(transactions[txIdx].date, periodDate)) {
+      runningAmount += transactions[txIdx].amount;
+      runningValue += transactions[txIdx].value;
+      txIdx++;
+    }
+
+    const periodTxAmount = runningAmount - prevRunningAmount;
+    const periodTxValue = runningValue - prevRunningValue;
+
+    transactionAmounts.push(periodTxAmount !== 0 ? periodTxAmount : NaN);
+    transactionValues.push(periodTxValue !== 0 ? periodTxValue : NaN);
+    aggregatedAmounts.push(runningAmount);
+    aggregatedValues.push(runningValue);
+
+    prevRunningAmount = runningAmount;
+    prevRunningValue = runningValue;
+  }
+
+  return { transactionAmounts, transactionValues, aggregatedAmounts, aggregatedValues };
+}
+
+/** Sums transaction amounts/values for all transactions strictly before asOf. */
+export function computePreRangeSnapshot(
+  transactions: Transaction[],
+  asOf: Date
+): { amount: number; value: number } {
+  let amount = 0, value = 0;
+  for (const tx of transactions) {
+    if (isBeforeDay(tx.date, asOf)) {
+      amount += tx.amount;
+      value += tx.value;
+    }
+  }
+  return { amount, value };
 }
 
 export function getStartDate(stocks: { [ticker: string]: Stock }): Date {

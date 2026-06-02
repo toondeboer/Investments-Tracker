@@ -82,7 +82,8 @@ describe('computePortfolioState', () => {
 
     // Stage-1 totals are preserved through stage 2.
     expect(stock.summary.totalInvested).toBe(200);
-    expect(stock.chartData.portfolioValues).toHaveLength(dates.length);
+    // portfolioValues must always be aligned with the dates array returned.
+    expect(stock.chartData.portfolioValues).toHaveLength(result.dates.length);
   });
 
   it('returns an empty portfolio for no transactions', () => {

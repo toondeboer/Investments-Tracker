@@ -1,11 +1,15 @@
 import { Component } from '@angular/core';
 import {
   selectBaseCurrency,
+  selectLoading,
   selectPortfoliosDbo,
   selectSelectedPortfolioIds,
   selectState,
+  selectTimeRange,
   setSelectedPortfolios,
+  setTimeRange,
 } from '@aws/state';
+import { TIME_RANGE_LABELS, TimeRange } from '@aws/util';
 import { Store } from '@ngrx/store';
 import { SummaryComponent } from '../summary/summary.component';
 import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
@@ -22,6 +26,11 @@ export class DashboardComponent {
   portfolios$ = this.store.select(selectPortfoliosDbo);
   selectedPortfolioIds$ = this.store.select(selectSelectedPortfolioIds);
   baseCurrency$ = this.store.select(selectBaseCurrency);
+  loading$ = this.store.select(selectLoading);
+  timeRange$ = this.store.select(selectTimeRange);
+
+  readonly ranges: TimeRange[] = ['1M', '3M', '6M', 'YTD', '1Y', '5Y', 'ALL'];
+  readonly rangeLabels = TIME_RANGE_LABELS;
 
   constructor(private store: Store) {}
 
@@ -42,5 +51,9 @@ export class DashboardComponent {
     }
     const ids = current.length === allIds.length ? 'all' : current;
     this.store.dispatch(setSelectedPortfolios({ ids }));
+  }
+
+  selectRange(range: TimeRange) {
+    this.store.dispatch(setTimeRange({ range }));
   }
 }
