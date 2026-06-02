@@ -405,6 +405,14 @@ export function getCurrencies(stocks: { [ticker: string]: Stock }): string[] {
   return [...set];
 }
 
+/**
+ * Display symbol for a display-currency code. EUR and USD are the supported
+ * display currencies; anything else falls back to the euro symbol.
+ */
+export function getCurrencySymbol(currency: string | null | undefined): string {
+  return currency === 'USD' ? '$' : '€';
+}
+
 export function transactionToTransactionDbo(tx: Transaction): TransactionDbo {
   return {
     ticker: tx.ticker,

@@ -11,6 +11,7 @@ import {
 import {
   addLists,
   getCurrencies,
+  getCurrencySymbol,
   getDailyDates,
   getDividendPerQuarterByYear,
   getDividendTtmPerQuarter,
@@ -144,21 +145,29 @@ describe('parseCsvInput', () => {
 });
 
 describe('getMostRecentValueFromList', () => {
-  it('returns the last truthy value and its index', () => {
+  it('returns the last present value and its index', () => {
     expect(getMostRecentValueFromList([1, 2, 3])).toEqual({ value: 3, index: 2 });
   });
 
-  it('skips trailing zeros and NaNs (treated as "no value yet")', () => {
-    expect(getMostRecentValueFromList([1, 2, 0])).toEqual({ value: 2, index: 1 });
+  it('skips trailing NaN/missing placeholders', () => {
     expect(getMostRecentValueFromList([5, NaN, NaN])).toEqual({
       value: 5,
       index: 0,
     });
   });
 
-  it('returns the zero fallback for empty / all-falsy lists', () => {
-    expect(getMostRecentValueFromList([])).toEqual({ value: 0, index: 0 });
-    expect(getMostRecentValueFromList([0, 0, 0])).toEqual({ value: 0, index: 0 });
+  it('treats a legitimate trailing 0 as a real value (e.g. sold-out position)', () => {
+    // A 0 is NOT a gap — a fully-sold position has 0 shares now and must not
+    // walk back to the stale earlier count.
+    expect(getMostRecentValueFromList([1, 2, 0])).toEqual({ value: 0, index: 2 });
+    expect(getMostRecentValueFromList([0, 0, 0])).toEqual({ value: 0, index: 2 });
+    // ...but a 0 BEHIND a NaN still skips the NaN to reach the 0.
+    expect(getMostRecentValueFromList([3, 0, NaN])).toEqual({ value: 0, index: 1 });
+  });
+
+  it('returns { value: 0, index: -1 } when there is no present value', () => {
+    expect(getMostRecentValueFromList([])).toEqual({ value: 0, index: -1 });
+    expect(getMostRecentValueFromList([NaN, NaN])).toEqual({ value: 0, index: -1 });
   });
 });
 
@@ -218,11 +227,19 @@ describe('getQuarter', () => {
 });
 
 describe('isSameDay', () => {
-  it('ignores the time component', () => {
+  it('ignores the time component within the same UTC day', () => {
     expect(
-      isSameDay(new Date(2023, 0, 2, 9, 30), new Date(2023, 0, 2, 23, 59))
+      isSameDay(
+        new Date('2023-01-02T09:30:00.000Z'),
+        new Date('2023-01-02T23:59:00.000Z')
+      )
     ).toBe(true);
-    expect(isSameDay(new Date(2023, 0, 2), new Date(2023, 0, 3))).toBe(false);
+    expect(
+      isSameDay(
+        new Date('2023-01-02T00:00:00.000Z'),
+        new Date('2023-01-03T00:00:00.000Z')
+      )
+    ).toBe(false);
   });
 });
 
@@ -296,6 +313,24 @@ describe('getPortfolioValues', () => {
       660, // 110 * 6 shares
     ]);
   });
+
+  it('values a 0-share (sold-out) day at 0 even with a missing or absent price', () => {
+    const dates = [
+      new Date('2023-01-02T00:00:00.000Z'),
+      new Date('2023-01-03T00:00:00.000Z'), // no ticker entry (gap)
+      new Date('2023-01-04T00:00:00.000Z'), // ticker entry but NaN close
+    ];
+    const aggregatedAmounts = [0, 0, 0]; // fully sold throughout
+    const ticker: Ticker = {
+      name: 'X',
+      currency: 'EUR',
+      dates: [new Date('2023-01-02T00:00:00.000Z'), new Date('2023-01-04T00:00:00.000Z')],
+      values: [100, NaN],
+      dividends: [],
+    };
+    // No NaN must leak in: holding nothing is worth 0 on every day.
+    expect(getPortfolioValues(dates, aggregatedAmounts, ticker)).toEqual([0, 0, 0]);
+  });
 });
 
 describe('getDividendPerQuarterByYear', () => {
@@ -351,6 +386,16 @@ describe('getYieldPerYear', () => {
       profit: [20, 30], // 20-0, then 50-20
       yields: [20, 15], // 100*20/100, then 100*30/200
     });
+  });
+
+  it('returns 0% yield (not Infinity/NaN) when the portfolio value is 0', () => {
+    const dates = [new Date(2023, 11, 31), new Date(2024, 0, 1)];
+    const portfolioValues = [0, 0];
+    const profitValues = [10, 20];
+
+    const result = getYieldPerYear(dates, portfolioValues, profitValues);
+    expect(result.yields).toEqual([0, 0]);
+    result.yields.forEach((y) => expect(Number.isFinite(y)).toBe(true));
   });
 });
 
@@ -464,6 +509,15 @@ describe('transactionsDboToStocks / getStartDate / getCurrencies', () => {
   });
 });
 
+describe('getCurrencySymbol', () => {
+  it('maps USD to $ and falls back to € otherwise', () => {
+    expect(getCurrencySymbol('USD')).toBe('$');
+    expect(getCurrencySymbol('EUR')).toBe('€');
+    expect(getCurrencySymbol(undefined)).toBe('€');
+    expect(getCurrencySymbol(null)).toBe('€');
+  });
+});
+
 describe('yahooObjectToTicker', () => {
   it('maps a Yahoo chart response into a Ticker (nulls -> NaN, dividends extracted)', () => {
     const ts1 = 1696550400; // 2023-10-06 UTC
@@ -505,5 +559,29 @@ describe('yahooObjectToTicker', () => {
       dividends: [{ date: new Date(ts1 * 1000), amountPerShare: 1.5 }],
     };
     expect(yahooObjectToTicker(yahooObject)).toEqual(expected);
+  });
+
+  it('trims to the shorter array when timestamps and closes differ in length', () => {
+    const ts1 = 1696550400;
+    const ts2 = 1696636800;
+    const yahooObject: YahooObject = {
+      symbol: 'AAPL',
+      data: {
+        chart: {
+          result: [
+            {
+              meta: { currency: 'USD', symbol: 'AAPL' },
+              timestamp: [ts1, ts2], // 2 timestamps
+              indicators: { quote: [{ close: [150 ] } as any] }, // only 1 close
+            } as any,
+          ],
+        },
+      },
+    };
+
+    const result = yahooObjectToTicker(yahooObject);
+    // Aligned to the shorter length (1) so dates[i] always matches values[i].
+    expect(result.values).toEqual([150]);
+    expect(result.dates).toEqual([new Date(ts1 * 1000)]);
   });
 });

@@ -1,4 +1,4 @@
-import { PortfolioDbo, Stock, Summary, Ticker, TimeRange, Transactions, TransactionsDbo } from './types';
+import { PortfolioDbo, Stock, Summary, Ticker, TimeRange, Transaction, Transactions, TransactionsDbo } from './types';
 import {
   addLists,
   getCurrencies,
@@ -21,6 +21,7 @@ import {
   computePreRangeSnapshot,
   getYieldPerYear,
   isBeforeDay,
+  isOnOrBeforeDay,
   isSameDay,
   multiplyLists,
   subtractLists,
@@ -85,6 +86,57 @@ function getFxRates(dates: Date[], fxTicker: Ticker): number[] {
   }
 
   return rates;
+}
+
+/**
+ * Returns the FX rate to use for a single calendar date, using the same
+ * forward-fill (last rate on or before the date) then backward-fill (first
+ * valid rate when the date precedes all data) strategy as {@link getFxRates}.
+ * Zero/NaN values are treated as missing (Yahoo omits rates on weekends).
+ *
+ * Used to convert each transaction's value at *its own date's* rate, so cost
+ * basis is locked at the spot rate that applied when the cash actually moved.
+ */
+function getFxRateForDate(fxTicker: Ticker, date: Date): number {
+  let rate = NaN;
+  for (let i = 0; i < fxTicker.dates.length; i++) {
+    if (isOnOrBeforeDay(fxTicker.dates[i], date)) {
+      const v = fxTicker.values[i];
+      if (!isNaN(v) && v > 0) rate = v;
+    } else {
+      break; // ticker dates are sorted ascending
+    }
+  }
+  if (isNaN(rate)) {
+    // Date precedes all FX data — backward-fill from the first valid rate.
+    for (let i = 0; i < fxTicker.values.length; i++) {
+      const v = fxTicker.values[i];
+      if (!isNaN(v) && v > 0) { rate = v; break; }
+    }
+  }
+  if (isNaN(rate)) {
+    throw new Error(
+      `No FX rate data available for ${fxTicker.name}. ` +
+      `Ensure the symbol is valid and Yahoo Finance data has loaded.`
+    );
+  }
+  return rate;
+}
+
+/**
+ * Returns a copy of the transactions with each value converted to the display
+ * currency at the FX rate on that transaction's own date (times the sub-unit
+ * multiplier, e.g. 0.01 for GBp). Share amounts are left untouched.
+ */
+function convertTransactionValues(
+  txs: Transaction[],
+  fxTicker: Ticker,
+  multiplier: number
+): Transaction[] {
+  return txs.map((tx) => ({
+    ...tx,
+    value: tx.value * getFxRateForDate(fxTicker, tx.date) * multiplier,
+  }));
 }
 
 export interface PortfolioState {
@@ -166,9 +218,16 @@ export function computePortfolioState(
     dates = getDailyDates(effectiveRangeStart, today);
   }
 
+  // The daily pre-range snapshot baseline must be everything STRICTLY BEFORE the
+  // first chart date. getDailyDates starts one day before effectiveRangeStart,
+  // so the baseline cutoff is dates[0] (not effectiveRangeStart) — otherwise a
+  // transaction landing exactly on dates[0] is counted both in the snapshot and
+  // in-window, making the summary totals wrongly depend on the selected range.
+  const windowStart = dates[0] ?? effectiveRangeStart;
+
   // 30-day daily window used for return calculations (always accurate).
   const returnWindowStart = new Date(today);
-  returnWindowStart.setDate(returnWindowStart.getDate() - 30);
+  returnWindowStart.setUTCDate(returnWindowStart.getUTCDate() - 30);
   const returnDates = getDailyDates(
     isBeforeDay(startDate, returnWindowStart) ? returnWindowStart : startDate,
     today
@@ -185,9 +244,9 @@ export function computePortfolioState(
 
     // For daily ranges, pre-compute historical holdings before the range window
     // so that aggregatedAmounts/aggregatedValues start from the correct baseline.
-    const stockSnapshot = computePreRangeSnapshot(t.stock, effectiveRangeStart);
-    const dividendSnapshot = computePreRangeSnapshot(t.dividend, effectiveRangeStart);
-    const commissionSnapshot = computePreRangeSnapshot(t.commission, effectiveRangeStart);
+    const stockSnapshot = computePreRangeSnapshot(t.stock, windowStart);
+    const dividendSnapshot = computePreRangeSnapshot(t.dividend, windowStart);
+    const commissionSnapshot = computePreRangeSnapshot(t.commission, windowStart);
 
     // Chart-resolution data for this stock.
     const stockAmountsAndValues = granularity === 'daily'
@@ -293,6 +352,16 @@ export function computePortfolioState(
     const fxTicker = fxSymbol ? tickers[fxSymbol] : undefined;
     const m = fxMultiplier ?? 1;
 
+    // Transactions with each value pre-converted at its own date's FX rate, so
+    // cost basis / commission / dividends are locked at the spot rate that
+    // applied when the cash moved (spot-at-purchase). Market value, by
+    // contrast, is converted at the current/per-date spot rate below.
+    const fxConvert = fxTicker
+      ? (value: number, date: Date) => value * getFxRateForDate(fxTicker, date) * m
+      : undefined;
+    const stockTxFx = fxTicker ? convertTransactionValues(t.stock, fxTicker, m) : t.stock;
+    const commissionTxFx = fxTicker ? convertTransactionValues(t.commission, fxTicker, m) : t.commission;
+
     let portfolioValues = portfolioValuesNative;
     let investedForProfit = stock.chartData.stock.aggregatedValues;
     let commissionForProfit = stock.chartData.commission.aggregatedValues;
@@ -306,55 +375,52 @@ export function computePortfolioState(
     const allTimePortfolioValuesNative = getPortfolioValuesByPeriod(allTimeDates, allTimeStockData.aggregatedAmounts, ticker);
     const allTimeCommissionData = getTransactionAmountsAndValuesByPeriod(allTimeDates, t.commission, startDate);
     const allTimeDividendBase = updateDividendsByPeriod(
-      allTimeStockData.aggregatedAmounts, ticker, allTimeDates, startDate, startDate
+      allTimeStockData.aggregatedAmounts, ticker, allTimeDates, startDate, startDate, fxConvert
     );
 
     let allTimePortfolioValues = allTimePortfolioValuesNative;
     let allTimeInvested = allTimeStockData.aggregatedValues;
     let allTimeCommissionAgg = allTimeCommissionData.aggregatedValues;
-    let allTimeDividendPerQuarterByYear = allTimeDividendBase.perQuarterByYear;
-    let allTimeDividendPerQuarter = allTimeDividendBase.perQuarter;
-    let allTimeDividendTtmPerQuarter = allTimeDividendBase.ttmPerQuarter;
-    // All dividend arrays use full-history monthly data so line charts are range-independent.
-    let dividendTransactionValues = allTimeDividendBase.transactionValues;
+    // Dividends are already in the display currency (fxConvert applied at the
+    // ex-date inside updateDividendsByPeriod), so every dividend array below is
+    // taken straight from the converted base — no second per-period scaling.
+    const allTimeDividendPerQuarterByYear = allTimeDividendBase.perQuarterByYear;
+    const allTimeDividendPerQuarter = allTimeDividendBase.perQuarter;
+    const allTimeDividendTtmPerQuarter = allTimeDividendBase.ttmPerQuarter;
+    const dividendTransactionValues = allTimeDividendBase.transactionValues;
     const dividendTransactionAmounts = allTimeDividendBase.transactionAmounts;
-    let dividendAggregatedValues = allTimeDividendBase.aggregatedValues;
+    const dividendAggregatedValues = allTimeDividendBase.aggregatedValues;
     const dividendAggregatedAmounts = allTimeDividendBase.aggregatedAmounts;
-    let allTimeTotalDividend = getMostRecentValueFromList(allTimeDividendBase.aggregatedValues).value;
+    const allTimeTotalDividend = getMostRecentValueFromList(allTimeDividendBase.aggregatedValues).value;
 
     if (fxTicker) {
+      // Market value: convert at the current/per-date spot rate.
       const fxRates = getFxRates(dates, fxTicker);
       const scaledRates = m === 1 ? fxRates : fxRates.map(r => r * m);
       portfolioValues = multiplyLists(portfolioValuesNative, scaledRates);
-      investedForProfit = multiplyLists(stock.chartData.stock.aggregatedValues, scaledRates);
-      commissionForProfit = multiplyLists(stock.chartData.commission.aggregatedValues, scaledRates);
-      stockTransactionValues = multiplyLists(stock.chartData.stock.transactionValues, scaledRates);
-      commissionTransactionValues = multiplyLists(stock.chartData.commission.transactionValues, scaledRates);
       const lastScaledRate = getMostRecentValueFromList(scaledRates).value;
       currentSharePrice = currentSharePrice * lastScaledRate;
 
-      // FX-convert all-time monthly data.
       const allTimeFxRates = getFxRates(allTimeDates, fxTicker);
       const allTimeScaledRates = m === 1 ? allTimeFxRates : allTimeFxRates.map(r => r * m);
       allTimePortfolioValues = multiplyLists(allTimePortfolioValuesNative, allTimeScaledRates);
-      allTimeInvested = multiplyLists(allTimeStockData.aggregatedValues, allTimeScaledRates);
-      allTimeCommissionAgg = multiplyLists(allTimeCommissionData.aggregatedValues, allTimeScaledRates);
-      dividendTransactionValues = multiplyLists(allTimeDividendBase.transactionValues, allTimeScaledRates);
-      dividendAggregatedValues = multiplyLists(allTimeDividendBase.aggregatedValues, allTimeScaledRates);
-      allTimeTotalDividend = getMostRecentValueFromList(dividendAggregatedValues).value;
-      const lastAllTimeRate = getMostRecentValueFromList(allTimeScaledRates).value;
-      allTimeDividendPerQuarterByYear = allTimeDividendBase.perQuarterByYear.map(pqby => ({
-        year: pqby.year,
-        data: pqby.data.map(v => v * lastAllTimeRate),
-      }));
-      allTimeDividendPerQuarter = {
-        ...allTimeDividendBase.perQuarter,
-        dividends: allTimeDividendBase.perQuarter.dividends.map(v => v * lastAllTimeRate),
-      };
-      allTimeDividendTtmPerQuarter = {
-        ...allTimeDividendBase.ttmPerQuarter,
-        dividends: allTimeDividendBase.ttmPerQuarter.dividends.map(v => v * lastAllTimeRate),
-      };
+
+      // Cost basis: re-aggregate from the spot-at-purchase transaction values.
+      const stockSnapFx = computePreRangeSnapshot(stockTxFx, windowStart);
+      const commissionSnapFx = computePreRangeSnapshot(commissionTxFx, windowStart);
+      const stockAggFx = granularity === 'daily'
+        ? getTransactionAmountsAndValues(dates, stockTxFx, stockSnapFx.amount, stockSnapFx.value)
+        : getTransactionAmountsAndValuesByPeriod(dates, stockTxFx, effectiveRangeStart);
+      const commissionAggFx = granularity === 'daily'
+        ? getTransactionAmountsAndValues(dates, commissionTxFx, commissionSnapFx.amount, commissionSnapFx.value)
+        : getTransactionAmountsAndValuesByPeriod(dates, commissionTxFx, effectiveRangeStart);
+      investedForProfit = stockAggFx.aggregatedValues;
+      commissionForProfit = commissionAggFx.aggregatedValues;
+      stockTransactionValues = stockAggFx.transactionValues;
+      commissionTransactionValues = commissionAggFx.transactionValues;
+
+      allTimeInvested = getTransactionAmountsAndValuesByPeriod(allTimeDates, stockTxFx, startDate).aggregatedValues;
+      allTimeCommissionAgg = getTransactionAmountsAndValuesByPeriod(allTimeDates, commissionTxFx, startDate).aggregatedValues;
     }
 
     const convertedDividend = {
@@ -411,11 +477,19 @@ export function computePortfolioState(
     let returnCommissionForProfit = returnWindowCommissionAmounts.aggregatedValues;
 
     if (fxTicker) {
+      // Market value at current/per-date spot; cost basis at spot-at-purchase.
       const returnFxRates = getFxRates(returnDates, fxTicker);
       const returnScaledRates = m === 1 ? returnFxRates : returnFxRates.map(r => r * m);
       returnPortfolioValues = multiplyLists(returnPortfolioValuesNative, returnScaledRates);
-      returnInvestedForProfit = multiplyLists(returnWindowStockAmounts.aggregatedValues, returnScaledRates);
-      returnCommissionForProfit = multiplyLists(returnWindowCommissionAmounts.aggregatedValues, returnScaledRates);
+
+      const preStockFx = computePreRangeSnapshot(stockTxFx, returnDates[0] ?? today);
+      const preCommissionFx = computePreRangeSnapshot(commissionTxFx, returnDates[0] ?? today);
+      returnInvestedForProfit = getTransactionAmountsAndValues(
+        returnDates, stockTxFx, preStockFx.amount, preStockFx.value
+      ).aggregatedValues;
+      returnCommissionForProfit = getTransactionAmountsAndValues(
+        returnDates, commissionTxFx, 0, preCommissionFx.value
+      ).aggregatedValues;
     }
 
     const returnProfit = subtractLists(
@@ -423,13 +497,15 @@ export function computePortfolioState(
       returnCommissionForProfit
     );
 
+    // nanAsZero: one stock with a missing price on a given day must not turn the
+    // whole portfolio's return for that day into NaN.
     returnWindowPortfolioValues =
       returnWindowPortfolioValues.length > 0
-        ? addLists(returnWindowPortfolioValues, returnPortfolioValues)
+        ? addLists(returnWindowPortfolioValues, returnPortfolioValues, true)
         : returnPortfolioValues;
     returnWindowProfit =
       returnWindowProfit.length > 0
-        ? addLists(returnWindowProfit, returnProfit)
+        ? addLists(returnWindowProfit, returnProfit, true)
         : returnProfit;
 
     // --- Per-stock return figures from the 30-day window ---
@@ -443,7 +519,10 @@ export function computePortfolioState(
     const totalReturnAbsolute = portfolioValue - stockTotalInvested - stockTotalCommission;
     const totalReturn = {
       absolute: totalReturnAbsolute,
-      percentage: portfolioValue !== 0 ? (totalReturnAbsolute / portfolioValue) * 100 : 0,
+      percentage:
+        Number.isFinite(portfolioValue) && portfolioValue !== 0
+          ? (totalReturnAbsolute / portfolioValue) * 100
+          : 0,
     };
 
     chartTotalInvestedSummary += stockTotalInvested;
@@ -499,7 +578,10 @@ export function computePortfolioState(
   const totalReturnAbsolute = portfolioValuesSummary - chartTotalInvestedSummary - chartTotalCommissionSummary;
   const totalReturn = {
     absolute: totalReturnAbsolute,
-    percentage: portfolioValuesSummary !== 0 ? (totalReturnAbsolute / portfolioValuesSummary) * 100 : 0,
+    percentage:
+      Number.isFinite(portfolioValuesSummary) && portfolioValuesSummary !== 0
+        ? (totalReturnAbsolute / portfolioValuesSummary) * 100
+        : 0,
   };
 
   summary = {
@@ -518,8 +600,37 @@ export function computePortfolioState(
 }
 
 /**
+ * Computes the portfolio state, falling back to an unconverted (native) view if
+ * FX conversion fails (e.g. a required FX rate hasn't loaded). Returns the
+ * fxError message alongside so callers can surface it without the selector
+ * chain throwing. This is the single place the FX try/catch lives.
+ */
+export function computePortfolioStateSafe(
+  transactionsDbo: TransactionsDbo,
+  tickers: { [ticker: string]: Ticker },
+  displayCurrency?: string,
+  range: TimeRange = 'ALL'
+): { portfolio: PortfolioState; fxError: string | null } {
+  try {
+    return {
+      portfolio: computePortfolioState(transactionsDbo, tickers, displayCurrency, range),
+      fxError: null,
+    };
+  } catch (err) {
+    return {
+      portfolio: computePortfolioState(transactionsDbo, tickers, undefined, range),
+      fxError: err instanceof Error ? err.message : 'FX conversion failed',
+    };
+  }
+}
+
+/**
  * Runs computePortfolioState for each portfolio and returns a map keyed by
  * portfolio ID. Used by per-portfolio selectors and the Portfolios page.
+ *
+ * FX errors are isolated per portfolio: a missing FX rate in one portfolio
+ * falls that portfolio back to its native view without stripping conversion
+ * from the others.
  */
 export function computeAllPortfolios(
   portfoliosDbo: PortfolioDbo[],
@@ -530,7 +641,7 @@ export function computeAllPortfolios(
   const result: { [id: string]: PortfolioComputedState } = {};
   for (const portfolio of portfoliosDbo) {
     result[portfolio.id] = {
-      ...computePortfolioState(portfolio.transactions, tickers, baseCurrency, range),
+      ...computePortfolioStateSafe(portfolio.transactions, tickers, baseCurrency, range).portfolio,
       portfolioId: portfolio.id,
       portfolioName: portfolio.name,
     };

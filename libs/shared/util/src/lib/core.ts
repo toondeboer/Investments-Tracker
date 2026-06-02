@@ -2,14 +2,19 @@
 
 import { ChartGranularity, TimeRange } from './types';
 
+// All day-level reasoning is done in UTC. Transaction dates are parsed from
+// date-only ISO strings (UTC midnight) and Yahoo timestamps are absolute
+// instants, so comparing/generating days in UTC keeps prices, FX rates and
+// transactions aligned regardless of the viewer's local timezone.
+
 export function getDailyDates(start: Date, end: Date): Date[] {
   const dates: Date[] = [];
   const currentDate = new Date(start);
-  currentDate.setDate(currentDate.getDate() - 1);
+  currentDate.setUTCDate(currentDate.getUTCDate() - 1);
 
   while (currentDate <= end) {
     dates.push(new Date(currentDate));
-    currentDate.setDate(currentDate.getDate() + 1);
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
   }
 
   return dates;
@@ -17,9 +22,9 @@ export function getDailyDates(start: Date, end: Date): Date[] {
 
 export function isSameDay(date1: Date, date2: Date): boolean {
   return (
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate()
+    date1.getUTCFullYear() === date2.getUTCFullYear() &&
+    date1.getUTCMonth() === date2.getUTCMonth() &&
+    date1.getUTCDate() === date2.getUTCDate()
   );
 }
 
@@ -27,19 +32,33 @@ export function getQuarter(month: number): number {
   return Math.floor(month / 3);
 }
 
+/** True for values that are not a real, usable number (NaN / null / undefined). */
+export function isMissing(value: number): boolean {
+  return value === null || value === undefined || Number.isNaN(value);
+}
+
+/**
+ * Returns the most recent *present* value and its index. "Present" skips
+ * NaN/null/undefined placeholders (missing prices, weekend/holiday gaps) but
+ * treats a legitimate `0` as a real value — e.g. a fully-sold position has 0
+ * shares now, and a flat day has 0 profit; neither should walk backwards to a
+ * stale earlier number.
+ *
+ * Returns { value: 0, index: -1 } when the list contains no present value.
+ */
 export function getMostRecentValueFromList(values: number[]): {
   value: number;
   index: number;
 } {
   let index = values.length - 1;
   while (index >= 0) {
-    if (values[index]) {
+    if (!isMissing(values[index])) {
       return { value: values[index], index };
     }
     index -= 1;
   }
 
-  return { value: 0, index: 0 };
+  return { value: 0, index: -1 };
 }
 
 export function getMostRecentValueAtIndex(values: number[], index: number) {
@@ -81,11 +100,11 @@ export function multiplyLists(list1: number[], list2: number[]): number[] {
   return result;
 }
 
-/** True when d1 is strictly before d2 (ignoring time-of-day). */
+/** True when d1 is strictly before d2 (ignoring time-of-day), in UTC. */
 export function isBeforeDay(d1: Date, d2: Date): boolean {
-  if (d1.getFullYear() !== d2.getFullYear()) return d1.getFullYear() < d2.getFullYear();
-  if (d1.getMonth() !== d2.getMonth()) return d1.getMonth() < d2.getMonth();
-  return d1.getDate() < d2.getDate();
+  if (d1.getUTCFullYear() !== d2.getUTCFullYear()) return d1.getUTCFullYear() < d2.getUTCFullYear();
+  if (d1.getUTCMonth() !== d2.getUTCMonth()) return d1.getUTCMonth() < d2.getUTCMonth();
+  return d1.getUTCDate() < d2.getUTCDate();
 }
 
 /** True when d1 is the same day as or before d2. */
@@ -93,14 +112,14 @@ export function isOnOrBeforeDay(d1: Date, d2: Date): boolean {
   return isSameDay(d1, d2) || isBeforeDay(d1, d2);
 }
 
-/** Returns the last day of each calendar month from start to end (inclusive). */
+/** Returns the last day of each calendar month from start to end (inclusive), in UTC. */
 export function getMonthlyDates(start: Date, end: Date): Date[] {
   const dates: Date[] = [];
-  const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+  const cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
   while (cursor <= end) {
-    const lastDay = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0);
+    const lastDay = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 0));
     dates.push(lastDay <= end ? lastDay : new Date(end));
-    cursor.setMonth(cursor.getMonth() + 1);
+    cursor.setUTCMonth(cursor.getUTCMonth() + 1);
   }
   return dates;
 }
@@ -111,7 +130,7 @@ export function getWeeklyDates(start: Date, end: Date): Date[] {
   const cursor = new Date(start);
   while (cursor <= end) {
     dates.push(new Date(cursor));
-    cursor.setDate(cursor.getDate() + 7);
+    cursor.setUTCDate(cursor.getUTCDate() + 7);
   }
   if (dates.length > 0 && !isSameDay(dates[dates.length - 1], end)) {
     dates[dates.length - 1] = new Date(end);
@@ -131,13 +150,16 @@ export function getGranularityForRange(range: TimeRange): ChartGranularity {
  */
 export function getRangeStartDate(range: TimeRange, portfolioStart: Date): Date {
   const today = new Date();
+  const y = today.getUTCFullYear();
+  const m = today.getUTCMonth();
+  const d = today.getUTCDate();
   switch (range) {
-    case '1M': return new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
-    case '3M': return new Date(today.getFullYear(), today.getMonth() - 3, today.getDate());
-    case '6M': return new Date(today.getFullYear(), today.getMonth() - 6, today.getDate());
-    case 'YTD': return new Date(today.getFullYear(), 0, 1);
-    case '1Y': return new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
-    case '5Y': return new Date(today.getFullYear() - 5, today.getMonth(), today.getDate());
+    case '1M': return new Date(Date.UTC(y, m - 1, d));
+    case '3M': return new Date(Date.UTC(y, m - 3, d));
+    case '6M': return new Date(Date.UTC(y, m - 6, d));
+    case 'YTD': return new Date(Date.UTC(y, 0, 1));
+    case '1Y': return new Date(Date.UTC(y - 1, m, d));
+    case '5Y': return new Date(Date.UTC(y - 5, m, d));
     case 'ALL': return portfolioStart;
   }
 }

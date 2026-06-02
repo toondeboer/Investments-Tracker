@@ -18,16 +18,20 @@ export function getYieldPerYear(
   let profitLastYear = 0;
   dates.forEach((date, index) => {
     if (
-      (date.getMonth() === 11 && date.getDate() === 31) ||
+      (date.getUTCMonth() === 11 && date.getUTCDate() === 31) ||
       index + 1 === dates.length
     ) {
-      years.push(date.getFullYear().toString());
+      years.push(date.getUTCFullYear().toString());
       const profitThisYear =
         getMostRecentValueAtIndex(profitValues, index) - profitLastYear;
       profit.push(profitThisYear);
+      // Guard the denominator: a zero/non-finite portfolio value (no holdings
+      // that year, or missing prices) yields 0% rather than Infinity/NaN.
+      const portfolioValueAtIndex = getMostRecentValueAtIndex(portfolioValues, index);
       yields.push(
-        (100 * profitThisYear) /
-          getMostRecentValueAtIndex(portfolioValues, index)
+        Number.isFinite(portfolioValueAtIndex) && portfolioValueAtIndex !== 0
+          ? (100 * profitThisYear) / portfolioValueAtIndex
+          : 0
       );
       profitLastYear = profitThisYear;
     }
@@ -49,6 +53,22 @@ export function getPortfolioValues(
     while (index < ticker.dates.length && isBeforeDay(ticker.dates[index], dates[i])) {
       if (ticker.values[index] > 0) lastKnownPrice = ticker.values[index];
       index++;
+    }
+
+    // Holding nothing is worth exactly 0 on any date, regardless of whether a
+    // price is available — e.g. after a position is fully sold. (Without this a
+    // missing price would make 0-share days NaN and corrupt profit.)
+    if (aggregatedAmounts[i] === 0) {
+      if (index < ticker.dates.length && isSameDay(ticker.dates[index], dates[i])) {
+        const price = ticker.values[index];
+        index++;
+        while (index < ticker.dates.length && isSameDay(ticker.dates[index], dates[i])) {
+          index++;
+        }
+        if (price > 0) lastKnownPrice = price;
+      }
+      values.push(0);
+      continue;
     }
 
     if (index < ticker.dates.length && isSameDay(ticker.dates[index], dates[i])) {
@@ -115,7 +135,7 @@ export function getReturn(
   return {
     absolute,
     percentage:
-      mostRecentPortfolioValue !== 0
+      Number.isFinite(mostRecentPortfolioValue) && mostRecentPortfolioValue !== 0
         ? (absolute / mostRecentPortfolioValue) * 100
         : 0,
   };

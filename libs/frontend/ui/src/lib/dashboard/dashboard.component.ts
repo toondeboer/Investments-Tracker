@@ -9,7 +9,7 @@ import {
   setSelectedPortfolios,
   setTimeRange,
 } from '@aws/state';
-import { TIME_RANGE_LABELS, TimeRange } from '@aws/util';
+import { getCurrencySymbol, TIME_RANGE_LABELS, TimeRange } from '@aws/util';
 import { Store } from '@ngrx/store';
 import { SummaryComponent } from '../summary/summary.component';
 import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
@@ -55,5 +55,9 @@ export class DashboardComponent {
 
   selectRange(range: TimeRange) {
     this.store.dispatch(setTimeRange({ range }));
+  }
+
+  currencySymbol(currency: string | null | undefined): string {
+    return getCurrencySymbol(currency);
   }
 }
