@@ -27,3 +27,29 @@
   display: flex;
   flex-direction: column;
 }
+
+.mobile-back {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-bottom: 1px solid $color-border;
+  background: $color-bg-surface;
+}
+
+.back-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: $color-gold;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: $radius-sm;
+  transition: $transition-base;
+
+  &:hover {
+    background: rgba($color-gold, 0.08);
+  }
+}

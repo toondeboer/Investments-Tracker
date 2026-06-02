@@ -4,8 +4,6 @@
 :host {
   display: block;
   padding: 24px;
-  max-width: 1000px;
-  margin: 0 auto;
 }
 
 // ─── Page header ─────────────────────────────────────────────────────────────
@@ -92,12 +90,25 @@
   cursor: pointer;
   list-style: none;
   transition: $transition-base;
+  gap: 12px;
 
   &:hover {
     background: rgba($color-gold, 0.06);
   }
 
   &::-webkit-details-marker { display: none; }
+}
+
+.ticker-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ticker-header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .ticker-name {
@@ -113,6 +124,24 @@
   font-size: 1.25rem;
   transition: transform 0.2s ease;
   display: inline-block;
+  flex-shrink: 0;
+}
+
+.ticker-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.holding-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: $color-cream;
+}
+
+.holding-shares {
+  font-size: 0.75rem;
+  color: $color-muted;
 }
 
 .ticker-body {
@@ -146,20 +175,18 @@
 .table-header {
   display: flex;
   gap: 12px;
-  padding: 8px 12px;
+  padding: 8px 16px;
   background: $color-bg-elevated;
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: $color-muted;
-
-  span { flex: 1; }
 }
 
 .transaction-row {
   display: flex;
   gap: 12px;
-  padding: 8px 12px;
+  padding: 9px 16px;
   font-size: 0.875rem;
   color: $color-cream;
   transition: background 0.15s;
@@ -175,8 +202,19 @@
   &:hover {
     background: rgba($color-gold, 0.06);
   }
+}
 
-  span { flex: 1; }
+.col-date {
+  flex: 0 0 100px;
+}
+
+.col-num {
+  flex: 1;
+  text-align: right;
+}
+
+.positive {
+  color: $color-success;
 }
 
 // ─── Add transaction form ─────────────────────────────────────────────────────
@@ -257,6 +295,14 @@ select.form-control {
 
   .transaction-form {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .holding-shares {
+    display: none;
+  }
+
+  .col-date {
+    flex: 0 0 80px;
   }
 }
 

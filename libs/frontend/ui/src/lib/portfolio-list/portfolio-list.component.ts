@@ -1,17 +1,19 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, CurrencyPipe } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
-import { PortfolioDbo } from '@aws/util';
+import { PortfolioDbo, Summary } from '@aws/util';
 
 @Component({
   selector: 'aws-portfolio-list',
   templateUrl: './portfolio-list.component.html',
   styleUrls: ['./portfolio-list.component.scss'],
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, CurrencyPipe],
 })
 export class PortfolioListComponent {
   @Input() portfolios: PortfolioDbo[] = [];
   @Input() selectedPortfolioId: string | null = null;
+  @Input() portfolioStates: { [id: string]: { summary: Summary } } | null = null;
+  @Input() baseCurrency = 'EUR';
 
   @Output() selectPortfolio = new EventEmitter<string>();
   @Output() createPortfolio = new EventEmitter<void>();

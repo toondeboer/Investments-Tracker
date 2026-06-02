@@ -7,6 +7,7 @@ import {
   Plus,
   Pencil,
   Trash2,
+  ChevronLeft,
 } from 'lucide-angular';
 
 export const APP_ICONS = {
@@ -18,4 +19,5 @@ export const APP_ICONS = {
   Plus,
   Pencil,
   Trash2,
+  ChevronLeft,
 };

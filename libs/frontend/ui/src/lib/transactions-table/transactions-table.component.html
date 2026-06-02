@@ -4,9 +4,17 @@
   <div class="ticker-section" *ngFor="let key of Object.keys(stocks)">
     <details class="ticker-panel">
       <summary class="ticker-header">
-        <span class="ticker-name">{{ stocks[key].ticker }}</span>
-        <span class="currency-badge">{{ stocks[key].currency.value }}</span>
-        <span class="ticker-arrow">›</span>
+        <div class="ticker-header-left">
+          <span class="ticker-name">{{ stocks[key].ticker }}</span>
+          <span class="currency-badge">{{ stocks[key].currency.value }}</span>
+        </div>
+        <div class="ticker-header-right">
+          <div class="ticker-meta" *ngIf="stocks[key].summary.portfolioValue">
+            <span class="holding-value">{{ stocks[key].summary.portfolioValue | currency:baseCurrency:'symbol':'1.0-0' }}</span>
+            <span class="holding-shares">{{ stocks[key].summary.amountOfShares | number:'1.0-2' }} shares</span>
+          </div>
+          <span class="ticker-arrow">›</span>
+        </div>
       </summary>
 
       <div class="ticker-body">
@@ -18,16 +26,16 @@
             <div class="group-label">Stocks</div>
             <div class="transaction-table">
               <div class="table-header">
-                <span>Date</span>
-                <span>Amount</span>
-                <span>Value</span>
-                <span>Price/Share</span>
+                <span class="col-date">Date</span>
+                <span class="col-num">Amount</span>
+                <span class="col-num">Value</span>
+                <span class="col-num">Price/Share</span>
               </div>
               <div class="transaction-row" *ngFor="let transaction of stocks[key].transactions?.stock">
-                <span>{{ transaction.date.getDate() }}/{{ transaction.date.getUTCMonth() + 1 }}/{{ transaction.date.getFullYear() }}</span>
-                <span>{{ transaction.amount }}</span>
-                <span>{{ transaction.value }}</span>
-                <span>{{ transaction.value / transaction.amount | number : '1.2-2' }}</span>
+                <span class="col-date">{{ transaction.date | date:'d MMM y' }}</span>
+                <span class="col-num">{{ transaction.amount }}</span>
+                <span class="col-num">{{ transaction.value | currency:baseCurrency:'symbol':'1.2-2' }}</span>
+                <span class="col-num">{{ transaction.value / transaction.amount | currency:baseCurrency:'symbol':'1.2-2' }}</span>
               </div>
             </div>
           </div>
@@ -37,12 +45,12 @@
             <div class="group-label">Dividends</div>
             <div class="transaction-table">
               <div class="table-header">
-                <span>Date</span>
-                <span>Value</span>
+                <span class="col-date">Date</span>
+                <span class="col-num">Value</span>
               </div>
               <div class="transaction-row" *ngFor="let transaction of stocks[key].transactions?.dividend">
-                <span>{{ transaction.date.getDate() }}/{{ transaction.date.getUTCMonth() + 1 }}/{{ transaction.date.getFullYear() }}</span>
-                <span class="number-text">{{ transaction.value }}</span>
+                <span class="col-date">{{ transaction.date | date:'d MMM y' }}</span>
+                <span class="col-num positive">{{ transaction.value | currency:baseCurrency:'symbol':'1.2-2' }}</span>
               </div>
             </div>
           </div>
@@ -52,12 +60,12 @@
             <div class="group-label">Commission</div>
             <div class="transaction-table">
               <div class="table-header">
-                <span>Date</span>
-                <span>Value</span>
+                <span class="col-date">Date</span>
+                <span class="col-num">Value</span>
               </div>
               <div class="transaction-row" *ngFor="let transaction of stocks[key].transactions?.commission">
-                <span>{{ transaction.date.getDate() }}/{{ transaction.date.getUTCMonth() + 1 }}/{{ transaction.date.getFullYear() }}</span>
-                <span class="negative">{{ transaction.value }}</span>
+                <span class="col-date">{{ transaction.date | date:'d MMM y' }}</span>
+                <span class="col-num negative">{{ transaction.value | currency:baseCurrency:'symbol':'1.2-2' }}</span>
               </div>
             </div>
           </div>
