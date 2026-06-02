@@ -30,7 +30,8 @@
 }
 
 // ─── Track — the single element that scrolls ─────────────────────────────────
-// Content is duplicated once (2×), so translateX(-50%) = exactly one full loop.
+// Content is rendered 4× in the template, so translateX(-25%) advances exactly
+// one copy width = one seamless loop (see the keyframes below).
 .ticker-track {
   display: flex;
   align-items: center;

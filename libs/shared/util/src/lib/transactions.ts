@@ -69,6 +69,7 @@ function initDefaultStock(ticker: string): Stock {
       yieldPerYear: { years: [], yields: [], profit: [] },
       allTimeDates: [],
       allTimePortfolioValues: [],
+      allTimeInvested: [],
       allTimeProfit: [],
     },
     currency: { value: 'EUR' },

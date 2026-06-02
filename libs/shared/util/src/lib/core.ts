@@ -65,6 +65,31 @@ export function getMostRecentValueAtIndex(values: number[], index: number) {
   return getMostRecentValueFromList(values.slice(0, index + 1)).value;
 }
 
+/**
+ * Replaces gap values (NaN) with the most recent prior finite value, so a held
+ * position carries its last known market value across days its market was
+ * closed (weekends/holidays) instead of reading as a gap. Leading gaps with no
+ * prior value are left untouched. A genuine 0 (e.g. a fully-sold position) is
+ * finite and therefore preserved, not back-filled.
+ *
+ * This matters when summing per-stock daily value series whose markets keep
+ * different calendars (e.g. NYSE vs Euronext): without it, a stock that is
+ * merely closed for the day would contribute 0 to the aggregate and distort
+ * day-over-day return maths.
+ */
+export function forwardFillValues(values: number[]): number[] {
+  const out = values.slice();
+  let last = NaN;
+  for (let i = 0; i < out.length; i++) {
+    if (Number.isFinite(out[i])) {
+      last = out[i];
+    } else if (Number.isFinite(last)) {
+      out[i] = last;
+    }
+  }
+  return out;
+}
+
 export function addLists(
   list1: number[],
   list2: number[],

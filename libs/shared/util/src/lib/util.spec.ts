@@ -26,6 +26,7 @@ import {
   parseCsvInput,
   sortTransactions,
   subtractLists,
+  timeWeightedReturn,
   transactionsDboToStocks,
   transactionsDboToTransactions,
   yahooObjectToTicker,
@@ -191,30 +192,63 @@ describe('addLists / subtractLists', () => {
   });
 });
 
+describe('timeWeightedReturn', () => {
+  it('measures plain growth with no cash flows', () => {
+    expect(timeWeightedReturn([100, 110], [100, 100])).toBeCloseTo(0.1, 10);
+  });
+
+  it('measures a loss', () => {
+    expect(timeWeightedReturn([100, 80], [100, 100])).toBeCloseTo(-0.2, 10);
+  });
+
+  it('returns 0 for empty / single-point / no-capital series', () => {
+    expect(timeWeightedReturn([], [])).toBe(0);
+    expect(timeWeightedReturn([100], [100])).toBe(0);
+    expect(timeWeightedReturn([0, 0, 0], [0, 0, 0])).toBe(0);
+  });
+
+  it('treats establishing a position (Vprev=0) as a deposit, not a return', () => {
+    // 0 -> bought 100 -> grew to 110: only the +10% growth counts.
+    expect(timeWeightedReturn([0, 100, 110], [0, 100, 100])).toBeCloseTo(0.1, 10);
+  });
+
+  it('captures a full buy -> grow -> sell-all at a gain (and ignores later zero days)', () => {
+    // buy 100, value rises to 120, sell everything for 120, then nothing.
+    // invested: 100 (buy) then 100-120 = -20 after the sale.
+    const values = [0, 100, 120, 0, 0];
+    const invested = [0, 100, 100, -20, -20];
+    expect(timeWeightedReturn(values, invested)).toBeCloseTo(0.2, 10);
+  });
+
+  it('captures a realized gain when the sale price exceeds the last valuation', () => {
+    // last marked value 100, but sold for 120 -> +20% realized in the sale period.
+    expect(timeWeightedReturn([100, 0], [100, -20])).toBeCloseTo(0.2, 10);
+  });
+
+  it('stays finite around a missing (NaN) price instead of poisoning the chain', () => {
+    // The NaN day drops the two sub-periods touching it; the +10% legs on either
+    // side still compound to a finite 1.1 * 1.1 - 1 = +21%.
+    expect(timeWeightedReturn([100, 110, NaN, 121, 133.1], [100, 100, 100, 100, 100])).toBeCloseTo(0.21, 10);
+  });
+});
+
 describe('getReturn', () => {
-  const portfolioValues = [200, 200, 200];
-  const profit = [5, 10, 20];
+  const profit = [100, 110, 130];
 
-  it('computes the 1-day absolute and percentage return', () => {
-    // most recent profit 20 (index 2); profit one day ago = 5 -> absolute 15
-    expect(getReturn(portfolioValues, profit, 1)).toEqual({
-      absolute: 15,
-      percentage: 7.5, // 15 / 200 * 100
-    });
+  it('absolute is the profit change over the window; % is over gross invested', () => {
+    const r = getReturn(profit, 1000, 1);
+    expect(r.absolute).toBe(30); // 130 (index 2) - 100 (index 0)
+    expect(r.percentage).toBeCloseTo(3, 10); // 30 / 1000 * 100
   });
 
-  it('computes the 2-day return (no earlier value -> baseline 0)', () => {
-    expect(getReturn(portfolioValues, profit, 2)).toEqual({
-      absolute: 20,
-      percentage: 10, // 20 / 200 * 100
-    });
+  it('uses a baseline of 0 when the window reaches before the first point', () => {
+    const r = getReturn(profit, 1000, 5); // startIndex clamps to 0 -> baseline 0
+    expect(r.absolute).toBe(130);
+    expect(r.percentage).toBeCloseTo(13, 10); // 130 / 1000 * 100
   });
 
-  it('guards divide-by-zero when the portfolio value is 0', () => {
-    expect(getReturn([0, 0, 0], [5, 10], 1)).toEqual({
-      absolute: 10,
-      percentage: 0,
-    });
+  it('returns 0% (not NaN) when gross invested is 0', () => {
+    expect(getReturn([5, 10], 0, 1)).toEqual({ absolute: 10, percentage: 0 });
   });
 });
 
@@ -372,28 +406,51 @@ describe('getDividendTtmPerQuarter', () => {
 });
 
 describe('getYieldPerYear', () => {
-  it('computes per-year profit and yield at each year-end and the final day', () => {
+  it('computes a time-weighted return per year, chaining across the year boundary', () => {
     const dates = [
-      new Date(2023, 11, 30),
-      new Date(2023, 11, 31), // year-end snapshot
-      new Date(2024, 0, 1), // final day
+      new Date(Date.UTC(2023, 11, 30)),
+      new Date(Date.UTC(2023, 11, 31)), // 2023 year-end
+      new Date(Date.UTC(2024, 11, 31)), // 2024 year-end (final point)
     ];
-    const portfolioValues = [100, 100, 200];
-    const profitValues = [10, 20, 50];
+    // No cash flows: value 100 -> 120 in 2023, then 120 -> 240 in 2024.
+    const portfolioValues = [100, 120, 240];
+    const invested = [100, 100, 100];
+    const profitValues = [0, 20, 140];
 
-    expect(getYieldPerYear(dates, portfolioValues, profitValues)).toEqual({
-      years: ['2023', '2024'],
-      profit: [20, 30], // 20-0, then 50-20
-      yields: [20, 15], // 100*20/100, then 100*30/200
-    });
+    const result = getYieldPerYear(dates, portfolioValues, invested, profitValues);
+    expect(result.years).toEqual(['2023', '2024']);
+    expect(result.profit).toEqual([20, 120]); // 20-0, then 140-20
+    expect(result.yields[0]).toBeCloseTo(20, 10); // 120/100 - 1
+    expect(result.yields[1]).toBeCloseTo(100, 10); // 240/120 - 1
+  });
+
+  it('gives a sane, finite yield for a year fully bought and sold (regression)', () => {
+    const dates = [
+      new Date(Date.UTC(2023, 5, 30)),
+      new Date(Date.UTC(2023, 8, 30)),
+      new Date(Date.UTC(2023, 11, 31)), // 2023 year-end — position closed by now
+      new Date(Date.UTC(2024, 11, 31)), // 2024 year-end — never held anything
+    ];
+    // Buy 100, grow to 150, sell everything for 150 (invested 100 -> -50).
+    const portfolioValues = [100, 150, 0, 0];
+    const invested = [100, 100, -50, -50];
+    const profitValues = [0, 50, 50, 50];
+
+    const result = getYieldPerYear(dates, portfolioValues, invested, profitValues);
+    expect(result.years).toEqual(['2023', '2024']);
+    expect(result.yields[0]).toBeCloseTo(50, 10); // realized +50%, not a blow-up
+    expect(result.yields[1]).toBe(0); // no holdings in 2024
+    expect(result.profit).toEqual([50, 0]);
+    result.yields.forEach((y) => expect(Number.isFinite(y)).toBe(true));
   });
 
   it('returns 0% yield (not Infinity/NaN) when the portfolio value is 0', () => {
-    const dates = [new Date(2023, 11, 31), new Date(2024, 0, 1)];
+    const dates = [new Date(Date.UTC(2023, 11, 31)), new Date(Date.UTC(2024, 11, 31))];
     const portfolioValues = [0, 0];
+    const invested = [0, 0];
     const profitValues = [10, 20];
 
-    const result = getYieldPerYear(dates, portfolioValues, profitValues);
+    const result = getYieldPerYear(dates, portfolioValues, invested, profitValues);
     expect(result.yields).toEqual([0, 0]);
     result.yields.forEach((y) => expect(Number.isFinite(y)).toBe(true));
   });
