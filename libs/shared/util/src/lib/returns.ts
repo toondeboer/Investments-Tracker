@@ -25,9 +25,13 @@ export function getYieldPerYear(
       const profitThisYear =
         getMostRecentValueAtIndex(profitValues, index) - profitLastYear;
       profit.push(profitThisYear);
+      // Guard the denominator: a zero/non-finite portfolio value (no holdings
+      // that year, or missing prices) yields 0% rather than Infinity/NaN.
+      const portfolioValueAtIndex = getMostRecentValueAtIndex(portfolioValues, index);
       yields.push(
-        (100 * profitThisYear) /
-          getMostRecentValueAtIndex(portfolioValues, index)
+        Number.isFinite(portfolioValueAtIndex) && portfolioValueAtIndex !== 0
+          ? (100 * profitThisYear) / portfolioValueAtIndex
+          : 0
       );
       profitLastYear = profitThisYear;
     }
@@ -115,7 +119,7 @@ export function getReturn(
   return {
     absolute,
     percentage:
-      mostRecentPortfolioValue !== 0
+      Number.isFinite(mostRecentPortfolioValue) && mostRecentPortfolioValue !== 0
         ? (absolute / mostRecentPortfolioValue) * 100
         : 0,
   };

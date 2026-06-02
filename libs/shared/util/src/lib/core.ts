@@ -27,19 +27,33 @@ export function getQuarter(month: number): number {
   return Math.floor(month / 3);
 }
 
+/** True for values that are not a real, usable number (NaN / null / undefined). */
+export function isMissing(value: number): boolean {
+  return value === null || value === undefined || Number.isNaN(value);
+}
+
+/**
+ * Returns the most recent *present* value and its index. "Present" skips
+ * NaN/null/undefined placeholders (missing prices, weekend/holiday gaps) but
+ * treats a legitimate `0` as a real value — e.g. a fully-sold position has 0
+ * shares now, and a flat day has 0 profit; neither should walk backwards to a
+ * stale earlier number.
+ *
+ * Returns { value: 0, index: -1 } when the list contains no present value.
+ */
 export function getMostRecentValueFromList(values: number[]): {
   value: number;
   index: number;
 } {
   let index = values.length - 1;
   while (index >= 0) {
-    if (values[index]) {
+    if (!isMissing(values[index])) {
       return { value: values[index], index };
     }
     index -= 1;
   }
 
-  return { value: 0, index: 0 };
+  return { value: 0, index: -1 };
 }
 
 export function getMostRecentValueAtIndex(values: number[], index: number) {

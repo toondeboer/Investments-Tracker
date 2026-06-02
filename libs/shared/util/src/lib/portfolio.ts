@@ -423,13 +423,15 @@ export function computePortfolioState(
       returnCommissionForProfit
     );
 
+    // nanAsZero: one stock with a missing price on a given day must not turn the
+    // whole portfolio's return for that day into NaN.
     returnWindowPortfolioValues =
       returnWindowPortfolioValues.length > 0
-        ? addLists(returnWindowPortfolioValues, returnPortfolioValues)
+        ? addLists(returnWindowPortfolioValues, returnPortfolioValues, true)
         : returnPortfolioValues;
     returnWindowProfit =
       returnWindowProfit.length > 0
-        ? addLists(returnWindowProfit, returnProfit)
+        ? addLists(returnWindowProfit, returnProfit, true)
         : returnProfit;
 
     // --- Per-stock return figures from the 30-day window ---
@@ -443,7 +445,10 @@ export function computePortfolioState(
     const totalReturnAbsolute = portfolioValue - stockTotalInvested - stockTotalCommission;
     const totalReturn = {
       absolute: totalReturnAbsolute,
-      percentage: portfolioValue !== 0 ? (totalReturnAbsolute / portfolioValue) * 100 : 0,
+      percentage:
+        Number.isFinite(portfolioValue) && portfolioValue !== 0
+          ? (totalReturnAbsolute / portfolioValue) * 100
+          : 0,
     };
 
     chartTotalInvestedSummary += stockTotalInvested;
@@ -499,7 +504,10 @@ export function computePortfolioState(
   const totalReturnAbsolute = portfolioValuesSummary - chartTotalInvestedSummary - chartTotalCommissionSummary;
   const totalReturn = {
     absolute: totalReturnAbsolute,
-    percentage: portfolioValuesSummary !== 0 ? (totalReturnAbsolute / portfolioValuesSummary) * 100 : 0,
+    percentage:
+      Number.isFinite(portfolioValuesSummary) && portfolioValuesSummary !== 0
+        ? (totalReturnAbsolute / portfolioValuesSummary) * 100
+        : 0,
   };
 
   summary = {

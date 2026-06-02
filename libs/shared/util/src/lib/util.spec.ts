@@ -144,21 +144,29 @@ describe('parseCsvInput', () => {
 });
 
 describe('getMostRecentValueFromList', () => {
-  it('returns the last truthy value and its index', () => {
+  it('returns the last present value and its index', () => {
     expect(getMostRecentValueFromList([1, 2, 3])).toEqual({ value: 3, index: 2 });
   });
 
-  it('skips trailing zeros and NaNs (treated as "no value yet")', () => {
-    expect(getMostRecentValueFromList([1, 2, 0])).toEqual({ value: 2, index: 1 });
+  it('skips trailing NaN/missing placeholders', () => {
     expect(getMostRecentValueFromList([5, NaN, NaN])).toEqual({
       value: 5,
       index: 0,
     });
   });
 
-  it('returns the zero fallback for empty / all-falsy lists', () => {
-    expect(getMostRecentValueFromList([])).toEqual({ value: 0, index: 0 });
-    expect(getMostRecentValueFromList([0, 0, 0])).toEqual({ value: 0, index: 0 });
+  it('treats a legitimate trailing 0 as a real value (e.g. sold-out position)', () => {
+    // A 0 is NOT a gap — a fully-sold position has 0 shares now and must not
+    // walk back to the stale earlier count.
+    expect(getMostRecentValueFromList([1, 2, 0])).toEqual({ value: 0, index: 2 });
+    expect(getMostRecentValueFromList([0, 0, 0])).toEqual({ value: 0, index: 2 });
+    // ...but a 0 BEHIND a NaN still skips the NaN to reach the 0.
+    expect(getMostRecentValueFromList([3, 0, NaN])).toEqual({ value: 0, index: 1 });
+  });
+
+  it('returns { value: 0, index: -1 } when there is no present value', () => {
+    expect(getMostRecentValueFromList([])).toEqual({ value: 0, index: -1 });
+    expect(getMostRecentValueFromList([NaN, NaN])).toEqual({ value: 0, index: -1 });
   });
 });
 
@@ -351,6 +359,16 @@ describe('getYieldPerYear', () => {
       profit: [20, 30], // 20-0, then 50-20
       yields: [20, 15], // 100*20/100, then 100*30/200
     });
+  });
+
+  it('returns 0% yield (not Infinity/NaN) when the portfolio value is 0', () => {
+    const dates = [new Date(2023, 11, 31), new Date(2024, 0, 1)];
+    const portfolioValues = [0, 0];
+    const profitValues = [10, 20];
+
+    const result = getYieldPerYear(dates, portfolioValues, profitValues);
+    expect(result.yields).toEqual([0, 0]);
+    result.yields.forEach((y) => expect(Number.isFinite(y)).toBe(true));
   });
 });
 

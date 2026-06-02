@@ -86,6 +86,35 @@ describe('computePortfolioState', () => {
     expect(stock.chartData.portfolioValues).toHaveLength(result.dates.length);
   });
 
+  it('reports 0 shares and 0 value after a position is fully sold', () => {
+    // Buy 2, later sell 2 -> 0 shares now. The most-recent share count and
+    // portfolio value must be 0, not the stale pre-sale numbers.
+    const soldDbo: TransactionsDbo = {
+      stock: [
+        { ticker: 'VUSA.AS', type: 'stock', date: '2023-01-10', amount: 2, value: 200, currency: 'EUR' },
+        { ticker: 'VUSA.AS', type: 'stock', date: '2023-06-10', amount: -2, value: -260, currency: 'EUR' },
+      ],
+      dividend: [],
+      commission: [],
+    };
+
+    const dates = getDailyDates(getStartDate(transactionsDboToStocks(soldDbo)), new Date());
+    const ticker: Ticker = {
+      name: 'VUSA.AS',
+      currency: 'EUR',
+      dates,
+      values: dates.map(() => 150),
+      dividends: [],
+    };
+
+    const result = computePortfolioState(soldDbo, { 'VUSA.AS': ticker });
+    const stock = result.stocks['VUSA.AS'];
+
+    expect(stock.summary.amountOfShares).toBe(0);
+    expect(stock.summary.portfolioValue).toBe(0);
+    expect(result.summary.portfolioValue).toBe(0);
+  });
+
   it('returns an empty portfolio for no transactions', () => {
     const result = computePortfolioState(
       { stock: [], dividend: [], commission: [] },
