@@ -58,17 +58,22 @@ export class ActiveTickersComponent implements OnChanges {
   }
 
   addChartDatas(chartData1: ChartData, chartData2: ChartData): ChartData {
+    // nanAsZero: stocks on different market calendars have NaN on each other's
+    // closed days; summing without it would void the whole portfolio's value on
+    // any day one market is shut. This matches how the engine sums its return
+    // window across mixed calendars.
     const portfolioValues = addLists(
       chartData1.portfolioValues,
-      chartData2.portfolioValues
+      chartData2.portfolioValues,
+      true
     );
-    const profit = addLists(chartData1.profit, chartData2.profit);
+    const profit = addLists(chartData1.profit, chartData2.profit, true);
 
     // Merge full-history data (same monthly dates for all stocks in the portfolio).
     const allTimeDates = chartData1.allTimeDates;
-    const allTimePortfolioValues = addLists(chartData1.allTimePortfolioValues, chartData2.allTimePortfolioValues);
-    const allTimeInvested = addLists(chartData1.allTimeInvested, chartData2.allTimeInvested);
-    const allTimeProfit = addLists(chartData1.allTimeProfit, chartData2.allTimeProfit);
+    const allTimePortfolioValues = addLists(chartData1.allTimePortfolioValues, chartData2.allTimePortfolioValues, true);
+    const allTimeInvested = addLists(chartData1.allTimeInvested, chartData2.allTimeInvested, true);
+    const allTimeProfit = addLists(chartData1.allTimeProfit, chartData2.allTimeProfit, true);
 
     return {
       stock: {

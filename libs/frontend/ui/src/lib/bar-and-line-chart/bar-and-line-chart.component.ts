@@ -9,6 +9,15 @@ const NAUTICAL_MUTED = '#8FA8C0';
 const NAUTICAL_GOLD  = '#C9A84C';
 const NAUTICAL_GRID  = 'rgba(201,168,76,0.1)';
 
+// The bar series is a trailing-twelve-month (annual) dividend figure, so the
+// derived rate lines divide the annual amount down to each interval.
+const MONTHS_PER_YEAR = 12;
+const DAYS_PER_YEAR = 365;
+const HOURS_PER_YEAR = DAYS_PER_YEAR * 24;
+
+/** Round a currency amount to 2 decimals. */
+const round2 = (value: number) => Math.round(value * 100) / 100;
+
 @Component({
   selector: 'aws-bar-and-line-chart',
   templateUrl: './bar-and-line-chart.component.html',
@@ -73,13 +82,13 @@ export class BarAndLineChartComponent implements OnChanges {
       series: [
         {
           name: 'Yearly',
-          data: this.series.dividends.map((dividend) => Math.round(dividend * 100) / 100),
+          data: this.series.dividends.map((dividend) => round2(dividend)),
           type: 'bar',
           itemStyle: { color: NAUTICAL_GOLD },
         },
         {
           name: 'Monthly',
-          data: this.series.dividends.map((dividend) => Math.round((dividend * 100) / 3) / 100),
+          data: this.series.dividends.map((dividend) => round2(dividend / MONTHS_PER_YEAR)),
           type: 'line',
           connectNulls: true,
           smooth: true,
@@ -88,7 +97,7 @@ export class BarAndLineChartComponent implements OnChanges {
         },
         {
           name: 'Daily',
-          data: this.series.dividends.map((dividend) => Math.round((dividend * 100) / (3 * 30)) / 100),
+          data: this.series.dividends.map((dividend) => round2(dividend / DAYS_PER_YEAR)),
           type: 'line',
           connectNulls: true,
           smooth: true,
@@ -97,7 +106,7 @@ export class BarAndLineChartComponent implements OnChanges {
         },
         {
           name: 'Hourly',
-          data: this.series.dividends.map((dividend) => Math.round((dividend * 100) / (3 * 30 * 24)) / 100),
+          data: this.series.dividends.map((dividend) => round2(dividend / HOURS_PER_YEAR)),
           type: 'line',
           connectNulls: true,
           smooth: true,
