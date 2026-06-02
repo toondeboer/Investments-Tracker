@@ -532,4 +532,28 @@ describe('yahooObjectToTicker', () => {
     };
     expect(yahooObjectToTicker(yahooObject)).toEqual(expected);
   });
+
+  it('trims to the shorter array when timestamps and closes differ in length', () => {
+    const ts1 = 1696550400;
+    const ts2 = 1696636800;
+    const yahooObject: YahooObject = {
+      symbol: 'AAPL',
+      data: {
+        chart: {
+          result: [
+            {
+              meta: { currency: 'USD', symbol: 'AAPL' },
+              timestamp: [ts1, ts2], // 2 timestamps
+              indicators: { quote: [{ close: [150 ] } as any] }, // only 1 close
+            } as any,
+          ],
+        },
+      },
+    };
+
+    const result = yahooObjectToTicker(yahooObject);
+    // Aligned to the shorter length (1) so dates[i] always matches values[i].
+    expect(result.values).toEqual([150]);
+    expect(result.dates).toEqual([new Date(ts1 * 1000)]);
+  });
 });

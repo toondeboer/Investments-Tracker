@@ -13,6 +13,7 @@ import {
   importYahooCsvReady,
   selectState,
   setChartData,
+  ToastService,
 } from '@aws/state';
 
 @Injectable()
@@ -20,7 +21,8 @@ export class YahooEffects {
   constructor(
     private store: Store,
     private readonly actions$: Actions,
-    private readonly service: YahooService
+    private readonly service: YahooService,
+    private readonly toastService: ToastService
   ) {}
 
   // Intercept the parsed Yahoo CSV to fetch each symbol's currency from Yahoo
@@ -85,11 +87,24 @@ export class YahooEffects {
       ofType(getDataSuccess),
       withLatestFrom(this.store.select(selectState)),
       switchMap(([_, { stocks, summary, currencies }]) => {
+        const requested = [...Object.keys(stocks), ...currencies];
         return this.service
           .getTickers(Object.keys(stocks), summary.startDate, currencies)
           .pipe(
             mergeMap((yahooObjects) => {
               const tickers = yahooObjectsToTickers(yahooObjects);
+              // Surface symbols Yahoo failed to return (errors / malformed
+              // payloads were dropped during parsing) instead of silently
+              // rendering an incomplete chart.
+              const returned = new Set(yahooObjects.map((y) => y.symbol));
+              const missing = requested.filter((s) => !returned.has(s));
+              if (missing.length > 0) {
+                this.toastService.open(
+                  `Couldn't load prices for: ${missing.join(', ')}`,
+                  'Dismiss',
+                  { duration: 6000 }
+                );
+              }
               return [getTickersSuccess({ tickers }), setChartData({ tickers })];
             }),
             catchError((error: HttpErrorResponse) =>
