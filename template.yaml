@@ -36,7 +36,7 @@ Parameters:
       so the secret never lives in the template or CI logs.
   OpenAIModel:
     Type: String
-    Default: gpt-4o-mini
+    Default: gpt-5.4-mini
     Description: OpenAI chat model for the Captain. Verify live pricing before changing.
 
 Globals:
@@ -104,6 +104,11 @@ Resources:
           COGNITO_CLIENT_ID: !Ref CognitoClientId
           OPENAI_PARAM_NAME: !Ref OpenAIParamName
           OPENAI_MODEL: !Ref OpenAIModel
+          # Empty by default (prod reads the key from SSM). Declared so a local
+          # `sam local --env-vars env.json` override can inject it — SAM only
+          # overrides variables that already exist in the template. Empty string
+          # is falsy, so prod still falls through to SSM.
+          OPENAI_API_KEY: ''
       Policies:
         # Read-only access to just the OpenAI key parameter (decryption via the
         # AWS-managed aws/ssm key is handled transparently by SSM, for free).

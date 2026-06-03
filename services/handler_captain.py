@@ -9,7 +9,10 @@ from shared.secrets import get_openai_api_key
 # Verify live pricing before changing this.
 _MODEL = os.environ.get('OPENAI_MODEL', 'gpt-4o-mini')
 _MAX_TOKENS = int(os.environ.get('OPENAI_MAX_TOKENS', '250'))
-_TEMPERATURE = float(os.environ.get('OPENAI_TEMPERATURE', '0.7'))
+# Left unset by default: newer models only accept the default temperature and
+# reject an explicit value. Set OPENAI_TEMPERATURE to opt in on models that
+# support it.
+_TEMPERATURE = os.environ.get('OPENAI_TEMPERATURE')
 
 # Input caps — bound the token spend and reject abusive payloads.
 _MAX_MESSAGES = 20
@@ -95,12 +98,15 @@ def _call_openai(messages: list) -> str:
     from openai import OpenAI
 
     client = OpenAI(api_key=get_openai_api_key())
-    completion = client.chat.completions.create(
-        model=_MODEL,
-        messages=messages,
-        max_tokens=_MAX_TOKENS,
-        temperature=_TEMPERATURE,
-    )
+    kwargs = {
+        'model': _MODEL,
+        'messages': messages,
+        # Newer models require max_completion_tokens; max_tokens is rejected.
+        'max_completion_tokens': _MAX_TOKENS,
+    }
+    if _TEMPERATURE is not None:
+        kwargs['temperature'] = float(_TEMPERATURE)
+    completion = client.chat.completions.create(**kwargs)
     return (completion.choices[0].message.content or '').strip()
 
 

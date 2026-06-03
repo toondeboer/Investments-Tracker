@@ -70,10 +70,14 @@ AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local sam local start-api
 
 Serves Lambda functions on `http://localhost:3000`. Re-run `sam build` after any Lambda change.
 
-> **Ask the Captain (OpenAI):** the `captain` Lambda needs an OpenAI API key. For local dev,
-> export `OPENAI_API_KEY=sk-...` in the terminal running `sam local start-api`. In production the
-> key lives in an SSM Parameter Store SecureString (free; no idle cost) — create it once:
-> `aws ssm put-parameter --name /sailor/openai-api-key --type SecureString --value sk-...`
+> **Ask the Captain (OpenAI):** the `captain` Lambda needs an OpenAI API key. It is read from the
+> `OPENAI_API_KEY` env var first, falling back to SSM — so:
+>
+> - **Local dev** — copy `env.json.example` to `env.json` (gitignored), paste your key, and pass it
+>   to SAM: `sam local start-api --env-vars env.json`. (Or just `export OPENAI_API_KEY=sk-...` in the
+>   shell instead.)
+> - **Production** — the key lives in an SSM Parameter Store SecureString (free; no idle cost), created
+>   once: `aws ssm put-parameter --name /sailor/openai-api-key --type SecureString --value sk-...`
 
 > **Tip:** The dummy credentials prevent `sam local` from failing on an expired AWS SSO session.
 > The Lambda talks to local DynamoDB with fake creds and never calls real AWS. Alternatively
