@@ -1,118 +1,253 @@
 # sailor
 
-Visit the website at [sailor.toondeboer.com](https://sailor.toondeboer.com/)
+[![CI](https://github.com/toondeboer/sailor/actions/workflows/ci.yml/badge.svg)](https://github.com/toondeboer/sailor/actions/workflows/ci.yml)
+![Angular](https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white)
+![NgRx](https://img.shields.io/badge/NgRx-21-BA2BD2?logo=reactivex&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-Lambda%20%2B%20DynamoDB-FF9900?logo=amazonaws&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v3-06B6D4?logo=tailwindcss&logoColor=white)
 
-An [Nx](https://nx.dev) monorepo: an **Angular 19 + NgRx** frontend and **Python AWS Lambda +
-DynamoDB** backend (managed with AWS SAM), authenticated with **Cognito**. See
-[ARCHITECTURE.md](ARCHITECTURE.md) for the project layout and data flow.
+Multi-portfolio investment tracker with per-currency holdings, dividend tracking, and
+time-series P&L charts. Live at **[sailor.toondeboer.com](https://sailor.toondeboer.com)**.
 
-## Prerequisites
+An [Nx](https://nx.dev) monorepo: **Angular 21 + NgRx** frontend and **Python AWS Lambda +
+DynamoDB** backend, authenticated with Cognito. See [ARCHITECTURE.md](ARCHITECTURE.md) for
+the full project layout and data flow.
 
-- **Node.js 22+**
-- **Yarn 1.x** (classic) — the repo uses Yarn workspaces
-- **Python 3.13** — must match the Lambda runtime. Install with `brew install python@3.13`
-- **Docker** — runs DynamoDB locally
-- **AWS SAM CLI** — runs the Lambda APIs locally. With Homebrew:
-  ```
-  brew install aws-sam-cli
-  ```
+---
 
-## Install dependencies
+## ⚡ Prerequisites
 
-```
-yarn install          # frontend + Nx toolchain
-```
+| Tool | Version | Install |
+|---|---|---|
+| Node.js | 22+ | `brew install node` |
+| Yarn | 1.x classic | `npm i -g yarn` |
+| Python | 3.13 | `brew install python@3.13` |
+| Docker | any | [docker.com](https://www.docker.com) |
+| AWS SAM CLI | any | `brew install aws-sam-cli` |
 
-Create a virtual environment for the Python backend (one-time setup). Use `python3.13`
-explicitly — the venv version must match the Lambda runtime:
+---
 
-```
-python3.13 -m venv .venv
+## 🛠 Local development
+
+Three processes run together. Use a separate terminal for each.
+
+### 1 — Install dependencies
+
+```bash
+yarn install                                    # frontend + Nx toolchain
+
+python3.13 -m venv .venv                       # one-time Python venv
 source .venv/bin/activate
 pip install -r services/requirements-dev.txt
 ```
 
-Activate the venv in any new terminal before running Python scripts or `sam build`:
+Activate the venv in every new terminal before running backend commands:
 
-```
+```bash
 source .venv/bin/activate
 ```
 
-## Run locally
+### 2 — Database (DynamoDB Local)
 
-The app has three pieces that run together: a local DynamoDB, the Lambda APIs (via SAM), and the
-Angular dev server. Run each in its own terminal.
-
-### 1. Start the database (DynamoDB Local)
-
-```
+```bash
 docker-compose up
 ```
 
-The first time only, create the table:
+First run only — create the table:
 
-```
+```bash
 python services/init_dynamodb.py
 ```
 
-### 2. Start the backend APIs (AWS SAM)
+### 3 — Backend APIs (AWS SAM)
 
-```
+```bash
 sam build
 AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local sam local start-api
 ```
 
-`sam build` installs `services/requirements.txt` into the deployment package. `sam local start-api`
-then serves the functions on `http://localhost:3000`, reading configuration — Cognito
-user-pool/client IDs and allowed CORS origins — from `template.yaml` parameter defaults.
+Serves Lambda functions on `http://localhost:3000`. Re-run `sam build` after any Lambda change.
 
-> **AWS credentials:** `sam local` resolves your AWS credentials to inject into the Lambda
-> container, so an **expired AWS SSO session makes every request return 502**. The dummy
-> `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` above sidestep that — the dev Lambda talks to the
-> local DynamoDB with fake credentials and never needs real ones. (Or run `aws sso login` to
-> refresh real credentials instead.)
+> **Tip:** The dummy credentials prevent `sam local` from failing on an expired AWS SSO session.
+> The Lambda talks to local DynamoDB with fake creds and never calls real AWS. Alternatively
+> run `aws sso login` to use real credentials.
 
-> **Note:** the DynamoDB Lambda verifies the Cognito **ID token** on every request, so it needs
-> internet access to fetch the Cognito JWKS, and you must be signed in through the frontend (which
-> supplies a valid token). Re-run `sam build` whenever you change Lambda code.
+### 4 — Frontend
 
-### 3. Start the frontend
-
-```
+```bash
 nx serve frontend
 ```
 
 Open `http://localhost:4200`. The dev server proxies `/microservice` and `/yahoo_finance` to the
-SAM APIs on `:3000` (see `apps/frontend/proxy.conf.json`).
+SAM APIs on `:3000`.
 
-## Useful commands
+---
 
-| Command | What it does |
-| --- | --- |
-| `nx serve frontend` | Run the app with hot reload |
-| `nx run-many -t test` / `nx test util` | Run unit tests |
+## 🔧 Useful commands
+
+| Command | Purpose |
+|---|---|
+| `nx serve frontend` | Dev server with hot reload |
+| `nx run-many -t test` | Run all unit tests |
+| `nx test util` | Test a single project |
 | `nx lint <project>` | Lint a project |
-| `nx build frontend` | Production build of the frontend |
+| `nx build frontend` | Production build |
 | `nx affected -t lint test build` | What CI runs on a PR |
-| `sam build` | Package the Python Lambdas (what CI does before deploy) |
+| `sam build` | Package Python Lambdas |
 
-## CI
+---
 
-GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs
-`nx affected -t lint test build` on every pull request and on pushes to `main`.
+## 🧮 Financial logic
 
-## Deployment (Infrastructure as Code)
+All calculations live in `libs/shared/util/src/lib/` and run entirely in the browser.
+The reducer stores only raw inputs; every derived figure is computed in memoized NgRx selectors.
 
-The backend is managed as code with AWS SAM/CloudFormation. `template.yaml` defines the two
-Lambdas, a single API Gateway and their environment variables; `samconfig.toml` holds the
-per-stage deploy settings (stack name, region, and prod parameters — CORS origin, Cognito IDs).
+### Portfolio value
 
-On every push to `main`, CodeBuild (`buildspec.yml`) builds the frontend, runs `sam build` to
-package the Python Lambdas, and runs `sam deploy --config-env prod` to update the
-`sailor-prod` stack. The frontend bundle is published as the build artifact.
+Current market value of a position, expressed in the user's base currency:
 
-> - The CodeBuild role needs permission to manage CloudFormation, IAM, API Gateway, Lambda and S3.
-> - The `sailor` DynamoDB table is intentionally **not** managed by the stack (so a
->   deploy can never replace it with an empty table) — the Lambda is only granted access to it.
-> - After a deploy, the API URLs come from the stack Outputs (`YahooEndpoint` /
->   `MicroserviceEndpoint`); they are baked into `apps/frontend/src/environments/environment.prod.ts`.
+```
+V(t) = shares(t) × price(t) × FX_market(t)
+```
+
+Missing prices (weekends, holidays) are **forward-filled** from the last known value.
+FX rates use the **per-date spot rate** so today's value tracks today's currency moves.
+
+---
+
+### Unrealized P&L (Profit & Loss)
+
+```
+P&L(t) = V(t) − cost_basis − commission
+```
+
+`cost_basis` and `commission` use **spot-at-purchase** FX rates (locked at the rate on each
+transaction's own date), so the cost side is never distorted by subsequent FX moves.
+
+---
+
+### Cost basis and gross invested
+
+```
+cost_basis   = Σ ( buy_qty_i × price_i × FX_spot_at_purchase_i )
+gross_invested = Σ ( buy_value_i )     ← never reduced by sells
+```
+
+`gross_invested` is the denominator for all percentage returns. Using gross (rather than net)
+prevents the denominator from collapsing to zero when a position is fully exited, keeping the
+return percentage meaningful throughout the position's life.
+
+---
+
+### Total return
+
+```
+absolute  = V(t) − net_invested + cumulative_dividends
+percentage = absolute / gross_invested × 100
+```
+
+Dividends are counted as return; commission is not.
+
+---
+
+### Average share price
+
+```
+avg_share_price = net_invested / shares_held(t)
+```
+
+Computed only when `shares_held ≠ 0`.
+
+---
+
+### Modified Dietz return (per calendar year)
+
+Instead of the iterative XIRR, sailor uses the closed-form Modified Dietz method, which is
+robust on partial years and when positions open and close within the same period:
+
+```
+gain        = EMV − BMV − net_flows
+avg_capital = BMV + Σ ( w_i × flow_i )
+w_i         = ( year_end − flow_date_i ) / ( year_end − year_start )
+
+R_year      = gain / avg_capital
+```
+
+| Symbol | Meaning |
+|---|---|
+| EMV | Ending market value (year-end or today for the current year) |
+| BMV | Beginning market value (prior year-end; 0 for the first year) |
+| net_flows | Cash into the portfolio (buys +, sells −, dividends −) |
+| w_i | Time-weight: fraction of the year the cash was invested |
+
+When `avg_capital ≤ 0` (position opened and closed in the same year) the return is recorded
+as 0 rather than dividing by zero.
+
+---
+
+### Rolling period returns (1 D / 1 W / 1 M)
+
+Computed from a dedicated 30-day daily window regardless of the chart's granularity
+(so the chips remain accurate even when the main chart is in weekly or monthly mode):
+
+```
+R_absolute(n days)   = profit[today] − profit[today − n]
+R_percentage(n days) = R_absolute / gross_invested × 100
+```
+
+---
+
+### Dividend calculations
+
+**Per-share dividend value**
+
+```
+D_value = dividend_per_share(ex_date) × shares_held(ex_date)
+```
+
+Share count is snapshotted at the most recent date on or before the ex-date.
+
+**Trailing twelve months (TTM) per quarter**
+
+```
+TTM[i] = Σ D[j]   for j = max(0, i−3) … i
+```
+
+A rolling four-quarter sum, so TTM[i] represents the income generated in the twelve months
+ending at quarter i.
+
+---
+
+### FX conversion
+
+Two separate conversion schemes are applied depending on what is being converted:
+
+| What | Rate used | Why |
+|---|---|---|
+| Cost basis, commission, dividends | Spot rate on the transaction's own date | Locks the historical cost in base currency |
+| Current market value | Spot rate on each chart date | Reflects live currency exposure |
+
+FX rates are forward-filled across gaps and backward-filled before the start of history.
+`GBp` (pence) is automatically scaled by `× 0.01` to convert to GBP before any further
+conversion.
+
+---
+
+### Multi-stock aggregation
+
+When summing across stocks, a day where one stock has no price data (e.g. a foreign holiday)
+must not poison the whole portfolio's return for that day. Aggregation therefore treats
+`NaN` as `0` when adding profit series:
+
+```
+portfolio_profit[t] = Σ stock_profit_i[t]     (NaN treated as 0)
+```
+
+---
+
+## 🏗 Architecture
+
+See [ARCHITECTURE.md](ARCHITECTURE.md) for the complete project layout, data flow, and
+infrastructure decisions.

@@ -47,3 +47,4 @@ nx run-many -t lint test build --all
 * Commit changes and open a PR.
 * Include a manual test checklist in the PR.
 * Update documentation only when implementation changes make it inaccurate.
+* If a financial formula in `libs/shared/util/src/lib/` is added, changed, or removed, update the corresponding section in `README.md`.

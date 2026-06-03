@@ -1,10 +1,10 @@
 # Architecture
 
-An [Nx](https://nx.dev) monorepo: an **Angular 19 + NgRx** frontend and a **Python AWS Lambda +
+An [Nx](https://nx.dev) monorepo: an **Angular 21 + NgRx 21** frontend and a **Python AWS Lambda +
 DynamoDB** backend (managed with AWS SAM), authenticated with **Cognito (OIDC)**. It tracks a
 stock/dividend portfolio, imports DEGIRO CSV exports, and pulls prices from Yahoo Finance.
 
-See [README.md](README.md) for setup/run/deploy instructions.
+See [README.md](README.md) for setup and run instructions.
 
 ## Projects
 
@@ -71,7 +71,7 @@ transactions using the tickers already in the store.
 ### Loading, errors, caching
 
 - The reducer tracks `loading`/`error` across the request → success/failure triad; a `showError$`
-  effect surfaces failures as a `MatSnackBar` toast, and `page-wrapper` shows a progress bar.
+  effect surfaces failures as a toast (via `ToastService`), and `page-wrapper` shows a progress bar.
 - `getData` is cached for 30s (`lastFetched`); a repeat within the window serves `getDataCached`
   (no re-fetch).
 - HTTP calls have timeouts + `retryWithBackoff()` (retries transient errors only); the Yahoo
@@ -109,4 +109,3 @@ Two Python 3.13 Lambdas behind one API Gateway:
 
 [libs/shared/util/src/lib/portfolio.ts]: libs/shared/util/src/lib/portfolio.ts
 [state.selectors.ts]: libs/frontend/state/src/lib/+state/state.selectors.ts
-[libs/backend/lambdas/build.mjs]: libs/backend/lambdas/build.mjs
