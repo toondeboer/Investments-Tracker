@@ -5,7 +5,7 @@
   [class.disabled]="disabled"
   [disabled]="disabled"
   (click)="open()"
->
+  >
   <span class="trigger-text" [class.placeholder]="!valueDate">
     {{ valueDate ? (valueDate | date:'d MMM y':'UTC') : placeholder }}
   </span>
@@ -25,23 +25,26 @@
     </div>
 
     <div class="weekday-row">
-      <span class="weekday" *ngFor="let wd of weekdays">{{ wd }}</span>
+      @for (wd of weekdays; track wd) {
+        <span class="weekday">{{ wd }}</span>
+      }
     </div>
 
     <div class="calendar-grid">
-      <ng-container *ngFor="let week of weeks">
-        <button
-          type="button"
-          class="day-cell"
-          *ngFor="let cell of week"
-          [class.muted]="!cell.inMonth"
-          [class.selected]="isSelected(cell)"
-          [class.today]="isToday(cell)"
-          (click)="selectDay(cell)"
-        >
-          {{ cell.date | date:'d':'UTC' }}
-        </button>
-      </ng-container>
+      @for (week of weeks; track week) {
+        @for (cell of week; track cell) {
+          <button
+            type="button"
+            class="day-cell"
+            [class.muted]="!cell.inMonth"
+            [class.selected]="isSelected(cell)"
+            [class.today]="isToday(cell)"
+            (click)="selectDay(cell)"
+            >
+            {{ cell.date | date:'d':'UTC' }}
+          </button>
+        }
+      }
     </div>
   </div>
 </ng-template>

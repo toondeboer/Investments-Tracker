@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { PortfolioDbo, Stock } from '@aws/util';
 import { LucideAngularModule } from 'lucide-angular';
 import { TransactionsTableComponent } from '../transactions-table/transactions-table.component';
@@ -8,7 +8,7 @@ import { TransactionsTableComponent } from '../transactions-table/transactions-t
   selector: 'aws-portfolio-detail',
   templateUrl: './portfolio-detail.component.html',
   styleUrls: ['./portfolio-detail.component.scss'],
-  imports: [CommonModule, LucideAngularModule, TransactionsTableComponent],
+  imports: [LucideAngularModule, TransactionsTableComponent],
 })
 export class PortfolioDetailComponent {
   @Input() portfolio: PortfolioDbo | null = null;

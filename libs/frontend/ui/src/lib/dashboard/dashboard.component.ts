@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
   selectBaseCurrency,
   selectLoading,
@@ -22,6 +22,8 @@ import { ActiveTickersComponent } from '../active-tickers/active-tickers.compone
   imports: [SummaryComponent, AsyncPipe, CommonModule, DatePipe, ActiveTickersComponent],
 })
 export class DashboardComponent {
+  private store = inject(Store);
+
   state$ = this.store.select(selectState);
   portfolios$ = this.store.select(selectPortfoliosDbo);
   selectedPortfolioIds$ = this.store.select(selectSelectedPortfolioIds);
@@ -31,8 +33,6 @@ export class DashboardComponent {
 
   readonly ranges: TimeRange[] = ['1M', '3M', '6M', 'YTD', '1Y', '5Y', 'ALL'];
   readonly rangeLabels = TIME_RANGE_LABELS;
-
-  constructor(private store: Store) {}
 
   isPortfolioActive(portfolioId: string, selectedIds: string[] | 'all'): boolean {
     return selectedIds === 'all' || selectedIds.includes(portfolioId);

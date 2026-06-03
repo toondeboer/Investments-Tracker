@@ -47,8 +47,12 @@
       <div class="dashboard-preview">
         <div class="chart-container">
           <div class="chart-placeholder" [class.loaded]="chartLoaded">
-            <span *ngIf="!chartLoaded">⚓ Charting Portfolio...</span>
-            <span *ngIf="chartLoaded">🧭 Live Portfolio Performance</span>
+            @if (!chartLoaded) {
+              <span>⚓ Charting Portfolio...</span>
+            }
+            @if (chartLoaded) {
+              <span>🧭 Live Portfolio Performance</span>
+            }
           </div>
         </div>
         <div class="stats-grid">
@@ -70,14 +74,15 @@
     <div class="container">
       <h2 class="section-title">Everything You Need to Chart Your Course</h2>
       <div class="features-grid">
-        <div
-          class="feature-card"
-          *ngFor="let feature of features; trackBy: trackByFeature"
-        >
-          <div class="feature-icon" [innerHTML]="feature.icon"></div>
-          <h3>{{ feature.title }}</h3>
-          <p>{{ feature.description }}</p>
-        </div>
+        @for (feature of features; track trackByFeature($index, feature)) {
+          <div
+            class="feature-card"
+            >
+            <div class="feature-icon" [innerHTML]="feature.icon"></div>
+            <h3>{{ feature.title }}</h3>
+            <p>{{ feature.description }}</p>
+          </div>
+        }
       </div>
     </div>
   </section>
@@ -87,15 +92,16 @@
     <div class="container">
       <h2 class="section-title">Set Sail in Minutes</h2>
       <div class="steps">
-        <div
-          class="step"
-          *ngFor="let step of steps; trackBy: trackByStep"
-          [style.animation-delay]="(step.number * 0.2) + 's'"
-        >
-          <div class="step-number">{{ step.number }}</div>
-          <h3>{{ step.title }}</h3>
-          <p>{{ step.description }}</p>
-        </div>
+        @for (step of steps; track trackByStep($index, step)) {
+          <div
+            class="step"
+            [style.animation-delay]="(step.number * 0.2) + 's'"
+            >
+            <div class="step-number">{{ step.number }}</div>
+            <h3>{{ step.title }}</h3>
+            <p>{{ step.description }}</p>
+          </div>
+        }
       </div>
     </div>
   </section>

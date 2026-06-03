@@ -11,7 +11,9 @@
     <div class="field-group">
       <label class="field-label">Base currency</label>
       <select class="field-select" [(ngModel)]="selectedCurrency" (ngModelChange)="onCurrencyChange($event)">
-        <option *ngFor="let c of currencies" [value]="c">{{ c }}</option>
+        @for (c of currencies; track c) {
+          <option [value]="c">{{ c }}</option>
+        }
       </select>
     </div>
   </div>

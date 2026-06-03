@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import {
   addLists,
   addPerQuarterByYearLists,
@@ -11,7 +11,7 @@ import { YahooComponent } from '../yahoo/yahoo.component';
 
 @Component({
   selector: 'aws-active-tickers',
-  imports: [CommonModule, YahooComponent],
+  imports: [YahooComponent],
   templateUrl: './active-tickers.component.html',
   styleUrl: './active-tickers.component.scss',
 })

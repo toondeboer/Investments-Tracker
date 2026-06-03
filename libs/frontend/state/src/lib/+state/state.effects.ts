@@ -1,6 +1,6 @@
 import { StateService } from './../state.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ToastService } from '../toast.service';
 import { Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
@@ -81,12 +81,11 @@ const EMPTY_TRANSACTIONS = { stock: [], dividend: [], commission: [] };
 
 @Injectable()
 export class StateEffects {
-  constructor(
-    private store: Store,
-    private readonly actions$: Actions,
-    private readonly service: StateService,
-    private readonly toastService: ToastService
-  ) {}
+  private store = inject(Store);
+  private readonly actions$ = inject(Actions);
+  private readonly service = inject(StateService);
+  private readonly toastService = inject(ToastService);
+
 
   public readonly showError$ = createEffect(
     () =>

@@ -20,7 +20,7 @@
         [readonly]="tickerLocked"
         [class.locked]="tickerLocked"
         placeholder="e.g. AAPL"
-      />
+        />
     </div>
 
     <div class="field-group field-group--full">
@@ -36,7 +36,7 @@
         [(ngModel)]="amount"
         (ngModelChange)="onAmountChange()"
         placeholder="0"
-      />
+        />
     </div>
 
     <div class="field-group">
@@ -46,12 +46,14 @@
         [(ngModel)]="currency"
         [disabled]="currencyLocked"
         [class.locked]="currencyLocked"
-      >
+        >
         <!-- Existing/imported holdings may use a currency outside the manual
-             set (e.g. GBP); show it so the locked value still renders. -->
-        <option *ngIf="currencyLocked && currency !== 'EUR' && currency !== 'USD'" [value]="currency">
-          {{ currency }}
-        </option>
+        set (e.g. GBP); show it so the locked value still renders. -->
+        @if (currencyLocked && currency !== 'EUR' && currency !== 'USD') {
+          <option [value]="currency">
+            {{ currency }}
+          </option>
+        }
         <option value="EUR">EUR</option>
         <option value="USD">USD</option>
       </select>
@@ -65,7 +67,7 @@
         [(ngModel)]="value"
         (ngModelChange)="recomputePerShareFromTotal()"
         placeholder="0.00"
-      />
+        />
     </div>
 
     <div class="field-group">
@@ -76,7 +78,7 @@
         [(ngModel)]="pricePerShare"
         (ngModelChange)="recomputeTotalFromPerShare()"
         placeholder="0.00"
-      />
+        />
     </div>
   </div>
 </div>

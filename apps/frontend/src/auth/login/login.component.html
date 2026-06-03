@@ -4,7 +4,9 @@
     <h1 class="heading">Welcome back</h1>
     <p class="subheading">Sign in to your portfolio</p>
 
-    <div class="error-banner" *ngIf="error" role="alert">{{ error }}</div>
+    @if (error) {
+      <div class="error-banner" role="alert">{{ error }}</div>
+    }
 
     <div class="field">
       <label for="email">Email</label>
@@ -15,7 +17,7 @@
         placeholder="you@example.com"
         [(ngModel)]="email"
         [disabled]="loading"
-      />
+        />
     </div>
 
     <div class="field">
@@ -27,12 +29,16 @@
         placeholder="••••••••"
         [(ngModel)]="password"
         [disabled]="loading"
-      />
+        />
     </div>
 
     <button class="btn-primary" (click)="submit()" [disabled]="loading || !email || !password">
-      <span *ngIf="!loading">Sign in</span>
-      <span *ngIf="loading" class="spinner"></span>
+      @if (!loading) {
+        <span>Sign in</span>
+      }
+      @if (loading) {
+        <span class="spinner"></span>
+      }
     </button>
 
     <p class="footer-link">

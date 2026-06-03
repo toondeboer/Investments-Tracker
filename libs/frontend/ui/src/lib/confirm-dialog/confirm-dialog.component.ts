@@ -1,5 +1,5 @@
-import { Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+
 import { DialogRef, DIALOG_DATA, DIALOG_REF } from '../dialog/dialog-ref';
 
 export type ConfirmDialogData = {
@@ -12,11 +12,9 @@ export type ConfirmDialogData = {
   selector: 'aws-confirm-dialog',
   templateUrl: './confirm-dialog.component.html',
   styleUrls: ['./confirm-dialog.component.scss'],
-  imports: [CommonModule],
+  imports: [],
 })
 export class ConfirmDialogComponent {
-  constructor(
-    @Inject(DIALOG_REF) public dialogRef: DialogRef<ConfirmDialogComponent, boolean>,
-    @Inject(DIALOG_DATA) public data: ConfirmDialogData
-  ) {}
+  dialogRef = inject<DialogRef<ConfirmDialogComponent, boolean>>(DIALOG_REF);
+  data = inject<ConfirmDialogData>(DIALOG_DATA);
 }

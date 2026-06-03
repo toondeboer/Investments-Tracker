@@ -1,66 +1,70 @@
-<div
-  class="page"
-  *ngIf="{
-    state: state$ | async,
-    portfolios: portfolios$ | async,
-    selectedIds: selectedPortfolioIds$ | async,
-    currency: baseCurrency$ | async,
-    loading: loading$ | async,
-    timeRange: timeRange$ | async
-  } as vm"
->
-
-  <header class="page-header">
-    <h1 class="page-title">Portfolio</h1>
-    <p class="page-subtitle" *ngIf="vm.state?.summary?.startDate">
-      Since {{ vm.state?.summary?.startDate | date : 'MMM yyyy' }}
-    </p>
-  </header>
-
-  <!-- Portfolio filter chips (shown only when multiple portfolios exist) -->
-  <section class="page-section" *ngIf="(vm.portfolios?.length ?? 0) > 1">
-    <div class="filter-label">Portfolios</div>
-    <div class="chips">
-      <button
-        *ngFor="let portfolio of vm.portfolios"
-        class="chip"
-        [class.active]="isPortfolioActive(portfolio.id, vm.selectedIds ?? 'all')"
-        (click)="togglePortfolio(portfolio.id, vm.selectedIds ?? 'all', portfolioIds(vm.portfolios ?? []))"
-        type="button"
-      >
-        {{ portfolio.name }}
-      </button>
-    </div>
-  </section>
-
-  <!-- Time-range selector -->
-  <section class="page-section range-section">
-    <div class="chips">
-      <button
-        *ngFor="let range of ranges"
-        class="chip"
-        [class.active]="vm.timeRange === range"
-        (click)="selectRange(range)"
-        type="button"
-      >
-        {{ rangeLabels[range] }}
-      </button>
-    </div>
-  </section>
-
-  <!-- Loading overlay while selector recomputes -->
-  <div class="computing-bar" *ngIf="vm.loading"></div>
-
-  <section class="page-section">
-    <aws-summary [summary]="vm.state?.summary" [currency]="vm.currency ?? 'EUR'"></aws-summary>
-  </section>
-
-  <section class="page-section" *ngIf="(vm.state?.stocks | keyvalue)?.length">
-    <aws-active-tickers
-      [dates]="vm.state?.dates ?? []"
-      [stocks]="vm.state?.stocks ?? {}"
-      [currencySymbol]="currencySymbol(vm.currency)"
-    ></aws-active-tickers>
-  </section>
-
-</div>
+@if ({
+  state: state$ | async,
+  portfolios: portfolios$ | async,
+  selectedIds: selectedPortfolioIds$ | async,
+  currency: baseCurrency$ | async,
+  loading: loading$ | async,
+  timeRange: timeRange$ | async
+  }; as vm) {
+  <div
+    class="page"
+    >
+    <header class="page-header">
+      <h1 class="page-title">Portfolio</h1>
+      @if (vm.state?.summary?.startDate) {
+        <p class="page-subtitle">
+          Since {{ vm.state?.summary?.startDate | date : 'MMM yyyy' }}
+        </p>
+      }
+    </header>
+    <!-- Portfolio filter chips (shown only when multiple portfolios exist) -->
+    @if ((vm.portfolios?.length ?? 0) > 1) {
+      <section class="page-section">
+        <div class="filter-label">Portfolios</div>
+        <div class="chips">
+          @for (portfolio of vm.portfolios; track portfolio) {
+            <button
+              class="chip"
+              [class.active]="isPortfolioActive(portfolio.id, vm.selectedIds ?? 'all')"
+              (click)="togglePortfolio(portfolio.id, vm.selectedIds ?? 'all', portfolioIds(vm.portfolios ?? []))"
+              type="button"
+              >
+              {{ portfolio.name }}
+            </button>
+          }
+        </div>
+      </section>
+    }
+    <!-- Time-range selector -->
+    <section class="page-section range-section">
+      <div class="chips">
+        @for (range of ranges; track range) {
+          <button
+            class="chip"
+            [class.active]="vm.timeRange === range"
+            (click)="selectRange(range)"
+            type="button"
+            >
+            {{ rangeLabels[range] }}
+          </button>
+        }
+      </div>
+    </section>
+    <!-- Loading overlay while selector recomputes -->
+    @if (vm.loading) {
+      <div class="computing-bar"></div>
+    }
+    <section class="page-section">
+      <aws-summary [summary]="vm.state?.summary" [currency]="vm.currency ?? 'EUR'"></aws-summary>
+    </section>
+    @if ((vm.state?.stocks | keyvalue)?.length) {
+      <section class="page-section">
+        <aws-active-tickers
+          [dates]="vm.state?.dates ?? []"
+          [stocks]="vm.state?.stocks ?? {}"
+          [currencySymbol]="currencySymbol(vm.currency)"
+        ></aws-active-tickers>
+      </section>
+    }
+  </div>
+}

@@ -1,5 +1,5 @@
-import { Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { DialogRef, DIALOG_DATA, DIALOG_REF } from '../dialog/dialog-ref';
 import { Transaction, TransactionKey, TransactionType } from '@aws/util';
@@ -25,9 +25,12 @@ export type TransactionDialogResult = {
   selector: 'aws-transaction-dialog',
   templateUrl: './transaction-dialog.component.html',
   styleUrls: ['./transaction-dialog.component.scss'],
-  imports: [CommonModule, FormsModule, DatePickerComponent],
+  imports: [FormsModule, DatePickerComponent],
 })
 export class TransactionDialogComponent {
+  dialogRef = inject<DialogRef<TransactionDialogComponent, TransactionDialogResult | undefined>>(DIALOG_REF);
+  data = inject<TransactionDialogData>(DIALOG_DATA);
+
   type: TransactionType = 'stock';
   ticker = '';
   /** Date as the native input's YYYY-MM-DD string. */
@@ -44,11 +47,9 @@ export class TransactionDialogComponent {
 
   private readonly original?: Transaction;
 
-  constructor(
-    @Inject(DIALOG_REF)
-    public dialogRef: DialogRef<TransactionDialogComponent, TransactionDialogResult | undefined>,
-    @Inject(DIALOG_DATA) public data: TransactionDialogData
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.tickerLocked = !!data.ticker || data.mode === 'edit';
     this.currencyLocked = !!data.lockedCurrency || data.mode === 'edit';
 

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import {
   DatabaseDto,
   DYNAMODB_TIMEOUT_MS,
@@ -12,10 +12,9 @@ import { map, Observable, timeout } from 'rxjs';
   providedIn: 'root',
 })
 export class StateService {
-  constructor(
-    @Inject('ENVIRONMENT') private environment: any,
-    private http: HttpClient
-  ) {}
+  private environment = inject<any>('ENVIRONMENT' as any);
+  private http = inject(HttpClient);
+
 
   public getData(): Observable<DatabaseDto> {
     return this.http.get<unknown>(`${this.environment.dynamoDBLambdaUrl}`).pipe(

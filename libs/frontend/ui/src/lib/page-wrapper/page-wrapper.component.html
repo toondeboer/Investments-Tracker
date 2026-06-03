@@ -9,19 +9,22 @@
   </header>
 
   <!-- ── Loading bar ──────────────────────────────────────────────────────── -->
-  <div *ngIf="loading$ | async" class="loading-bar">
-    <div class="loading-bar-inner"></div>
-  </div>
+  @if (loading$ | async) {
+    <div class="loading-bar">
+      <div class="loading-bar-inner"></div>
+    </div>
+  }
 
   <!-- ── Body ─────────────────────────────────────────────────────────────── -->
   <div class="app-body" [style.marginTop.px]="mobileQuery.matches ? 56 : 0">
 
     <!-- Mobile overlay -->
-    <div
-      *ngIf="mobileQuery.matches && sidenavOpen"
-      class="sidenav-overlay"
-      (click)="sidenavOpen = false"
-    ></div>
+    @if (mobileQuery.matches && sidenavOpen) {
+      <div
+        class="sidenav-overlay"
+        (click)="sidenavOpen = false"
+      ></div>
+    }
 
     <!-- ── Sidenav ─────────────────────────────────────────────────────────── -->
     <nav
@@ -29,7 +32,7 @@
       [class.sidenav-open]="sidenavOpen"
       [class.sidenav-mobile]="mobileQuery.matches"
       [class.sidenav-desktop-closed]="!mobileQuery.matches && !sidenavOpen"
-    >
+      >
       <div class="sidenav-inner">
 
         <div class="sidenav-header">
@@ -38,16 +41,18 @@
         </div>
 
         <ul class="nav-list">
-          <li *ngFor="let nav of navigationOptions">
-            <button
-              class="nav-item"
-              [class.active]="isActive(nav.path)"
-              (click)="routeTo(nav.path)"
-            >
-              <lucide-icon [name]="nav.icon" [size]="20" class="nav-icon"></lucide-icon>
-              <span>{{ nav.text }}</span>
-            </button>
-          </li>
+          @for (nav of navigationOptions; track nav) {
+            <li>
+              <button
+                class="nav-item"
+                [class.active]="isActive(nav.path)"
+                (click)="routeTo(nav.path)"
+                >
+                <lucide-icon [name]="nav.icon" [size]="20" class="nav-icon"></lucide-icon>
+                <span>{{ nav.text }}</span>
+              </button>
+            </li>
+          }
         </ul>
 
         <div class="sidenav-footer">

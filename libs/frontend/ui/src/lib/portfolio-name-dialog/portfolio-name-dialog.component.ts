@@ -1,5 +1,5 @@
-import { Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { DialogRef, DIALOG_DATA, DIALOG_REF } from '../dialog/dialog-ref';
 
@@ -12,15 +12,17 @@ export type PortfolioNameDialogData = {
   selector: 'aws-portfolio-name-dialog',
   templateUrl: './portfolio-name-dialog.component.html',
   styleUrls: ['./portfolio-name-dialog.component.scss'],
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
 })
 export class PortfolioNameDialogComponent {
+  dialogRef = inject<DialogRef<PortfolioNameDialogComponent, string>>(DIALOG_REF);
+  data = inject<PortfolioNameDialogData>(DIALOG_DATA);
+
   name: string;
 
-  constructor(
-    @Inject(DIALOG_REF) public dialogRef: DialogRef<PortfolioNameDialogComponent, string>,
-    @Inject(DIALOG_DATA) public data: PortfolioNameDialogData
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.name = data.initialName ?? '';
   }
 

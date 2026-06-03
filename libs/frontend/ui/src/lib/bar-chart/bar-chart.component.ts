@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { EChartsOption } from 'echarts';
 import { NgxEchartsDirective } from 'ngx-echarts';
-import { CommonModule, NgIf } from '@angular/common';
+
 
 const NAUTICAL_TEXT  = '#F5F0E8';
 const NAUTICAL_MUTED = '#8FA8C0';
@@ -14,9 +14,8 @@ const NAUTICAL_GRID  = 'rgba(201,168,76,0.1)';
   templateUrl: './bar-chart.component.html',
   styleUrls: ['./bar-chart.component.scss'],
   imports: [
-    NgxEchartsDirective,
-    CommonModule
-  ]
+    NgxEchartsDirective
+]
 })
 export class BarChartComponent implements OnChanges {
   @Input() series: { years: string[]; yields: number[]; profit: number[] } = {

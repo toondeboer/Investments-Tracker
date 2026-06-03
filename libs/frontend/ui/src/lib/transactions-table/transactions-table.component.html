@@ -1,135 +1,155 @@
 <div class="transactions-page">
 
   <!-- Empty state -->
-  <div class="empty-holdings" *ngIf="!Object.keys(stocks).length">
-    <p class="empty-text">No holdings yet.</p>
-    <button class="btn btn-primary" (click)="onAddHolding()">
-      <lucide-icon name="Plus" [size]="16"></lucide-icon>
-      Add holding
-    </button>
-  </div>
+  @if (!Object.keys(stocks).length) {
+    <div class="empty-holdings">
+      <p class="empty-text">No holdings yet.</p>
+      <button class="btn btn-primary" (click)="onAddHolding()">
+        <lucide-icon name="Plus" [size]="16"></lucide-icon>
+        Add holding
+      </button>
+    </div>
+  }
 
   <!-- Transaction list per ticker -->
-  <div class="ticker-section" *ngFor="let key of Object.keys(stocks)">
-    <details class="ticker-panel">
-      <summary class="ticker-header">
-        <div class="ticker-header-left">
-          <span class="ticker-name">{{ stocks[key].ticker }}</span>
-          <span class="currency-badge">{{ stocks[key].currency.value }}</span>
+  @for (key of Object.keys(stocks); track key) {
+    <div class="ticker-section">
+      <details class="ticker-panel">
+        <summary class="ticker-header">
+          <div class="ticker-header-left">
+            <span class="ticker-name">{{ stocks[key].ticker }}</span>
+            <span class="currency-badge">{{ stocks[key].currency.value }}</span>
+          </div>
+          <div class="ticker-header-right">
+            @if (stocks[key].summary.portfolioValue) {
+              <div class="ticker-meta">
+                <span class="holding-value">{{ stocks[key].summary.portfolioValue | currency:baseCurrency:'symbol':'1.0-0' }}</span>
+                <span class="holding-shares">{{ stocks[key].summary.amountOfShares | number:'1.0-2' }} shares</span>
+              </div>
+            }
+            <div class="holding-actions">
+              <button
+                class="icon-btn"
+                title="Add transaction"
+                (click)="$event.stopPropagation(); $event.preventDefault(); onAddTransaction(stocks[key])"
+                >
+                <lucide-icon name="Plus" [size]="16"></lucide-icon>
+              </button>
+              <button
+                class="icon-btn"
+                title="Edit holding"
+                (click)="$event.stopPropagation(); $event.preventDefault(); onEditHolding(stocks[key])"
+                >
+                <lucide-icon name="Pencil" [size]="15"></lucide-icon>
+              </button>
+              <button
+                class="icon-btn icon-btn--danger"
+                title="Delete holding"
+                (click)="$event.stopPropagation(); $event.preventDefault(); onDeleteHolding(stocks[key])"
+                >
+                <lucide-icon name="Trash2" [size]="15"></lucide-icon>
+              </button>
+            </div>
+            <span class="ticker-arrow">›</span>
+          </div>
+        </summary>
+        <div class="ticker-body">
+          @if (stocks[key].transactions) {
+            <!-- Stock transactions -->
+            @if (stocks[key].transactions?.stock?.length) {
+              <div class="transaction-group">
+                <div class="group-label">Stocks</div>
+                <div class="transaction-table">
+                  <div class="table-header">
+                    <span class="col-date">Date</span>
+                    <span class="col-num">Amount</span>
+                    <span class="col-num">Value</span>
+                    <span class="col-num">Price/Share</span>
+                    <span class="col-actions"></span>
+                  </div>
+                  @for (transaction of stocks[key].transactions?.stock; track transaction) {
+                    <div class="transaction-row">
+                      <span class="col-date">{{ transaction.date | date:'d MMM y' }}</span>
+                      <span class="col-num">{{ transaction.amount }}</span>
+                      <span class="col-num">
+                        <span class="val-primary">{{ displayValue(transaction) | currency:baseCurrency:'symbol':'1.2-2' }}</span>
+                        @if (transaction.convertedValue !== undefined) {
+                          <span class="val-native">{{ transaction.value | currency:transaction.currency:'symbol':'1.2-2' }}</span>
+                        }
+                      </span>
+                      <span class="col-num">
+                        <span class="val-primary">{{ displayValue(transaction) / transaction.amount | currency:baseCurrency:'symbol':'1.2-2' }}</span>
+                        @if (transaction.convertedValue !== undefined) {
+                          <span class="val-native">{{ transaction.value / transaction.amount | currency:transaction.currency:'symbol':'1.2-2' }}</span>
+                        }
+                      </span>
+                      <span class="col-actions">
+                        <ng-container *ngTemplateOutlet="rowActions; context: { $implicit: transaction }"></ng-container>
+                      </span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+            <!-- Dividend transactions -->
+            @if (stocks[key].transactions?.dividend?.length) {
+              <div class="transaction-group">
+                <div class="group-label">Dividends</div>
+                <div class="transaction-table">
+                  <div class="table-header">
+                    <span class="col-date">Date</span>
+                    <span class="col-num">Value</span>
+                    <span class="col-actions"></span>
+                  </div>
+                  @for (transaction of stocks[key].transactions?.dividend; track transaction) {
+                    <div class="transaction-row">
+                      <span class="col-date">{{ transaction.date | date:'d MMM y' }}</span>
+                      <span class="col-num">
+                        <span class="val-primary positive">{{ displayValue(transaction) | currency:baseCurrency:'symbol':'1.2-2' }}</span>
+                        @if (transaction.convertedValue !== undefined) {
+                          <span class="val-native">{{ transaction.value | currency:transaction.currency:'symbol':'1.2-2' }}</span>
+                        }
+                      </span>
+                      <span class="col-actions">
+                        <ng-container *ngTemplateOutlet="rowActions; context: { $implicit: transaction }"></ng-container>
+                      </span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+            <!-- Commission transactions -->
+            @if (stocks[key].transactions?.commission?.length) {
+              <div class="transaction-group">
+                <div class="group-label">Commission</div>
+                <div class="transaction-table">
+                  <div class="table-header">
+                    <span class="col-date">Date</span>
+                    <span class="col-num">Value</span>
+                    <span class="col-actions"></span>
+                  </div>
+                  @for (transaction of stocks[key].transactions?.commission; track transaction) {
+                    <div class="transaction-row">
+                      <span class="col-date">{{ transaction.date | date:'d MMM y' }}</span>
+                      <span class="col-num">
+                        <span class="val-primary negative">{{ displayValue(transaction) | currency:baseCurrency:'symbol':'1.2-2' }}</span>
+                        @if (transaction.convertedValue !== undefined) {
+                          <span class="val-native">{{ transaction.value | currency:transaction.currency:'symbol':'1.2-2' }}</span>
+                        }
+                      </span>
+                      <span class="col-actions">
+                        <ng-container *ngTemplateOutlet="rowActions; context: { $implicit: transaction }"></ng-container>
+                      </span>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          }
         </div>
-        <div class="ticker-header-right">
-          <div class="ticker-meta" *ngIf="stocks[key].summary.portfolioValue">
-            <span class="holding-value">{{ stocks[key].summary.portfolioValue | currency:baseCurrency:'symbol':'1.0-0' }}</span>
-            <span class="holding-shares">{{ stocks[key].summary.amountOfShares | number:'1.0-2' }} shares</span>
-          </div>
-          <div class="holding-actions">
-            <button
-              class="icon-btn"
-              title="Add transaction"
-              (click)="$event.stopPropagation(); $event.preventDefault(); onAddTransaction(stocks[key])"
-            >
-              <lucide-icon name="Plus" [size]="16"></lucide-icon>
-            </button>
-            <button
-              class="icon-btn"
-              title="Edit holding"
-              (click)="$event.stopPropagation(); $event.preventDefault(); onEditHolding(stocks[key])"
-            >
-              <lucide-icon name="Pencil" [size]="15"></lucide-icon>
-            </button>
-            <button
-              class="icon-btn icon-btn--danger"
-              title="Delete holding"
-              (click)="$event.stopPropagation(); $event.preventDefault(); onDeleteHolding(stocks[key])"
-            >
-              <lucide-icon name="Trash2" [size]="15"></lucide-icon>
-            </button>
-          </div>
-          <span class="ticker-arrow">›</span>
-        </div>
-      </summary>
-
-      <div class="ticker-body">
-
-        <ng-container *ngIf="stocks[key].transactions">
-
-          <!-- Stock transactions -->
-          <div class="transaction-group" *ngIf="stocks[key].transactions?.stock?.length">
-            <div class="group-label">Stocks</div>
-            <div class="transaction-table">
-              <div class="table-header">
-                <span class="col-date">Date</span>
-                <span class="col-num">Amount</span>
-                <span class="col-num">Value</span>
-                <span class="col-num">Price/Share</span>
-                <span class="col-actions"></span>
-              </div>
-              <div class="transaction-row" *ngFor="let transaction of stocks[key].transactions?.stock">
-                <span class="col-date">{{ transaction.date | date:'d MMM y' }}</span>
-                <span class="col-num">{{ transaction.amount }}</span>
-                <span class="col-num">
-                  <span class="val-primary">{{ displayValue(transaction) | currency:baseCurrency:'symbol':'1.2-2' }}</span>
-                  <span class="val-native" *ngIf="transaction.convertedValue !== undefined">{{ transaction.value | currency:transaction.currency:'symbol':'1.2-2' }}</span>
-                </span>
-                <span class="col-num">
-                  <span class="val-primary">{{ displayValue(transaction) / transaction.amount | currency:baseCurrency:'symbol':'1.2-2' }}</span>
-                  <span class="val-native" *ngIf="transaction.convertedValue !== undefined">{{ transaction.value / transaction.amount | currency:transaction.currency:'symbol':'1.2-2' }}</span>
-                </span>
-                <span class="col-actions">
-                  <ng-container *ngTemplateOutlet="rowActions; context: { $implicit: transaction }"></ng-container>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Dividend transactions -->
-          <div class="transaction-group" *ngIf="stocks[key].transactions?.dividend?.length">
-            <div class="group-label">Dividends</div>
-            <div class="transaction-table">
-              <div class="table-header">
-                <span class="col-date">Date</span>
-                <span class="col-num">Value</span>
-                <span class="col-actions"></span>
-              </div>
-              <div class="transaction-row" *ngFor="let transaction of stocks[key].transactions?.dividend">
-                <span class="col-date">{{ transaction.date | date:'d MMM y' }}</span>
-                <span class="col-num">
-                  <span class="val-primary positive">{{ displayValue(transaction) | currency:baseCurrency:'symbol':'1.2-2' }}</span>
-                  <span class="val-native" *ngIf="transaction.convertedValue !== undefined">{{ transaction.value | currency:transaction.currency:'symbol':'1.2-2' }}</span>
-                </span>
-                <span class="col-actions">
-                  <ng-container *ngTemplateOutlet="rowActions; context: { $implicit: transaction }"></ng-container>
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Commission transactions -->
-          <div class="transaction-group" *ngIf="stocks[key].transactions?.commission?.length">
-            <div class="group-label">Commission</div>
-            <div class="transaction-table">
-              <div class="table-header">
-                <span class="col-date">Date</span>
-                <span class="col-num">Value</span>
-                <span class="col-actions"></span>
-              </div>
-              <div class="transaction-row" *ngFor="let transaction of stocks[key].transactions?.commission">
-                <span class="col-date">{{ transaction.date | date:'d MMM y' }}</span>
-                <span class="col-num">
-                  <span class="val-primary negative">{{ displayValue(transaction) | currency:baseCurrency:'symbol':'1.2-2' }}</span>
-                  <span class="val-native" *ngIf="transaction.convertedValue !== undefined">{{ transaction.value | currency:transaction.currency:'symbol':'1.2-2' }}</span>
-                </span>
-                <span class="col-actions">
-                  <ng-container *ngTemplateOutlet="rowActions; context: { $implicit: transaction }"></ng-container>
-                </span>
-              </div>
-            </div>
-          </div>
-
-        </ng-container>
-      </div>
-    </details>
-  </div>
+      </details>
+    </div>
+  }
 
 </div>
 

@@ -1,4 +1,4 @@
-import { Injectable, Injector, Type } from '@angular/core';
+import { Injectable, Injector, Type, inject } from '@angular/core';
 import { Overlay, OverlayConfig } from '@angular/cdk/overlay';
 import { ComponentPortal } from '@angular/cdk/portal';
 import { FocusTrapFactory } from '@angular/cdk/a11y';
@@ -12,11 +12,10 @@ export interface DialogConfig<D = unknown> {
 
 @Injectable({ providedIn: 'root' })
 export class DialogService {
-  constructor(
-    private overlay: Overlay,
-    private injector: Injector,
-    private focusTrapFactory: FocusTrapFactory
-  ) {}
+  private overlay = inject(Overlay);
+  private injector = inject(Injector);
+  private focusTrapFactory = inject(FocusTrapFactory);
+
 
   open<T, D = unknown, R = unknown>(
     component: Type<T>,

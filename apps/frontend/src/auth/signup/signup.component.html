@@ -1,96 +1,106 @@
 <div class="page">
   <!-- Step 1: Register -->
-  <div class="card" *ngIf="step === 'register'" (keydown.enter)="register()">
-    <div class="wordmark">s<span class="ai">AI</span>lor</div>
-    <h1 class="heading">Create an account</h1>
-    <p class="subheading">Start tracking your portfolio</p>
-
-    <div class="error-banner" *ngIf="error" role="alert">{{ error }}</div>
-
-    <div class="field">
-      <label for="email">Email</label>
-      <input
-        id="email"
-        type="email"
-        autocomplete="email"
-        placeholder="you@example.com"
-        [(ngModel)]="email"
-        [disabled]="loading"
-      />
+  @if (step === 'register') {
+    <div class="card" (keydown.enter)="register()">
+      <div class="wordmark">s<span class="ai">AI</span>lor</div>
+      <h1 class="heading">Create an account</h1>
+      <p class="subheading">Start tracking your portfolio</p>
+      @if (error) {
+        <div class="error-banner" role="alert">{{ error }}</div>
+      }
+      <div class="field">
+        <label for="email">Email</label>
+        <input
+          id="email"
+          type="email"
+          autocomplete="email"
+          placeholder="you@example.com"
+          [(ngModel)]="email"
+          [disabled]="loading"
+          />
+      </div>
+      <div class="field">
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          autocomplete="new-password"
+          placeholder="Min. 8 characters"
+          [(ngModel)]="password"
+          [disabled]="loading"
+          />
+      </div>
+      <div class="field">
+        <label for="confirm">Confirm password</label>
+        <input
+          id="confirm"
+          type="password"
+          autocomplete="new-password"
+          placeholder="••••••••"
+          [(ngModel)]="confirmPassword"
+          [disabled]="loading"
+          [class.mismatch]="passwordMismatch"
+          />
+        @if (passwordMismatch) {
+          <span class="hint mismatch-hint">Passwords do not match</span>
+        }
+      </div>
+      <button
+        class="btn-primary"
+        (click)="register()"
+        [disabled]="loading || !email || !password || !confirmPassword || passwordMismatch"
+        >
+        @if (!loading) {
+          <span>Create account</span>
+        }
+        @if (loading) {
+          <span class="spinner"></span>
+        }
+      </button>
+      <p class="footer-link">
+        Already have an account? <a routerLink="/signin">Sign in</a>
+      </p>
     </div>
-
-    <div class="field">
-      <label for="password">Password</label>
-      <input
-        id="password"
-        type="password"
-        autocomplete="new-password"
-        placeholder="Min. 8 characters"
-        [(ngModel)]="password"
-        [disabled]="loading"
-      />
-    </div>
-
-    <div class="field">
-      <label for="confirm">Confirm password</label>
-      <input
-        id="confirm"
-        type="password"
-        autocomplete="new-password"
-        placeholder="••••••••"
-        [(ngModel)]="confirmPassword"
-        [disabled]="loading"
-        [class.mismatch]="passwordMismatch"
-      />
-      <span class="hint mismatch-hint" *ngIf="passwordMismatch">Passwords do not match</span>
-    </div>
-
-    <button
-      class="btn-primary"
-      (click)="register()"
-      [disabled]="loading || !email || !password || !confirmPassword || passwordMismatch"
-    >
-      <span *ngIf="!loading">Create account</span>
-      <span *ngIf="loading" class="spinner"></span>
-    </button>
-
-    <p class="footer-link">
-      Already have an account? <a routerLink="/signin">Sign in</a>
-    </p>
-  </div>
+  }
 
   <!-- Step 2: Confirm email -->
-  <div class="card" *ngIf="step === 'confirm'" (keydown.enter)="confirm()">
-    <div class="wordmark">s<span class="ai">AI</span>lor</div>
-    <div class="check-icon">✉</div>
-    <h1 class="heading">Check your email</h1>
-    <p class="subheading">We sent a 6-digit code to <strong>{{ email }}</strong></p>
-
-    <div class="error-banner" *ngIf="error" role="alert">{{ error }}</div>
-    <div class="info-banner" *ngIf="info">{{ info }}</div>
-
-    <div class="field">
-      <label for="code">Confirmation code</label>
-      <input
-        id="code"
-        type="text"
-        inputmode="numeric"
-        autocomplete="one-time-code"
-        placeholder="123456"
-        maxlength="6"
-        [(ngModel)]="code"
-        [disabled]="loading"
-        class="code-input"
-      />
+  @if (step === 'confirm') {
+    <div class="card" (keydown.enter)="confirm()">
+      <div class="wordmark">s<span class="ai">AI</span>lor</div>
+      <div class="check-icon">✉</div>
+      <h1 class="heading">Check your email</h1>
+      <p class="subheading">We sent a 6-digit code to <strong>{{ email }}</strong></p>
+      @if (error) {
+        <div class="error-banner" role="alert">{{ error }}</div>
+      }
+      @if (info) {
+        <div class="info-banner">{{ info }}</div>
+      }
+      <div class="field">
+        <label for="code">Confirmation code</label>
+        <input
+          id="code"
+          type="text"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          placeholder="123456"
+          maxlength="6"
+          [(ngModel)]="code"
+          [disabled]="loading"
+          class="code-input"
+          />
+      </div>
+      <button class="btn-primary" (click)="confirm()" [disabled]="loading || code.length < 6">
+        @if (!loading) {
+          <span>Verify email</span>
+        }
+        @if (loading) {
+          <span class="spinner"></span>
+        }
+      </button>
+      <p class="footer-link">
+        Didn't receive it? <button class="link-btn" (click)="resend()" [disabled]="loading">Resend code</button>
+      </p>
     </div>
-
-    <button class="btn-primary" (click)="confirm()" [disabled]="loading || code.length < 6">
-      <span *ngIf="!loading">Verify email</span>
-      <span *ngIf="loading" class="spinner"></span>
-    </button>
-
-    <p class="footer-link">
-      Didn't receive it? <button class="link-btn" (click)="resend()" [disabled]="loading">Resend code</button>
-    </p>
-  </div>
+  }
 </div>

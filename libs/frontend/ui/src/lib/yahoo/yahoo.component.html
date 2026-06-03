@@ -73,20 +73,22 @@
 </div>
 
 <!-- ─── Holdings (live Yahoo prices) ─────────────────────────────────────── -->
-<div class="chart-section" *ngIf="yahoo$ | async as yahoo">
-  <h3 class="section-title">Holdings</h3>
-  <div class="charts-grid">
-
-    <div class="chart-card" *ngFor="let ticker of Object.keys(yahoo.tickers)">
-      <aws-chart
-        [x]="yahoo.tickers[ticker].dates"
-        [y]="yahoo.tickers[ticker].values"
-        [label]="ticker"
-      ></aws-chart>
+@if (yahoo$ | async; as yahoo) {
+  <div class="chart-section">
+    <h3 class="section-title">Holdings</h3>
+    <div class="charts-grid">
+      @for (ticker of Object.keys(yahoo.tickers); track ticker) {
+        <div class="chart-card">
+          <aws-chart
+            [x]="yahoo.tickers[ticker].dates"
+            [y]="yahoo.tickers[ticker].values"
+            [label]="ticker"
+          ></aws-chart>
+        </div>
+      }
     </div>
-
   </div>
-</div>
+}
 
 <!-- ─── Transactions ──────────────────────────────────────────────────────── -->
 <div class="chart-section">

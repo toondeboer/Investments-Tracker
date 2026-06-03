@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { EChartsOption } from 'echarts';
 import { NgxEchartsDirective } from 'ngx-echarts';
-import { CommonModule, NgIf } from '@angular/common';
+
 
 const NAUTICAL_TEXT  = '#F5F0E8';
 const NAUTICAL_MUTED = '#8FA8C0';
@@ -12,7 +12,7 @@ const NAUTICAL_GRID  = 'rgba(201,168,76,0.1)';
   selector: 'aws-chart',
   templateUrl: './chart.component.html',
   styleUrls: ['./chart.component.scss'],
-  imports: [NgxEchartsDirective, CommonModule],
+  imports: [NgxEchartsDirective],
 })
 export class ChartComponent implements OnChanges {
   @Input() x: Date[] = [];
