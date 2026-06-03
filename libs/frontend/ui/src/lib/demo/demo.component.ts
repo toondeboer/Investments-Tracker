@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -9,6 +9,9 @@ import { BarAndLineChartComponent } from '../bar-and-line-chart/bar-and-line-cha
 import { BarChartPerQuarterByYearComponent } from '../bar-chart-per-quarter-by-year/bar-chart-per-quarter-by-year.component';
 import { SummaryComponent } from '../summary/summary.component';
 import { ScrollingTextComponent } from '../scrolling-text/scrolling-text.component';
+import { InsightsBannerComponent } from '../insights-banner/insights-banner.component';
+import { CaptainPanelComponent } from '../captain-panel/captain-panel.component';
+import { DialogService } from '../dialog/dialog.service';
 import {
   buildDemoAnnualReturns,
   buildDemoQuarterlyDividends,
@@ -36,11 +39,14 @@ import {
     BarChartPerQuarterByYearComponent,
     SummaryComponent,
     ScrollingTextComponent,
+    InsightsBannerComponent,
   ],
   templateUrl: './demo.component.html',
   styleUrl: './demo.component.scss',
 })
 export class DemoComponent {
+  private readonly dialog = inject(DialogService);
+
   readonly currency = 'EUR';
   readonly currencySymbol = '€';
 
@@ -60,4 +66,12 @@ export class DemoComponent {
     buildDemoQuarterlyDividends();
   readonly ttmDividends: { yearQuarters: YearQuarter[]; dividends: number[] } =
     buildDemoTtmDividends();
+
+  // Opens "Ask the Captain" in demo mode — canned, offline replies, no API call.
+  openCaptain(): void {
+    this.dialog.open(CaptainPanelComponent, {
+      width: '440px',
+      data: { demo: true },
+    });
+  }
 }

@@ -54,6 +54,12 @@
     @if (vm.loading) {
       <div class="computing-bar"></div>
     }
+    <!-- Captain's read (auto, daily-cached) — only when there are holdings -->
+    @if ((vm.state?.stocks | keyvalue)?.length) {
+      <section class="page-section">
+        <aws-insights-banner></aws-insights-banner>
+      </section>
+    }
     <section class="page-section">
       <aws-summary [summary]="vm.state?.summary" [currency]="vm.currency ?? 'EUR'"></aws-summary>
     </section>

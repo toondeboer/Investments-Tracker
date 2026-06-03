@@ -13,6 +13,13 @@ dynamodb.zip
 node_modules
 .venv
 
+# python bytecode
+__pycache__/
+*.pyc
+
+# local SAM env vars (contains the OpenAI API key) — never commit
+env.json
+
 # IDEs and editors
 /.idea
 .project

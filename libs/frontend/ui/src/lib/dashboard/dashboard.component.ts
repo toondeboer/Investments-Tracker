@@ -14,12 +14,13 @@ import { Store } from '@ngrx/store';
 import { SummaryComponent } from '../summary/summary.component';
 import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
 import { ActiveTickersComponent } from '../active-tickers/active-tickers.component';
+import { InsightsBannerComponent } from '../insights-banner/insights-banner.component';
 
 @Component({
   selector: 'aws-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  imports: [SummaryComponent, AsyncPipe, CommonModule, DatePipe, ActiveTickersComponent],
+  imports: [SummaryComponent, AsyncPipe, CommonModule, DatePipe, ActiveTickersComponent, InsightsBannerComponent],
 })
 export class DashboardComponent {
   private store = inject(Store);

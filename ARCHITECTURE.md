@@ -15,17 +15,20 @@ libs/
   frontend/ui/         Presentational components (dashboard, charts, tables, landing page)
   frontend/state/      NgRx "state" slice — portfolio transactions
   frontend/yahoo/      NgRx "yahoo" slice — price tickers
+  frontend/captain/    NgRx "captain" slice — "Ask the Captain" GenAI insights
   shared/util/         Framework-agnostic domain logic (pure, heavily unit-tested)
 services/
   handler_dynamodb.py  DynamoDB Lambda — CRUD + Cognito JWT auth
   handler_yahoo.py     Yahoo Finance Lambda — fan-out price fetch
-  shared/              Shared utilities (cors.py, auth.py)
+  handler_captain.py   Captain Lambda — OpenAI chat/insights + Cognito JWT auth
+  shared/              Shared utilities (cors.py, auth.py, secrets.py)
   requirements.txt     Python dependencies for all Lambdas
   init_dynamodb.py     One-time local dev table setup
 ```
 
 Module boundaries are enforced by `@nx/enforce-module-boundaries`. Dependencies flow one way:
-`ui` / `state` / `yahoo` → `util`; `yahoo` → `state` (never the reverse — see "Prices" below).
+`ui` / `state` / `yahoo` / `captain` → `util`; `yahoo` / `captain` → `state` (never the
+reverse — see "Prices" below). `captain` never imports `yahoo`.
 
 ## Data flow
 
@@ -86,16 +89,45 @@ a user can only read/write their own data.
 
 ## Backend
 
-Two Python 3.13 Lambdas behind one API Gateway:
+Three Python 3.13 Lambdas behind one API Gateway:
 
 - **dynamodb** (`handler_dynamodb.py`) — CRUD over the `sailor` table (partition key =
   Cognito `sub`); verifies the Cognito ID token's signature via JWKS; CORS via an origin allowlist
   that reflects the request `Origin`.
 - **yahoo** (`handler_yahoo.py`) — fans out to the Yahoo Finance API for the requested symbols
   (`ThreadPoolExecutor`, per-request timeout), returning per-symbol results.
+- **captain** (`handler_captain.py`) — verifies the Cognito ID token, then calls the OpenAI Chat
+  Completions API. The OpenAI key is read from an SSM Parameter Store SecureString (cached
+  module-level, like the JWKS cache), with an `OPENAI_API_KEY` env-var fallback for local dev.
+  See "Ask the Captain (GenAI)" below.
 
-`sam build` packages each handler with `services/requirements.txt` (PyJWT + cryptography);
-`boto3` is provided by the Lambda Python runtime and not bundled.
+`sam build` packages each handler with `services/requirements.txt` (PyJWT + cryptography +
+openai); `boto3` is provided by the Lambda Python runtime and not bundled.
+
+## Ask the Captain (GenAI)
+
+A sailing-themed assistant ("the Captain") that **explains** the user's portfolio in plain
+language — a chat panel plus an auto-generated, daily-cached "Captain's read" on the dashboard.
+
+- **Deterministic first, LLM second.** The client computes a compact summary
+  (`buildCaptainSummary`) and the biggest movers (`detectMovers`) from the existing `selectState`
+  view-model, then sends only that JSON — not raw time-series — to the Lambda. The model narrates;
+  it never computes. This keeps tokens (and cost) low and the numbers reproducible.
+- **No financial advice.** The Lambda's system prompt scopes answers to the provided summary and
+  refuses any advice/forecast/recommendation with a varied, funny sailing-themed deflection. A
+  persistent disclaimer reinforces this in the UI.
+- **Cost control.** Requests go through an authenticated Lambda (key server-side), use the cheapest
+  small model with a tight `max_tokens`, and the dashboard insight is cached per day + portfolio in
+  `localStorage`, so a reload or same-day revisit triggers no new call.
+- **Demo mode.** The public `/demo` page is unauthenticated, so it never calls the Lambda — the chat
+  and insight render canned, offline responses from `captain.demo.ts` (the same advice-refusal
+  behaviour, mirrored client-side).
+
+```
+component ─build summary (selectState)→ captain effect ─POST /captain→ handler_captain.py → OpenAI
+                                              │  demo? → canned reply, no network
+                                  loadInsights cache (localStorage, per day + portfolio)
+```
 
 ## Infrastructure & CI
 

@@ -27,6 +27,17 @@ Parameters:
       Existing DynamoDB table (holds user data). Intentionally NOT created by this
       stack so a fresh deploy can't replace it with an empty table — the function is
       only granted access to it.
+  OpenAIParamName:
+    Type: String
+    Default: /sailor/openai-api-key
+    Description: >
+      Name of the SSM Parameter Store SecureString holding the OpenAI API key.
+      Created out-of-band (see README) and intentionally NOT managed by this stack
+      so the secret never lives in the template or CI logs.
+  OpenAIModel:
+    Type: String
+    Default: gpt-5.4-mini
+    Description: OpenAI chat model for the Captain. Verify live pricing before changing.
 
 Globals:
   Function:
@@ -82,6 +93,39 @@ Resources:
             Path: /microservice
             Method: any
 
+  CaptainFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handler_captain.handler
+      Environment:
+        Variables:
+          ALLOWED_ORIGINS: !Ref AllowedOrigins
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+          COGNITO_CLIENT_ID: !Ref CognitoClientId
+          OPENAI_PARAM_NAME: !Ref OpenAIParamName
+          OPENAI_MODEL: !Ref OpenAIModel
+          # Empty by default (prod reads the key from SSM). Declared so a local
+          # `sam local --env-vars env.json` override can inject it — SAM only
+          # overrides variables that already exist in the template. Empty string
+          # is falsy, so prod still falls through to SSM.
+          OPENAI_API_KEY: ''
+      Policies:
+        # Read-only access to just the OpenAI key parameter (decryption via the
+        # AWS-managed aws/ssm key is handled transparently by SSM, for free).
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action: ssm:GetParameter
+              Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${OpenAIParamName}'
+      Events:
+        Captain:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /captain
+            # ANY so the Lambda also answers the CORS preflight (OPTIONS).
+            Method: any
+
 Outputs:
   ApiBaseUrl:
     Description: Base URL of the deployed API stage.
@@ -92,3 +136,6 @@ Outputs:
   MicroserviceEndpoint:
     Description: Copy into environment.prod.ts -> dynamoDBLambdaUrl
     Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/microservice'
+  CaptainEndpoint:
+    Description: Copy into environment.prod.ts -> captainLambdaUrl
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/captain'

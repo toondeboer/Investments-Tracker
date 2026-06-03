@@ -1,0 +1,67 @@
+<div class="captain">
+  <!-- Header -->
+  <header class="captain-header">
+    <div class="captain-title">
+      <lucide-icon name="Ship" [size]="22"></lucide-icon>
+      <div>
+        <h2>Ask the Captain</h2>
+        <p class="captain-subtitle">A plain-language read of your charts.</p>
+      </div>
+    </div>
+    <button class="icon-btn" (click)="close()" aria-label="Close">
+      <lucide-icon name="X" [size]="20"></lucide-icon>
+    </button>
+  </header>
+
+  <!-- Conversation -->
+  <div class="captain-messages">
+    @if ((messages$ | async)?.length) {
+      @for (msg of messages$ | async; track $index) {
+        <div class="bubble" [class.user]="msg.role === 'user'" [class.captain-bubble]="msg.role === 'assistant'">
+          {{ msg.content }}
+        </div>
+      }
+    } @else {
+      <div class="captain-welcome">
+        <lucide-icon name="Compass" [size]="28"></lucide-icon>
+        <p>Ahoy! Ask me what your numbers are doing — or tap a prompt below.</p>
+      </div>
+    }
+
+    @if (loading$ | async) {
+      <div class="bubble captain-bubble typing">
+        <span></span><span></span><span></span>
+      </div>
+    }
+
+    @if (error$ | async; as error) {
+      <div class="captain-error">The Captain couldn't reply just now. Try again shortly.</div>
+    }
+  </div>
+
+  <!-- Ready-to-use prompts -->
+  <div class="captain-prompts">
+    @for (prompt of prompts; track prompt) {
+      <button class="prompt-chip" (click)="send(prompt)" type="button">{{ prompt }}</button>
+    }
+  </div>
+
+  <!-- Input -->
+  <div class="captain-input">
+    <input
+      type="text"
+      [(ngModel)]="draft"
+      (keyup.enter)="send(draft)"
+      placeholder="Ask about your portfolio…"
+      aria-label="Message the Captain"
+    />
+    <button class="send-btn" (click)="send(draft)" [disabled]="!draft.trim()" aria-label="Send">
+      <lucide-icon name="Send" [size]="18"></lucide-icon>
+    </button>
+  </div>
+
+  <!-- Disclaimer -->
+  <p class="captain-disclaimer">
+    The Captain shares facts about your portfolio, not financial advice.
+  </p>
+</div>
