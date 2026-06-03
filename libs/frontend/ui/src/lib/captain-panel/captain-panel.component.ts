@@ -1,0 +1,61 @@
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
+import { Store } from '@ngrx/store';
+import {
+  CAPTAIN_PROMPTS,
+  clearChat,
+  selectChatError,
+  selectChatLoading,
+  selectMessages,
+  sendMessage,
+} from '@aws/captain';
+import { DialogRef, DIALOG_DATA, DIALOG_REF } from '../dialog/dialog-ref';
+
+export type CaptainPanelData = {
+  /** Demo mode serves canned replies and never calls the Lambda. */
+  demo?: boolean;
+};
+
+/**
+ * "Ask the Captain" chat panel. Wired to the global `captain` NgRx slice; when
+ * opened in demo mode the same actions resolve to canned, offline replies (see
+ * the captain effects), so this one component serves both the app and /demo.
+ */
+@Component({
+  selector: 'aws-captain-panel',
+  standalone: true,
+  imports: [CommonModule, FormsModule, LucideAngularModule],
+  templateUrl: './captain-panel.component.html',
+  styleUrls: ['./captain-panel.component.scss'],
+})
+export class CaptainPanelComponent {
+  private store = inject(Store);
+  dialogRef = inject<DialogRef<CaptainPanelComponent>>(DIALOG_REF);
+  data = inject<CaptainPanelData>(DIALOG_DATA);
+
+  readonly prompts = CAPTAIN_PROMPTS;
+  messages$ = this.store.select(selectMessages);
+  loading$ = this.store.select(selectChatLoading);
+  error$ = this.store.select(selectChatError);
+
+  draft = '';
+
+  send(content: string): void {
+    const text = content.trim();
+    if (!text) {
+      return;
+    }
+    this.store.dispatch(sendMessage({ content: text, demo: this.data?.demo }));
+    this.draft = '';
+  }
+
+  clear(): void {
+    this.store.dispatch(clearChat());
+  }
+
+  close(): void {
+    this.dialogRef.close();
+  }
+}

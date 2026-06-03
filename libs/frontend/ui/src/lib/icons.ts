@@ -22,6 +22,8 @@ import {
   ArrowRight,
   Sparkles,
   LineChart,
+  Send,
+  X,
 } from 'lucide-angular';
 
 export const APP_ICONS = {
@@ -48,4 +50,6 @@ export const APP_ICONS = {
   ArrowRight,
   Sparkles,
   LineChart,
+  Send,
+  X,
 };

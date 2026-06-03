@@ -8,3 +8,5 @@ export * from './lib/settings/settings.component';
 export * from './lib/landing-page/landing-page.component';
 export * from './lib/demo/demo.component';
 export * from './lib/reveal-on-scroll/reveal-on-scroll.directive';
+export * from './lib/captain-panel/captain-panel.component';
+export * from './lib/insights-banner/insights-banner.component';

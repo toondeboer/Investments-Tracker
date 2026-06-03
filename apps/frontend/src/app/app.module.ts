@@ -14,6 +14,7 @@ import { EffectsModule } from '@ngrx/effects';
 import { HttpClientModule } from '@angular/common/http';
 import { UiModule } from '@aws/ui';
 import { YahooModule } from '@aws/yahoo';
+import { CaptainModule } from '@aws/captain';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { environment } from '../environments/environment';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -30,6 +31,7 @@ import { JwtInterceptor } from '../auth/jwtInterceptor/JwtInterceptor';
     EffectsModule.forRoot(),
     StateModule,
     YahooModule,
+    CaptainModule,
     StoreDevtoolsModule.instrument({connectInZone: true}),
     UiModule,
     OverlayModule,

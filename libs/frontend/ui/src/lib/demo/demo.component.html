@@ -31,6 +31,15 @@
       </p>
     </div>
 
+    <!-- Captain's read (static demo narrative) + chat launcher -->
+    <div class="demo-captain">
+      <aws-insights-banner [demo]="true"></aws-insights-banner>
+      <button class="btn btn-secondary demo-captain-btn" (click)="openCaptain()" type="button">
+        <lucide-icon name="Ship" [size]="18"></lucide-icon>
+        Ask the Captain
+      </button>
+    </div>
+
     <!-- Headline metrics -->
     <aws-summary [summary]="summary" [currency]="currency"></aws-summary>
 

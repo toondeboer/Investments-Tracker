@@ -6,6 +6,8 @@ import { getData, selectLoading } from '@aws/state';
 import { ScrollingTextComponent } from '../scrolling-text/scrolling-text.component';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
+import { DialogService } from '../dialog/dialog.service';
+import { CaptainPanelComponent } from '../captain-panel/captain-panel.component';
 
 @Component({
   selector: 'aws-page-wrapper',
@@ -21,6 +23,7 @@ import { LucideAngularModule } from 'lucide-angular';
 export class PageWrapperComponent implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private store = inject(Store);
+  private readonly dialog = inject(DialogService);
 
   loading$ = this.store.select(selectLoading);
   mobileQuery: MediaQueryList;
@@ -51,6 +54,10 @@ export class PageWrapperComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.store.dispatch(getData());
+  }
+
+  openCaptain(): void {
+    this.dialog.open(CaptainPanelComponent, { width: '440px' });
   }
 
   ngOnDestroy(): void {

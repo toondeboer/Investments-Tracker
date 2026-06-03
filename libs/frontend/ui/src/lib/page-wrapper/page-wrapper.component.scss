@@ -52,6 +52,34 @@ aws-scrolling-text {
   min-width: 0;
 }
 
+.captain-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 10px 0 6px;
+  padding: 7px 14px;
+  background: rgba($color-gold, 0.1);
+  border: 1px solid $color-border-strong;
+  border-radius: 999px;
+  cursor: pointer;
+  color: $color-gold;
+  font-family: $font-sans;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: $transition-base;
+
+  &:hover {
+    background: rgba($color-gold, 0.18);
+    color: $color-gold-light;
+  }
+
+  .is-mobile & .captain-btn-label {
+    display: none;
+  }
+}
+
 // ─── Loading bar ──────────────────────────────────────────────────────────────
 .loading-bar {
   height: 4px;

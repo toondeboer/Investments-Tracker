@@ -148,3 +148,17 @@
   .demo-badge { display: none; }
   .demo-intro h1 { font-size: 2rem; }
 }
+
+.demo-captain {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.demo-captain-btn {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
