@@ -1,6 +1,7 @@
 import { Route } from '@angular/router';
 import {
   DashboardComponent,
+  DemoComponent,
   PageWrapperComponent,
   PortfoliosComponent,
   SettingsComponent,
@@ -13,6 +14,7 @@ import { AuthGuard } from '../auth/guard/auth.guard';
 
 export const appRoutes: Route[] = [
   { path: 'login', component: LandingWrapperComponent },
+  { path: 'demo', component: DemoComponent },
   { path: 'signin', component: LoginComponent },
   { path: 'signup', component: SignUpComponent },
   { path: 'callback', redirectTo: 'login' },

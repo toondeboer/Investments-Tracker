@@ -1,0 +1,132 @@
+<div class="demo">
+  <!-- Banner -->
+  <header class="demo-banner">
+    <div class="demo-banner-inner">
+      <a routerLink="/login" class="demo-back">
+        <lucide-icon name="ChevronLeft" [size]="18"></lucide-icon>
+        Back to home
+      </a>
+      <div class="demo-badge">
+        <lucide-icon name="Compass" [size]="16"></lucide-icon>
+        Demo — sample data, no account needed
+      </div>
+      <a routerLink="/signin" class="btn btn-primary demo-cta">
+        Get Started
+        <lucide-icon name="ArrowRight" [size]="16"></lucide-icon>
+      </a>
+    </div>
+  </header>
+
+  <div class="demo-body">
+    <div class="demo-intro">
+      <h1>Chart your voyage</h1>
+      <p>
+        A live look at the sailor dashboard, powered by an example portfolio.
+        Hover the charts to explore — this is the clarity your own holdings get.
+      </p>
+    </div>
+
+    <!-- Headline metrics -->
+    <aws-summary [summary]="summary" [currency]="currency"></aws-summary>
+
+    <!-- Performance -->
+    <section class="demo-section">
+      <h2 class="demo-section-title">
+        <lucide-icon name="TrendingUp" [size]="20"></lucide-icon>
+        Performance
+      </h2>
+      <div class="demo-grid">
+        <div class="demo-card">
+          <aws-chart
+            [x]="dates"
+            [y]="portfolioValues"
+            label="Portfolio Value"
+            [money]="true"
+            [currencySymbol]="currencySymbol"
+          ></aws-chart>
+        </div>
+        <div class="demo-card">
+          <aws-chart
+            [x]="dates"
+            [y]="profit"
+            label="Profit"
+            [money]="true"
+            [currencySymbol]="currencySymbol"
+          ></aws-chart>
+        </div>
+        <div class="demo-card">
+          <aws-bar-chart [series]="annualReturns" [currencySymbol]="currencySymbol"></aws-bar-chart>
+        </div>
+      </div>
+    </section>
+
+    <!-- Dividends -->
+    <section class="demo-section">
+      <h2 class="demo-section-title">
+        <lucide-icon name="Sparkles" [size]="20"></lucide-icon>
+        Dividends
+      </h2>
+      <div class="demo-grid">
+        <div class="demo-card">
+          <aws-bar-chart-per-quarter-by-year
+            [series]="quarterlyDividends"
+            [currencySymbol]="currencySymbol"
+          ></aws-bar-chart-per-quarter-by-year>
+        </div>
+        <div class="demo-card">
+          <aws-bar-and-line-chart
+            [series]="ttmDividends"
+            [currencySymbol]="currencySymbol"
+          ></aws-bar-and-line-chart>
+        </div>
+        <div class="demo-card">
+          <aws-chart
+            [x]="dates"
+            [y]="cumulativeDividend"
+            label="Cumulative Dividend"
+            [money]="true"
+            [currencySymbol]="currencySymbol"
+          ></aws-chart>
+        </div>
+      </div>
+    </section>
+
+    <!-- Transactions -->
+    <section class="demo-section">
+      <h2 class="demo-section-title">
+        <lucide-icon name="Upload" [size]="20"></lucide-icon>
+        Transactions
+      </h2>
+      <div class="demo-grid">
+        <div class="demo-card">
+          <aws-chart
+            [x]="dates"
+            [y]="invested"
+            label="Cumulative Invested"
+            [money]="true"
+            [currencySymbol]="currencySymbol"
+          ></aws-chart>
+        </div>
+        <div class="demo-card">
+          <aws-chart
+            [x]="dates"
+            [y]="cumulativeCommission"
+            label="Cumulative Commission"
+            [money]="true"
+            [currencySymbol]="currencySymbol"
+          ></aws-chart>
+        </div>
+      </div>
+    </section>
+
+    <!-- Closing CTA -->
+    <section class="demo-closing">
+      <h2>Ready to chart your own course?</h2>
+      <p>Import your DeGiro history and see your real portfolio come alive in minutes.</p>
+      <a routerLink="/signin" class="btn btn-primary btn-large demo-cta">
+        Start Your Voyage
+        <lucide-icon name="ArrowRight" [size]="20"></lucide-icon>
+      </a>
+    </section>
+  </div>
+</div>

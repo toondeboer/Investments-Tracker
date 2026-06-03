@@ -7,6 +7,11 @@ import {
   OnDestroy,
 } from '@angular/core';
 import { CommonModule, DecimalPipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
+import { ChartComponent } from '../chart/chart.component';
+import { RevealOnScrollDirective } from '../reveal-on-scroll/reveal-on-scroll.directive';
+import { buildDemoSeries, buildDemoSummary } from '../demo/demo-data';
 
 interface Feature {
   icon: string;
@@ -23,7 +28,14 @@ interface Step {
 @Component({
   selector: 'aws-landing-page',
   standalone: true,
-  imports: [CommonModule, DecimalPipe],
+  imports: [
+    CommonModule,
+    DecimalPipe,
+    RouterLink,
+    LucideAngularModule,
+    ChartComponent,
+    RevealOnScrollDirective,
+  ],
   templateUrl: './landing-page.component.html',
   styleUrl: './landing-page.component.scss',
 })
@@ -33,32 +45,49 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   title = 'portfolio-tracker';
   isScrolled = false;
   mobileMenuOpen = false;
-  chartLoaded = false;
-  portfolioReturn = 12.5;
-  portfolioValue = 24856;
   currentYear = new Date().getFullYear();
+
+  // Rotating hero verb (nautical flavour, cross-faded via CSS).
+  heroWords = ['Navigate', 'Chart', 'Captain', 'Steer'];
+  heroWordIndex = 0;
+  heroWordVisible = true;
+  private wordTimer?: ReturnType<typeof setInterval>;
+
+  // Hero chart + stat cards — driven by the shared static demo series so the
+  // numbers and the curve tell the same story.
+  private readonly demoSeries = buildDemoSeries();
+  private readonly demoSummary = buildDemoSummary(this.demoSeries);
+  heroChartX: Date[] = this.demoSeries.dates;
+  heroChartY: number[] = this.demoSeries.portfolioValues;
+
+  portfolioReturn = 0;
+  portfolioValue = 0;
+
+  get heroWord(): string {
+    return this.heroWords[this.heroWordIndex];
+  }
 
   features: Feature[] = [
     {
-      icon: '⚓',
+      icon: 'ShieldCheck',
       title: 'Secure Harbour',
       description:
         'Enterprise-grade security keeps your portfolio data encrypted and protected at all times — a safe harbour for your investments.',
     },
     {
-      icon: '🧭',
+      icon: 'Sparkles',
       title: 'AI-Powered Insights',
       description:
         'Intelligent analytics chart your course. Beautiful visualisations and trend detection help you navigate markets with confidence.',
     },
     {
-      icon: '🌊',
+      icon: 'Upload',
       title: 'DeGiro Integration',
       description:
         'Seamlessly import CSV exports from DeGiro. Our smart parser automatically organises your trading history — no manual entry.',
     },
     {
-      icon: '⚡',
+      icon: 'Zap',
       title: 'Real-Time Data',
       description:
         'Live market data powered by Yahoo Finance. Stay current with real-time prices and portfolio valuation as markets move.',
@@ -76,7 +105,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
       number: 2,
       title: 'Chart Your Course',
       description:
-        "Export your CSV from DeGiro and upload it. Our AI engine automatically charts your complete trading history.",
+        'Export your CSV from DeGiro and upload it. Our AI engine automatically charts your complete trading history.',
     },
     {
       number: 3,
@@ -87,14 +116,28 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   ];
 
   ngOnInit() {
-    // Simulate chart loading
-    setTimeout(() => {
-      this.chartLoaded = true;
-    }, 2000);
+    // Count up the hero stats to the demo summary's headline figures.
+    this.animateValue(
+      'portfolioReturn',
+      0,
+      Math.round(this.demoSummary.totalReturn.percentage * 10) / 10,
+      2000
+    );
+    this.animateValue(
+      'portfolioValue',
+      Math.round(this.demoSummary.totalInvested),
+      Math.round(this.demoSummary.portfolioValue),
+      2500
+    );
 
-    // Animate portfolio values
-    this.animateValue('portfolioReturn', 0, 12.5, 2000);
-    this.animateValue('portfolioValue', 20000, 24856, 2500);
+    // Cross-fade the rotating hero verb.
+    this.wordTimer = setInterval(() => {
+      this.heroWordVisible = false;
+      setTimeout(() => {
+        this.heroWordIndex = (this.heroWordIndex + 1) % this.heroWords.length;
+        this.heroWordVisible = true;
+      }, 350);
+    }, 2800);
   }
 
   onClick() {
@@ -148,6 +191,9 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   // Make sure to close mobile menu on component destroy
   ngOnDestroy(): void {
     document.body.style.overflow = '';
+    if (this.wordTimer) {
+      clearInterval(this.wordTimer);
+    }
   }
 
   private animateValue(
