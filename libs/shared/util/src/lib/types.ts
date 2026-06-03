@@ -44,7 +44,8 @@ export type ChartData = {
   portfolioValues: number[];
   profit: number[];
   yieldPerYear: { years: string[]; yields: number[]; profit: number[] };
-  // Full-history monthly data (independent of selected range) for yield/dividend charts.
+  // Full-history monthly data (independent of selected range) for the annual
+  // return / dividend charts.
   allTimeDates: Date[];
   allTimePortfolioValues: number[];
   allTimeInvested: number[];

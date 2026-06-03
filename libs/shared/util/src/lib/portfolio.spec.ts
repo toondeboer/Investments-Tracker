@@ -156,7 +156,9 @@ describe('computePortfolioState', () => {
   it('computes realized profit correctly after a position is fully sold', () => {
     // Buy 10 @ €100 (cost €1000), later sell all 10 @ €120 (proceeds €1200,
     // recorded with a negative value per the signed convention), €5 commission.
-    // Fully sold -> 0 shares, €0 market value, realized profit = 1200-1000-5 = 195.
+    // Fully sold -> 0 shares, €0 market value. Total return (simple formula,
+    // commission excluded) = proceeds 1200 - cost 1000 = 200; the profit chart
+    // (which nets out commission) shows 1200-1000-5 = 195.
     const dbo: TransactionsDbo = {
       stock: [
         { ticker: 'VUSA.AS', type: 'stock', date: '2023-01-10', amount: 10, value: 1000, currency: 'EUR' },
@@ -177,8 +179,8 @@ describe('computePortfolioState', () => {
 
     expect(stock.summary.amountOfShares).toBe(0);
     expect(stock.summary.portfolioValue).toBe(0);
-    expect(stock.summary.totalReturn.absolute).toBeCloseTo(195);
-    expect(result.summary.totalReturn.absolute).toBeCloseTo(195);
+    expect(stock.summary.totalReturn.absolute).toBeCloseTo(200);
+    expect(result.summary.totalReturn.absolute).toBeCloseTo(200);
 
     // Profit on every sold-out day must be the realized 195 — never NaN from a
     // missing price multiplied by 0 shares.
@@ -190,7 +192,8 @@ describe('computePortfolioState', () => {
   it('keeps the aggregate return % sane when one position is fully sold at a large gain', () => {
     // Regression: an active position worth little, aggregated with a fully-sold
     // position carrying a large realized gain, used to divide total profit by the
-    // tiny current value -> thousands of percent. Time-weighted return fixes it.
+    // tiny current value -> thousands of percent. Dividing by gross purchase cost
+    // (which never shrinks back) fixes it.
     //
     //   ACTIVE:   buy 1 @ €100, still worth ~€100 (flat).
     //   SOLD:     buy 10 @ €100 (€1000), price rises to €500, sell all @ €500
@@ -229,7 +232,7 @@ describe('computePortfolioState', () => {
     // but on DIFFERENT market calendars (one closed Mondays, one Tuesdays). On a
     // day one ticker is closed and the other isn't, the aggregate must carry the
     // closed stock's last value forward — not drop it to 0, which used to send
-    // the time-weighted return to absurd values (e.g. 1525%/-100%).
+    // the windowed (1W/1M) return to absurd values (e.g. 1525%/-100%).
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-06-01T12:00:00.000Z'));
     try {
@@ -266,6 +269,52 @@ describe('computePortfolioState', () => {
       expect(summary.weeklyReturn.percentage).toBeLessThan(10);
       expect(summary.monthlyReturn.percentage).toBeGreaterThan(0);
       expect(summary.monthlyReturn.percentage).toBeLessThan(10);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('carries the chart value across weekends on a daily range (no NaN gaps)', () => {
+    // Yahoo tickers have no weekend rows, so getPortfolioValues yields NaN on
+    // Sat/Sun. The daily value/profit charts must carry the last known value
+    // across those days instead of dropping to the axis.
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-06-01T12:00:00.000Z'));
+    try {
+      const dbo: TransactionsDbo = {
+        stock: [
+          { ticker: 'AAA', type: 'stock', date: '2026-03-02', amount: 10, value: 1000, currency: 'EUR' },
+        ],
+        dividend: [],
+        commission: [],
+      };
+      const today = new Date('2026-06-01T00:00:00.000Z');
+      // Weekday-only prices (constant 100) for the last ~70 days.
+      const dates: Date[] = [];
+      const values: number[] = [];
+      for (let i = 70; i >= 0; i--) {
+        const d = new Date(today);
+        d.setUTCDate(d.getUTCDate() - i);
+        const dow = d.getUTCDay();
+        if (dow === 0 || dow === 6) continue; // weekends absent, like Yahoo
+        dates.push(d);
+        values.push(100);
+      }
+      const ticker: Ticker = { name: 'AAA', currency: 'EUR', dates, values, dividends: [] };
+
+      const result = computePortfolioState(dbo, { AAA: ticker }, undefined, '1M');
+      const pv = result.stocks['AAA'].chartData.portfolioValues;
+      const profit = result.stocks['AAA'].chartData.profit;
+
+      // Position held throughout the window -> every charted day is the held
+      // value (10 * 100), weekends included, and nothing is NaN.
+      expect(pv.every(Number.isFinite)).toBe(true);
+      expect(profit.every(Number.isFinite)).toBe(true);
+      const weekendIdx = result.dates.findIndex(
+        (d) => d.getUTCDay() === 0 || d.getUTCDay() === 6
+      );
+      expect(weekendIdx).toBeGreaterThan(-1);
+      expect(pv[weekendIdx]).toBe(1000);
     } finally {
       jest.useRealTimers();
     }
@@ -367,8 +416,9 @@ describe('computePortfolioState', () => {
     //   commission= $10  * 0.8 = €8
     expect(s.totalInvested).toBeCloseTo(80);
     expect(s.totalCommission).toBeCloseTo(8);
-    // Total return captures both the price move and the FX move: 200 - 80 - 8 = 112.
-    expect(s.totalReturn.absolute).toBeCloseTo(112);
+    // Total return captures both the price move and the FX move: 200 - 80 = 120
+    // (the simple formula does not net out commission).
+    expect(s.totalReturn.absolute).toBeCloseTo(120);
   });
 
   it('skips FX conversion when displayCurrency matches stock currency', () => {

@@ -38,7 +38,7 @@ export class BarChartComponent implements OnChanges {
       textStyle: { color: NAUTICAL_TEXT },
       title: {
         left: 'center',
-        text: 'Yield',
+        text: 'Annual Return',
         textStyle: { color: NAUTICAL_TEXT },
       },
       grid: { containLabel: true },
@@ -77,7 +77,7 @@ export class BarChartComponent implements OnChanges {
       ],
       series: [
         {
-          name: 'Yield %',
+          name: 'Annual Return %',
           type: 'bar',
           data: this.series.yields.map((value) => Math.round(value * 100) / 100),
           itemStyle: { color: NAUTICAL_GOLD },
