@@ -2,21 +2,24 @@ import { Component, Input, OnChanges } from '@angular/core';
 import { EChartsOption } from 'echarts';
 import { YearQuarter } from '@aws/util';
 import { NgxEchartsDirective } from 'ngx-echarts';
-
-
-const NAUTICAL_TEXT  = '#F5F0E8';
-const NAUTICAL_MUTED = '#8FA8C0';
-const NAUTICAL_GOLD  = '#C9A84C';
-const NAUTICAL_GRID  = 'rgba(201,168,76,0.1)';
+import {
+  axisStyle,
+  baseGrid,
+  baseTitle,
+  baseTooltip,
+  formatMoney,
+  NAUTICAL_GOLD,
+  NAUTICAL_MUTED,
+  NAUTICAL_TEXT,
+  round2,
+  scrollLegend,
+} from '../chart-theme';
 
 // The bar series is a trailing-twelve-month (annual) dividend figure, so the
 // derived rate lines divide the annual amount down to each interval.
 const MONTHS_PER_YEAR = 12;
 const DAYS_PER_YEAR = 365;
 const HOURS_PER_YEAR = DAYS_PER_YEAR * 24;
-
-/** Round a currency amount to 2 decimals. */
-const round2 = (value: number) => Math.round(value * 100) / 100;
 
 @Component({
   selector: 'aws-bar-and-line-chart',
@@ -43,23 +46,12 @@ export class BarAndLineChartComponent implements OnChanges {
     return {
       backgroundColor: 'transparent',
       textStyle: { color: NAUTICAL_TEXT },
-      title: {
-        left: 'center',
-        text: 'TTM Dividend',
-        textStyle: { color: NAUTICAL_TEXT },
-      },
-      grid: { containLabel: true },
-      tooltip: {
-        trigger: 'axis',
-        backgroundColor: '#0F2035',
-        borderColor: NAUTICAL_GOLD,
-        textStyle: { color: NAUTICAL_TEXT },
-        axisPointer: { type: 'shadow' },
-      },
-      legend: {
-        top: '8%',
-        textStyle: { color: NAUTICAL_MUTED },
-      },
+      title: baseTitle('TTM Dividend'),
+      grid: baseGrid(72),
+      tooltip: baseTooltip('axis', {
+        valueFormatter: (value) => formatMoney(value as number, this.currencySymbol),
+      }),
+      legend: scrollLegend(40),
       xAxis: {
         type: 'category',
         data: this.series.yearQuarters.map((x) => {
@@ -68,15 +60,15 @@ export class BarAndLineChartComponent implements OnChanges {
           }
           return `Q${x.quarter + 1}`;
         }),
-        axisLine: { lineStyle: { color: NAUTICAL_GRID } },
         axisLabel: { color: NAUTICAL_MUTED },
-        axisTick: { lineStyle: { color: NAUTICAL_GRID } },
+        axisLine: axisStyle.axisLine,
+        axisTick: axisStyle.axisTick,
       },
       yAxis: {
         type: 'value',
         axisLabel: { formatter: `{value} ${this.currencySymbol}`, color: NAUTICAL_MUTED },
-        axisLine: { lineStyle: { color: NAUTICAL_GRID } },
-        splitLine: { lineStyle: { color: NAUTICAL_GRID } },
+        axisLine: axisStyle.axisLine,
+        splitLine: axisStyle.splitLine,
       },
       series: [
         {

@@ -1,12 +1,19 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { EChartsOption } from 'echarts';
 import { NgxEchartsDirective } from 'ngx-echarts';
-
-
-const NAUTICAL_TEXT  = '#F5F0E8';
-const NAUTICAL_MUTED = '#8FA8C0';
-const NAUTICAL_GOLD  = '#C9A84C';
-const NAUTICAL_GRID  = 'rgba(201,168,76,0.1)';
+import {
+  axisStyle,
+  baseGrid,
+  baseTitle,
+  baseTooltip,
+  formatAxisDate,
+  formatMoney,
+  NAUTICAL_GOLD,
+  NAUTICAL_MUTED,
+  NAUTICAL_TEXT,
+  round2,
+  spanDays,
+} from '../chart-theme';
 
 @Component({
   selector: 'aws-chart',
@@ -29,67 +36,54 @@ export class ChartComponent implements OnChanges {
   }
 
   getChartOptions(): EChartsOption {
+    const symbol = this.money ? this.currencySymbol : undefined;
+    const span = spanDays(this.x);
+    // [timestamp, value] pairs let echarts' time axis pick relevant, period-aware
+    // ticks. NaN values (hidden quarters / gaps) keep their slot but draw nothing.
+    const data: [number, number][] = this.x.map((d, i) => [
+      d.getTime(),
+      round2(this.y[i]),
+    ]);
+
     return {
       backgroundColor: 'transparent',
       color: [NAUTICAL_GOLD, '#1E6091', '#2ECC71', '#E8D5B7', NAUTICAL_MUTED, '#E74C3C'],
       textStyle: { color: NAUTICAL_TEXT },
-      title: {
-        left: 'center',
-        text: this.label,
-        textStyle: { color: NAUTICAL_TEXT },
-      },
-      grid: {
-        top: 48,
-        containLabel: true,
-      },
-      tooltip: {
-        trigger: this.showSymbols ? 'item' : 'axis',
-        backgroundColor: '#0F2035',
-        borderColor: NAUTICAL_GOLD,
-        textStyle: { color: NAUTICAL_TEXT },
-        axisPointer: {
-          type: 'shadow',
+      title: baseTitle(this.label),
+      grid: baseGrid(56),
+      tooltip: baseTooltip(this.showSymbols ? 'item' : 'axis', {
+        formatter: (params) => {
+          const list = Array.isArray(params) ? params : [params];
+          if (list.length === 0) {
+            return '';
+          }
+          const value = list[0].value as [number, number];
+          const header = formatAxisDate(value[0], span);
+          const rows = list
+            .map((p) => {
+              const v = (p.value as [number, number])[1];
+              return `${p.marker ?? ''} ${formatMoney(v, symbol)}`;
+            })
+            .join('<br/>');
+          return `${header}<br/>${rows}`;
         },
+      }),
+      xAxis: {
+        type: 'time',
+        ...axisStyle,
       },
-      xAxis: [
-        {
-          type: 'category',
-          show: false,
-          data: this.x.map(
-            (x) =>
-              `${x.getDate()} ${x.toLocaleString('en-US', {
-                month: 'short',
-              })} ${x.getFullYear()}`
-          ),
-          axisLine: { lineStyle: { color: NAUTICAL_GRID } },
-          axisLabel: { color: NAUTICAL_MUTED },
-        },
-        {
-          type: 'category',
-          position: 'bottom',
-          data: this.x.map(
-            (x) =>
-              `${x.toLocaleString('en-US', {
-                month: 'short',
-              })} '${x.getFullYear().toString().slice(2, 4)}`
-          ),
-          axisLine: { lineStyle: { color: NAUTICAL_GRID } },
-          axisLabel: { color: NAUTICAL_MUTED },
-          axisTick: { lineStyle: { color: NAUTICAL_GRID } },
-        },
-      ],
       yAxis: {
         type: 'value',
         axisLabel: {
           formatter: `{value}${this.money ? ' ' + this.currencySymbol : ''}`,
           color: NAUTICAL_MUTED,
         },
-        axisLine: { lineStyle: { color: NAUTICAL_GRID } },
-        splitLine: { lineStyle: { color: NAUTICAL_GRID } },
+        axisLine: axisStyle.axisLine,
+        splitLine: axisStyle.splitLine,
       },
       series: [
         {
-          data: this.y.map((value) => Math.round(value * 100) / 100),
+          data,
           type: 'line',
           connectNulls: true,
           smooth: true,
