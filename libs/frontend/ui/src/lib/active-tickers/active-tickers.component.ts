@@ -73,7 +73,16 @@ export class ActiveTickersComponent implements OnChanges {
     const allTimeDates = chartData1.allTimeDates;
     const allTimePortfolioValues = addLists(chartData1.allTimePortfolioValues, chartData2.allTimePortfolioValues, true);
     const allTimeInvested = addLists(chartData1.allTimeInvested, chartData2.allTimeInvested, true);
+    const allTimeGrossInvested = addLists(chartData1.allTimeGrossInvested, chartData2.allTimeGrossInvested, true);
     const allTimeProfit = addLists(chartData1.allTimeProfit, chartData2.allTimeProfit, true);
+
+    // Cumulative dividends per all-time date, summed across the active stocks —
+    // the dividend term in the per-year total return.
+    const allTimeDividends = addLists(
+      chartData1.dividend.aggregatedValues,
+      chartData2.dividend.aggregatedValues,
+      true
+    );
 
     return {
       stock: {
@@ -156,9 +165,17 @@ export class ActiveTickersComponent implements OnChanges {
       allTimeDates,
       allTimePortfolioValues,
       allTimeInvested,
+      allTimeGrossInvested,
       allTimeProfit,
-      // Yield always computed from full-history monthly data regardless of range.
-      yieldPerYear: getYieldPerYear(allTimeDates, allTimePortfolioValues, allTimeInvested, allTimeProfit),
+      // Total return per year always computed from full-history monthly data
+      // regardless of the selected range.
+      yieldPerYear: getYieldPerYear(
+        allTimeDates,
+        allTimePortfolioValues,
+        allTimeInvested,
+        allTimeGrossInvested,
+        allTimeDividends
+      ),
     };
   }
 }

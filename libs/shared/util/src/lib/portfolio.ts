@@ -333,7 +333,14 @@ function computePriceState(
     const allTimePortfolioValues = allTimeSeries.portfolioValues;
     const allTimeInvested = allTimeSeries.invested;
     const allTimeProfit = allTimeSeries.profit;
-    const yieldPerYear = getYieldPerYear(allTimeDates, allTimePortfolioValues, allTimeInvested, allTimeProfit);
+
+    // Cumulative gross purchase cost (buys only) per all-time date, at
+    // spot-at-purchase FX — the stable denominator for the per-year total
+    // return. Sells are excluded so it never shrinks back toward zero.
+    const grossBuysTxFx = stockTxFx.filter((tx) => tx.value > 0);
+    const allTimeGrossInvested = getTransactionAmountsAndValuesByPeriod(
+      allTimeDates, grossBuysTxFx, startDate
+    ).aggregatedValues;
 
     // Dividends use the native all-time share counts and are converted at the
     // ex-date inside updateDividendsByPeriod, so they're already in the display
@@ -352,6 +359,16 @@ function computePriceState(
     };
     const allTimeTotalDividend = getMostRecentValueFromList(allTimeDividendBase.aggregatedValues).value;
 
+    // Per-year total return (%), same simple formula as the headline figure,
+    // including dividends received and using gross purchase cost as the base.
+    const yieldPerYear = getYieldPerYear(
+      allTimeDates,
+      allTimePortfolioValues,
+      allTimeInvested,
+      allTimeGrossInvested,
+      allTimeDividendBase.aggregatedValues
+    );
+
     const portfolioValue = getMostRecentValueFromList(portfolioValues).value;
     portfolioValuesSummary += portfolioValue;
 
@@ -364,7 +381,7 @@ function computePriceState(
     // --- 30-day daily return window (accurate regardless of chart granularity) ---
     // Commission seeds at amount 0 (share counts irrelevant here) and values are
     // forward-filled across closed days so a stock that's merely closed doesn't
-    // zero out and corrupt the summed time-weighted return.
+    // zero out and corrupt the summed windowed (1D/1W/1M) return.
     const returnSeries = buildStockSeries({
       ...fxArgs,
       dates: returnDates,
@@ -390,12 +407,15 @@ function computePriceState(
     const weeklyReturn = getReturn(returnProfit, stockGrossInvested, 7);
     const monthlyReturn = getReturn(returnProfit, stockGrossInvested, 30);
 
-    // Total return: absolute is point-in-time (currentValue - invested -
-    // commission); percentage is return on gross invested capital, so it
-    // reconciles with the euro profit and stays sane after a sale.
+    // Total return (the simple, easy-to-explain formula):
+    //   absolute = sale proceeds + current value − purchase cost + dividends
+    //            = currentValue − netInvested + dividends
+    //   percentage = absolute / purchase cost (gross invested) × 100
+    // Gross invested as the base keeps the % sane after a sale (it can't
+    // collapse to zero). Commission is not part of this figure.
     const stockTotalInvested = getMostRecentValueFromList(investedForProfit).value;
     const stockTotalCommission = getMostRecentValueFromList(commissionForProfit).value;
-    const totalReturnAbsolute = portfolioValue - stockTotalInvested - stockTotalCommission;
+    const totalReturnAbsolute = portfolioValue - stockTotalInvested + allTimeTotalDividend;
     const totalReturn = {
       absolute: totalReturnAbsolute,
       percentage:
@@ -432,6 +452,7 @@ function computePriceState(
         allTimeDates,
         allTimePortfolioValues,
         allTimeInvested,
+        allTimeGrossInvested,
         allTimeProfit,
         stock: {
           ...stock.chartData.stock,
@@ -453,11 +474,13 @@ function computePriceState(
   const weeklyReturn = getReturn(returnWindowProfit, grossInvestedSummary, 7);
   const monthlyReturn = getReturn(returnWindowProfit, grossInvestedSummary, 30);
 
-  // Total return: absolute is the point-in-time sum; percentage is return on
-  // gross invested capital, so it reconciles with the euro profit and a
-  // fully-sold position (zero current value, real realized profit) can't blow
-  // it up. (The Yield chart still uses time-weighted return per year.)
-  const totalReturnAbsolute = portfolioValuesSummary - chartTotalInvestedSummary - chartTotalCommissionSummary;
+  // Total return (the simple, easy-to-explain formula):
+  //   absolute = sale proceeds + current value − purchase cost + dividends
+  //            = currentValue − netInvested + dividends
+  //   percentage = absolute / purchase cost (gross invested) × 100
+  // Gross invested as the base keeps the % sane after a sale; commission is not
+  // part of this figure. The total-return-per-year chart uses the same formula.
+  const totalReturnAbsolute = portfolioValuesSummary - chartTotalInvestedSummary + chartTotalDividendSummary;
   const totalReturn = {
     absolute: totalReturnAbsolute,
     percentage:

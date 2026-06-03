@@ -70,6 +70,7 @@ function initDefaultStock(ticker: string): Stock {
       allTimeDates: [],
       allTimePortfolioValues: [],
       allTimeInvested: [],
+      allTimeGrossInvested: [],
       allTimeProfit: [],
     },
     currency: { value: 'EUR' },

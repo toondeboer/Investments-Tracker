@@ -44,10 +44,14 @@ export type ChartData = {
   portfolioValues: number[];
   profit: number[];
   yieldPerYear: { years: string[]; yields: number[]; profit: number[] };
-  // Full-history monthly data (independent of selected range) for yield/dividend charts.
+  // Full-history monthly data (independent of selected range) for the total
+  // return / dividend charts.
   allTimeDates: Date[];
   allTimePortfolioValues: number[];
   allTimeInvested: number[];
+  // Cumulative gross purchase cost (buys only, never reduced by a sale) — the
+  // stable denominator for the total-return-per-year chart.
+  allTimeGrossInvested: number[];
   allTimeProfit: number[];
 };
 

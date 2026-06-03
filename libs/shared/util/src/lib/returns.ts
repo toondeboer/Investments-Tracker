@@ -8,89 +8,54 @@ import {
 } from './core';
 
 /**
- * Growth factor of one TWR sub-period [i-1, i]. Returns 1 (a no-op for the
- * chained product) when the period can't contribute a market return:
- *   - no capital at the start (Vprev <= 0): a position is being established or
- *     was previously fully sold — the deposit itself is not a return;
- *   - any input is non-finite (e.g. a missing price in an aggregate series).
- * Otherwise strips the external cash flow out of the end value so only the
- * price-driven change is measured:  factor = (Vcurr - flow) / Vprev.
+ * Total return (%) at each calendar year-end, using the same simple formula as
+ * the headline figure, evaluated on a cumulative (start-of-time → year-end)
+ * basis:
  *
- *   flow  = invested[i] - invested[i-1]   (buy +, sell −)
- */
-function subPeriodFactor(
-  values: number[],
-  invested: number[],
-  i: number
-): number {
-  const vPrev = values[i - 1];
-  const vCurr = values[i];
-  const flow = invested[i] - invested[i - 1];
-  if (
-    !Number.isFinite(vPrev) ||
-    !Number.isFinite(vCurr) ||
-    !Number.isFinite(flow) ||
-    vPrev <= 0
-  ) {
-    return 1;
-  }
-  return (vCurr - flow) / vPrev;
-}
-
-/**
- * Time-weighted return (TWR) over a value series with external cash flows.
- *   values[i]   = holdings market value at point i (display currency)
- *   invested[i] = cumulative net capital invested up to point i (the
- *                 stock-transaction aggregate), so Δinvested[i] is the external
- *                 cash flow into holdings at point i (buy +, sell −).
+ *   total return % = (sale proceeds + value − purchase cost + dividends)
+ *                    / purchase cost × 100
  *
- * Chains each sub-period's growth factor and returns the cumulative return as a
- * fraction (0.2 = +20%) over [0, n-1]. Insensitive to the timing/size of cash
- * flows, so it never divides cumulative profit by a tiny current value — a
- * fully-sold position's realized gain is captured in its sale-period factor and
- * later zero-holding periods are skipped. Empty/single-point/no-capital → 0.
+ * Expressed with the series this function receives (all cumulative to year-end):
+ *   netInvested   = purchase cost − sale proceeds   (signed buys − sells)
+ *   grossInvested = purchase cost                    (buys only, never reduced)
+ *   so   value − netInvested + dividends == sale proceeds + value − purchase
+ *   cost + dividends   (the formula's numerator).
+ *
+ * Using gross purchase cost as the denominator keeps it stable: a fully-sold
+ * position can't collapse it to zero and blow the percentage up.
+ *
+ * `profit` is the change in that total-return profit during the year (the money
+ * made that year, including dividends received), for the secondary line.
  */
-export function timeWeightedReturn(
-  values: number[],
-  invested: number[]
-): number {
-  if (values.length < 2) return 0;
-  let product = 1;
-  for (let i = 1; i < values.length; i++) {
-    product *= subPeriodFactor(values, invested, i);
-  }
-  return product - 1;
-}
-
 export function getYieldPerYear(
   dates: Date[],
   portfolioValues: number[],
-  invested: number[],
-  profitValues: number[]
+  netInvested: number[],
+  grossInvested: number[],
+  dividends: number[]
 ): { years: string[]; yields: number[]; profit: number[] } {
   const years: string[] = [];
   const yields: number[] = [];
   const profit: number[] = [];
   let profitLastYear = 0;
-  // Running TWR product for the current calendar year. Sub-period factors are
-  // computed across the year boundary (point i-1 may be in the prior year), so
-  // each year's return chains correctly from the prior year-end value.
-  let yearProduct = 1;
   dates.forEach((date, index) => {
-    if (index > 0) {
-      yearProduct *= subPeriodFactor(portfolioValues, invested, index);
-    }
     const isLast = index + 1 === dates.length;
-    const isYearEnd = isLast || dates[index + 1].getUTCFullYear() !== date.getUTCFullYear();
-    if (isYearEnd) {
-      years.push(date.getUTCFullYear().toString());
-      const profitThisYear =
-        getMostRecentValueAtIndex(profitValues, index) - profitLastYear;
-      profit.push(profitThisYear);
-      yields.push((yearProduct - 1) * 100);
-      profitLastYear = getMostRecentValueAtIndex(profitValues, index);
-      yearProduct = 1;
-    }
+    const isYearEnd =
+      isLast || dates[index + 1].getUTCFullYear() !== date.getUTCFullYear();
+    if (!isYearEnd) return;
+
+    const value = getMostRecentValueAtIndex(portfolioValues, index);
+    const net = getMostRecentValueAtIndex(netInvested, index);
+    const gross = getMostRecentValueAtIndex(grossInvested, index);
+    const dividend = getMostRecentValueAtIndex(dividends, index);
+
+    // Cumulative total-return profit to this year-end (€).
+    const totalReturnProfit = value - net + dividend;
+
+    years.push(date.getUTCFullYear().toString());
+    yields.push(gross > 0 ? (totalReturnProfit / gross) * 100 : 0);
+    profit.push(totalReturnProfit - profitLastYear);
+    profitLastYear = totalReturnProfit;
   });
   return { years, yields, profit };
 }

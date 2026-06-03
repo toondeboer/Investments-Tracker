@@ -22,6 +22,7 @@ function chartData(portfolioValues: number[], profit: number[]): ChartData {
     allTimeDates: [],
     allTimePortfolioValues: [],
     allTimeInvested: [],
+    allTimeGrossInvested: [],
     allTimeProfit: [],
   };
 }

@@ -58,7 +58,13 @@ describe('date helpers are timezone-independent (UTC)', () => {
       new Date('2023-12-31T00:00:00.000Z'), // UTC year-end
       new Date('2024-01-01T00:00:00.000Z'),
     ];
-    const result = getYieldPerYear(dates, [100, 100, 200], [100, 100, 100], [10, 20, 50]);
+    const result = getYieldPerYear(
+      dates,
+      [100, 100, 200], // portfolio value
+      [100, 100, 100], // net invested
+      [100, 100, 100], // gross purchase cost
+      [0, 0, 0]        // cumulative dividends
+    );
     expect(result.years).toEqual(['2023', '2024']);
   });
 });
