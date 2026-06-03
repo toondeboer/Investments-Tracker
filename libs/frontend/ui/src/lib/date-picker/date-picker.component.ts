@@ -1,13 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  forwardRef,
-  Input,
-  ViewChild,
-  ViewContainerRef,
-  TemplateRef,
-  OnDestroy,
-} from '@angular/core';
+import { Component, ElementRef, forwardRef, Input, ViewChild, ViewContainerRef, TemplateRef, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
@@ -38,6 +29,9 @@ const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
   ],
 })
 export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
+  private readonly overlay = inject(Overlay);
+  private readonly viewContainerRef = inject(ViewContainerRef);
+
   @Input() placeholder = 'Select a date';
 
   @ViewChild('trigger', { static: true }) trigger!: ElementRef<HTMLElement>;
@@ -56,11 +50,6 @@ export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
   private overlayRef?: OverlayRef;
   private onChange: (value: string | null) => void = () => undefined;
   private onTouched: () => void = () => undefined;
-
-  constructor(
-    private readonly overlay: Overlay,
-    private readonly viewContainerRef: ViewContainerRef
-  ) {}
 
   // --- ControlValueAccessor -------------------------------------------------
   writeValue(value: string | null): void {

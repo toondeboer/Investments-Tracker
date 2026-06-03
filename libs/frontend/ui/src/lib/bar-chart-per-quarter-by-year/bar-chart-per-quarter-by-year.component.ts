@@ -1,7 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { EChartsOption } from 'echarts';
 import { NgxEchartsDirective } from 'ngx-echarts';
-import { CommonModule, NgIf } from '@angular/common';
+
 
 const NAUTICAL_TEXT  = '#F5F0E8';
 const NAUTICAL_MUTED = '#8FA8C0';
@@ -22,9 +22,8 @@ const colors = [
   templateUrl: './bar-chart-per-quarter-by-year.component.html',
   styleUrls: ['./bar-chart-per-quarter-by-year.component.scss'],
   imports: [
-    NgxEchartsDirective,
-    CommonModule
-  ]
+    NgxEchartsDirective
+]
 })
 export class BarChartPerQuarterByYearComponent implements OnChanges {
   @Input() series: { year: string; data: number[] }[] = [];

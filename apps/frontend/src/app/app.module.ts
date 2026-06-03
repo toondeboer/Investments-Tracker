@@ -30,7 +30,7 @@ import { JwtInterceptor } from '../auth/jwtInterceptor/JwtInterceptor';
     EffectsModule.forRoot(),
     StateModule,
     YahooModule,
-    StoreDevtoolsModule.instrument(),
+    StoreDevtoolsModule.instrument({connectInZone: true}),
     UiModule,
     OverlayModule,
     LucideAngularModule.pick(APP_ICONS),

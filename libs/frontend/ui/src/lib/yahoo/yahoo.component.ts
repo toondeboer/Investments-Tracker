@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import { ChartData } from '@aws/util';
 import { selectYahoo } from '@aws/yahoo';
 import { Store } from '@ngrx/store';
@@ -22,13 +22,13 @@ import { AsyncPipe, CommonModule } from '@angular/common';
   ]
 })
 export class YahooComponent {
+  private store = inject(Store);
+
   @Input() dates: Date[] = [];
   @Input() chartData: ChartData | undefined;
   @Input() currencySymbol = '€';
 
   yahoo$ = this.store.select(selectYahoo);
-
-  constructor(private store: Store) {}
 
   protected readonly Object = Object;
 }

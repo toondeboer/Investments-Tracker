@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MediaMatcher } from '@angular/cdk/layout';
 import { Store } from '@ngrx/store';
@@ -39,6 +39,9 @@ import { LucideAngularModule } from 'lucide-angular';
   imports: [CommonModule, PortfolioListComponent, PortfolioDetailComponent, LucideAngularModule],
 })
 export class PortfoliosComponent implements OnInit, OnDestroy {
+  private store = inject(Store);
+  private dialog = inject(DialogService);
+
   portfolios$ = this.store.select(selectPortfoliosDbo);
   allPortfolioStates$ = this.store.select(selectAllPortfolioStates);
   baseCurrency$ = this.store.select(selectBaseCurrency);
@@ -48,12 +51,10 @@ export class PortfoliosComponent implements OnInit, OnDestroy {
   mobileQuery: MediaQueryList;
   private _mobileQueryListener: () => void;
 
-  constructor(
-    private store: Store,
-    private dialog: DialogService,
-    changeDetectorRef: ChangeDetectorRef,
-    media: MediaMatcher,
-  ) {
+  constructor() {
+    const changeDetectorRef = inject(ChangeDetectorRef);
+    const media = inject(MediaMatcher);
+
     this.mobileQuery = media.matchMedia('(max-width: 768px)');
     this._mobileQueryListener = () => changeDetectorRef.detectChanges();
     this.mobileQuery.addListener(this._mobileQueryListener);

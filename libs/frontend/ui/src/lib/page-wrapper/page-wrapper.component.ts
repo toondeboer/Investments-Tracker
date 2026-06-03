@@ -1,9 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { MediaMatcher } from '@angular/cdk/layout';
 import { Router, RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -24,6 +19,9 @@ import { LucideAngularModule } from 'lucide-angular';
   ],
 })
 export class PageWrapperComponent implements OnInit, OnDestroy {
+  private readonly router = inject(Router);
+  private store = inject(Store);
+
   loading$ = this.store.select(selectLoading);
   mobileQuery: MediaQueryList;
   sidenavOpen: boolean;
@@ -36,12 +34,10 @@ export class PageWrapperComponent implements OnInit, OnDestroy {
 
   private _mobileQueryListener: () => void;
 
-  constructor(
-    changeDetectorRef: ChangeDetectorRef,
-    media: MediaMatcher,
-    private readonly router: Router,
-    private store: Store,
-  ) {
+  constructor() {
+    const changeDetectorRef = inject(ChangeDetectorRef);
+    const media = inject(MediaMatcher);
+
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
     // Open by default on desktop, closed on mobile.
     this.sidenavOpen = !this.mobileQuery.matches;

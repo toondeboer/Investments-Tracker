@@ -1,6 +1,8 @@
-<div class="grid" *ngIf="state$ | async as state">
-  <aws-transactions-table
-    [stocks]="state.stocks"
-    [transactions]="state.transactions"
-  ></aws-transactions-table>
-</div>
+@if (state$ | async; as state) {
+  <div class="grid">
+    <aws-transactions-table
+      [stocks]="state.stocks"
+      [transactions]="state.transactions"
+    ></aws-transactions-table>
+  </div>
+}

@@ -1,5 +1,5 @@
-import { Component, Inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { DialogRef, DIALOG_DATA, DIALOG_REF } from '../dialog/dialog-ref';
 
@@ -17,17 +17,18 @@ export type HoldingEditResult = {
   selector: 'aws-holding-edit-dialog',
   templateUrl: './holding-edit-dialog.component.html',
   styleUrls: ['./holding-edit-dialog.component.scss'],
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
 })
 export class HoldingEditDialogComponent {
+  dialogRef = inject<DialogRef<HoldingEditDialogComponent, HoldingEditResult | undefined>>(DIALOG_REF);
+  data = inject<HoldingEditDialogData>(DIALOG_DATA);
+
   ticker: string;
   currency: string;
 
-  constructor(
-    @Inject(DIALOG_REF)
-    public dialogRef: DialogRef<HoldingEditDialogComponent, HoldingEditResult | undefined>,
-    @Inject(DIALOG_DATA) public data: HoldingEditDialogData
-  ) {
+  constructor() {
+    const data = this.data;
+
     this.ticker = data.ticker;
     this.currency = data.currency;
   }

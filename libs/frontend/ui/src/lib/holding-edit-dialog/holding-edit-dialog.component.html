@@ -10,13 +10,15 @@
       (keyup.enter)="confirm()"
       placeholder="e.g. AAPL"
       autofocus
-    />
+      />
   </div>
 
   <div class="field-group">
     <label class="field-label">Currency</label>
     <select class="field-input" [(ngModel)]="currency">
-      <option *ngIf="currency !== 'EUR' && currency !== 'USD'" [value]="currency">{{ currency }}</option>
+      @if (currency !== 'EUR' && currency !== 'USD') {
+        <option [value]="currency">{{ currency }}</option>
+      }
       <option value="EUR">EUR</option>
       <option value="USD">USD</option>
     </select>

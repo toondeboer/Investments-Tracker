@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, inject } from '@angular/core';
 import {
   deleteHolding,
   deleteTransaction,
@@ -30,15 +30,13 @@ import {
   imports: [DecimalPipe, CommonModule, LucideAngularModule],
 })
 export class TransactionsTableComponent {
+  private readonly store = inject(Store);
+  private readonly dialog = inject(DialogService);
+
   @Input() stocks: { [ticker: string]: Stock } = {};
   @Input() transactions: Transactions | undefined;
   @Input() portfolioId = 'default';
   @Input() baseCurrency = 'EUR';
-
-  constructor(
-    private readonly store: Store,
-    private readonly dialog: DialogService
-  ) {}
 
   /** Open the dialog to add a brand-new holding (ticker + currency editable). */
   onAddHolding() {

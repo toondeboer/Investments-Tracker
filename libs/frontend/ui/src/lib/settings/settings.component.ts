@@ -1,5 +1,5 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
+
 import { FormsModule } from '@angular/forms';
 import { Store } from '@ngrx/store';
 import { selectBaseCurrency, updateSettings } from '@aws/state';
@@ -10,13 +10,13 @@ const SUPPORTED_CURRENCIES = ['EUR', 'USD'];
   selector: 'aws-settings',
   templateUrl: './settings.component.html',
   styleUrls: ['./settings.component.scss'],
-  imports: [CommonModule, FormsModule],
+  imports: [FormsModule],
 })
 export class SettingsComponent implements OnInit {
+  private store = inject(Store);
+
   currencies = SUPPORTED_CURRENCIES;
   selectedCurrency = 'EUR';
-
-  constructor(private store: Store) {}
 
   ngOnInit() {
     this.store.select(selectBaseCurrency).subscribe((currency) => {

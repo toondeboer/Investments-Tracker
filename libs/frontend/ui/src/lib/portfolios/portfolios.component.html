@@ -1,29 +1,36 @@
-<div class="portfolios-layout" *ngIf="{ portfolios: portfolios$ | async, allStates: allPortfolioStates$ | async, baseCurrency: baseCurrency$ | async } as vm">
-  <aside class="portfolios-sidebar" *ngIf="!mobileQuery.matches || !showDetail">
-    <aws-portfolio-list
-      [portfolios]="vm.portfolios ?? []"
-      [portfolioStates]="vm.allStates"
-      [baseCurrency]="vm.baseCurrency ?? 'EUR'"
-      [selectedPortfolioId]="selectedPortfolioId"
-      (selectPortfolio)="onSelectPortfolio($event)"
-      (createPortfolio)="onCreatePortfolio()"
-      (renamePortfolio)="onRenamePortfolio($event)"
-      (deletePortfolio)="onDeletePortfolio($event)"
-    ></aws-portfolio-list>
-  </aside>
-
-  <main class="portfolios-main" *ngIf="!mobileQuery.matches || showDetail">
-    <div class="mobile-back" *ngIf="mobileQuery.matches">
-      <button class="back-btn" (click)="onBackToList()">
-        <lucide-icon name="ChevronLeft" [size]="18"></lucide-icon>
-        Portfolios
-      </button>
-    </div>
-    <aws-portfolio-detail
-      [portfolio]="getSelectedPortfolio(vm.portfolios ?? [])"
-      [stocks]="getSelectedPortfolioStocks(vm.allStates)"
-      [baseCurrency]="vm.baseCurrency ?? 'EUR'"
-      (importCsv)="onImportCsv($event)"
-    ></aws-portfolio-detail>
-  </main>
-</div>
+@if ({ portfolios: portfolios$ | async, allStates: allPortfolioStates$ | async, baseCurrency: baseCurrency$ | async }; as vm) {
+  <div class="portfolios-layout">
+    @if (!mobileQuery.matches || !showDetail) {
+      <aside class="portfolios-sidebar">
+        <aws-portfolio-list
+          [portfolios]="vm.portfolios ?? []"
+          [portfolioStates]="vm.allStates"
+          [baseCurrency]="vm.baseCurrency ?? 'EUR'"
+          [selectedPortfolioId]="selectedPortfolioId"
+          (selectPortfolio)="onSelectPortfolio($event)"
+          (createPortfolio)="onCreatePortfolio()"
+          (renamePortfolio)="onRenamePortfolio($event)"
+          (deletePortfolio)="onDeletePortfolio($event)"
+        ></aws-portfolio-list>
+      </aside>
+    }
+    @if (!mobileQuery.matches || showDetail) {
+      <main class="portfolios-main">
+        @if (mobileQuery.matches) {
+          <div class="mobile-back">
+            <button class="back-btn" (click)="onBackToList()">
+              <lucide-icon name="ChevronLeft" [size]="18"></lucide-icon>
+              Portfolios
+            </button>
+          </div>
+        }
+        <aws-portfolio-detail
+          [portfolio]="getSelectedPortfolio(vm.portfolios ?? [])"
+          [stocks]="getSelectedPortfolioStocks(vm.allStates)"
+          [baseCurrency]="vm.baseCurrency ?? 'EUR'"
+          (importCsv)="onImportCsv($event)"
+        ></aws-portfolio-detail>
+      </main>
+    }
+  </div>
+}

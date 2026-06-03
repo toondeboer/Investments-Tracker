@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { switchMap, catchError, of, withLatestFrom, mergeMap, map } from 'rxjs';
@@ -18,12 +18,11 @@ import {
 
 @Injectable()
 export class YahooEffects {
-  constructor(
-    private store: Store,
-    private readonly actions$: Actions,
-    private readonly service: YahooService,
-    private readonly toastService: ToastService
-  ) {}
+  private store = inject(Store);
+  private readonly actions$ = inject(Actions);
+  private readonly service = inject(YahooService);
+  private readonly toastService = inject(ToastService);
+
 
   // Intercept the parsed Yahoo CSV to fetch each symbol's currency from Yahoo
   // before handing off to state.effects for the DB save.

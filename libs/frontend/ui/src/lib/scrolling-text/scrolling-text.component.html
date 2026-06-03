@@ -1,13 +1,15 @@
-<div *ngIf="{ state: state$ | async, symbol: currencySymbol$ | async } as vm" class="ticker-viewport">
-  <ng-container *ngIf="vm.state?.summary?.totalReturn?.absolute !== 0">
-    <div class="ticker-track">
-      <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
-      <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
-      <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
-      <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
-    </div>
-  </ng-container>
-</div>
+@if ({ state: state$ | async, symbol: currencySymbol$ | async }; as vm) {
+  <div class="ticker-viewport">
+    @if (vm.state?.summary?.totalReturn?.absolute !== 0) {
+      <div class="ticker-track">
+        <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
+        <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
+        <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
+        <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
+      </div>
+    }
+  </div>
+}
 
 <ng-template #items let-state let-symbol="symbol">
 
@@ -23,7 +25,7 @@
   </span>
   <span class="ticker-sep">◆</span>
 
-  <ng-container *ngIf="state.summary.dailyReturn as r">
+  @if (state.summary.dailyReturn; as r) {
     <span class="ticker-item">
       <span class="ticker-label">1D</span>
       <span class="ticker-change" [ngClass]="r.absolute >= 0 ? 'ticker-pos' : 'ticker-neg'">
@@ -33,9 +35,9 @@
       </span>
     </span>
     <span class="ticker-sep">◆</span>
-  </ng-container>
+  }
 
-  <ng-container *ngIf="state.summary.weeklyReturn as r">
+  @if (state.summary.weeklyReturn; as r) {
     <span class="ticker-item">
       <span class="ticker-label">1W</span>
       <span class="ticker-change" [ngClass]="r.absolute >= 0 ? 'ticker-pos' : 'ticker-neg'">
@@ -45,9 +47,9 @@
       </span>
     </span>
     <span class="ticker-sep">◆</span>
-  </ng-container>
+  }
 
-  <ng-container *ngIf="state.summary.monthlyReturn as r">
+  @if (state.summary.monthlyReturn; as r) {
     <span class="ticker-item">
       <span class="ticker-label">1M</span>
       <span class="ticker-change" [ngClass]="r.absolute >= 0 ? 'ticker-pos' : 'ticker-neg'">
@@ -57,6 +59,6 @@
       </span>
     </span>
     <span class="ticker-sep">◆</span>
-  </ng-container>
+  }
 
 </ng-template>

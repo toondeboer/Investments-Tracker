@@ -2,7 +2,7 @@ import { Component, Input, OnChanges } from '@angular/core';
 import { EChartsOption } from 'echarts';
 import { YearQuarter } from '@aws/util';
 import { NgxEchartsDirective } from 'ngx-echarts';
-import { CommonModule, NgIf } from '@angular/common';
+
 
 const NAUTICAL_TEXT  = '#F5F0E8';
 const NAUTICAL_MUTED = '#8FA8C0';
@@ -23,9 +23,8 @@ const round2 = (value: number) => Math.round(value * 100) / 100;
   templateUrl: './bar-and-line-chart.component.html',
   styleUrls: ['./bar-and-line-chart.component.scss'],
   imports: [
-    NgxEchartsDirective,
-    CommonModule
-  ]
+    NgxEchartsDirective
+]
 })
 export class BarAndLineChartComponent implements OnChanges {
   @Input() series: { yearQuarters: YearQuarter[]; dividends: number[] } = {

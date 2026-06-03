@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Inject, Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { map, Observable, timeout } from 'rxjs';
 import {
   parseYahooObjects,
@@ -13,10 +13,9 @@ import {
   providedIn: 'root',
 })
 export class YahooService {
-  constructor(
-    @Inject('ENVIRONMENT') private environment: any,
-    private http: HttpClient
-  ) {}
+  private environment = inject<any>('ENVIRONMENT' as any);
+  private http = inject(HttpClient);
+
 
   public getTicker(name: string, startDate: Date): Observable<YahooObject> {
     const start = Math.floor(startDate.getTime() / 1000);

@@ -1,27 +1,27 @@
-<div class="portfolio-detail" *ngIf="portfolio; else noSelection">
-  <div class="detail-header">
-    <h2 class="detail-title">{{ portfolio.name }}</h2>
-    <div class="detail-actions">
-      <button class="btn btn-primary add-holding-btn" (click)="onAddHolding()">
-        <lucide-icon name="Plus" [size]="16"></lucide-icon>
-        Add holding
-      </button>
-      <button class="btn btn-secondary import-btn" (click)="importCsv.emit(portfolio.id)">
-        &#8593; Import CSV
-      </button>
+@if (portfolio) {
+  <div class="portfolio-detail">
+    <div class="detail-header">
+      <h2 class="detail-title">{{ portfolio.name }}</h2>
+      <div class="detail-actions">
+        <button class="btn btn-primary add-holding-btn" (click)="onAddHolding()">
+          <lucide-icon name="Plus" [size]="16"></lucide-icon>
+          Add holding
+        </button>
+        <button class="btn btn-secondary import-btn" (click)="importCsv.emit(portfolio.id)">
+          &#8593; Import CSV
+        </button>
+      </div>
     </div>
+    <aws-transactions-table
+      [stocks]="stocks"
+      [portfolioId]="portfolioId"
+      [baseCurrency]="baseCurrency"
+    ></aws-transactions-table>
   </div>
-
-  <aws-transactions-table
-    [stocks]="stocks"
-    [portfolioId]="portfolioId"
-    [baseCurrency]="baseCurrency"
-  ></aws-transactions-table>
-</div>
-
-<ng-template #noSelection>
+} @else {
   <div class="no-selection">
     <span class="no-selection-icon">&#128193;</span>
     <p>Select a portfolio to view transactions</p>
   </div>
-</ng-template>
+}
+

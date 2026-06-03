@@ -1,21 +1,23 @@
 <div class="tickers-header">
   <h2 class="section-title">Holdings</h2>
   <div class="chips">
-    <button
-      *ngFor="let ticker of tickers"
-      class="chip"
-      [class.active]="activeStocks.includes(ticker)"
-      (click)="toggleTicker(ticker)"
-      type="button"
-    >
-      {{ ticker }}
-    </button>
+    @for (ticker of tickers; track ticker) {
+      <button
+        class="chip"
+        [class.active]="activeStocks.includes(ticker)"
+        (click)="toggleTicker(ticker)"
+        type="button"
+        >
+        {{ ticker }}
+      </button>
+    }
   </div>
 </div>
 
-<aws-yahoo
-  *ngIf="activeChartData"
-  [dates]="dates"
-  [chartData]="activeChartData"
-  [currencySymbol]="currencySymbol"
-></aws-yahoo>
+@if (activeChartData) {
+  <aws-yahoo
+    [dates]="dates"
+    [chartData]="activeChartData"
+    [currencySymbol]="currencySymbol"
+  ></aws-yahoo>
+}
