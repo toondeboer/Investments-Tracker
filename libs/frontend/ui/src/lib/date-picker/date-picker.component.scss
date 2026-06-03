@@ -1,0 +1,141 @@
+@use 'tokens' as *;
+@use 'mixins' as *;
+
+:host {
+  display: block;
+}
+
+.date-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  box-sizing: border-box;
+  background: $color-bg-surface;
+  border: 1px solid $color-border-strong;
+  border-radius: $radius-sm;
+  padding: 10px 14px;
+  color: $color-cream;
+  font-family: $font-sans;
+  font-size: 0.9rem;
+  cursor: pointer;
+  outline: none;
+  transition: $transition-base;
+
+  &:hover:not(.disabled) {
+    border-color: $color-gold;
+  }
+
+  &:focus {
+    border-color: $color-gold;
+    box-shadow: 0 0 0 2px rgba($color-gold, 0.15);
+  }
+
+  &.disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  lucide-icon {
+    color: $color-gold;
+    display: inline-flex;
+  }
+}
+
+.trigger-text.placeholder {
+  color: rgba($color-muted, 0.7);
+}
+
+// ─── Calendar popover ─────────────────────────────────────────────────────────
+.calendar-panel {
+  background: $color-bg-elevated;
+  border: 1px solid $color-border-strong;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+  padding: 14px;
+  width: 280px;
+}
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.month-label {
+  @include serif-heading;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: $color-cream;
+}
+
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  color: $color-muted;
+  cursor: pointer;
+  padding: 4px;
+  transition: $transition-base;
+
+  &:hover {
+    color: $color-gold;
+    border-color: rgba($color-gold, 0.3);
+    background: rgba($color-gold, 0.08);
+  }
+}
+
+.weekday-row,
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.weekday {
+  text-align: center;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: $color-muted;
+  padding: 4px 0;
+}
+
+.day-cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  color: $color-cream;
+  font-family: $font-sans;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: $transition-base;
+
+  &:hover {
+    background: rgba($color-gold, 0.1);
+    border-color: rgba($color-gold, 0.3);
+  }
+
+  &.muted {
+    color: rgba($color-muted, 0.5);
+  }
+
+  &.today {
+    border-color: rgba($color-gold, 0.5);
+  }
+
+  &.selected {
+    background: $color-gold;
+    color: $color-bg-base;
+    font-weight: 600;
+  }
+}

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogRef, DIALOG_DATA, DIALOG_REF } from '../dialog/dialog-ref';
 import { Transaction, TransactionKey, TransactionType } from '@aws/util';
+import { DatePickerComponent } from '../date-picker/date-picker.component';
 
 export type TransactionDialogData = {
   mode: 'add' | 'edit';
@@ -24,7 +25,7 @@ export type TransactionDialogResult = {
   selector: 'aws-transaction-dialog',
   templateUrl: './transaction-dialog.component.html',
   styleUrls: ['./transaction-dialog.component.scss'],
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, DatePickerComponent],
 })
 export class TransactionDialogComponent {
   type: TransactionType = 'stock';
