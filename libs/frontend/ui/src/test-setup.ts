@@ -5,8 +5,9 @@ globalThis.ngJest = {
     errorOnUnknownProperties: true,
   },
 };
-import 'jest-preset-angular/setup-jest';
+import { setupZoneTestEnv } from 'jest-preset-angular/setup-env/zone';
 
+setupZoneTestEnv();
 // jsdom doesn't implement matchMedia, which Angular CDK's MediaMatcher needs
 // (e.g. PageWrapperComponent builds a MediaQueryList on construction).
 Object.defineProperty(window, 'matchMedia', {
