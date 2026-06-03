@@ -3,6 +3,7 @@ import {
   Ticker,
   Transaction,
   TransactionDbo,
+  TransactionKey,
   TransactionType,
   Transactions,
   TransactionsDbo,
@@ -10,8 +11,12 @@ import {
 } from './types';
 import {
   addLists,
+  applyTransactionEdit,
   getCurrencies,
   getCurrencySymbol,
+  getHoldingCurrency,
+  renameHoldingTicker,
+  setHoldingCurrency,
   getDailyDates,
   getDividendPerQuarterByYear,
   getDividendTtmPerQuarter,
@@ -631,5 +636,81 @@ describe('yahooObjectToTicker', () => {
     // Aligned to the shorter length (1) so dates[i] always matches values[i].
     expect(result.values).toEqual([150]);
     expect(result.dates).toEqual([new Date(ts1 * 1000)]);
+  });
+});
+
+describe('holding & transaction mutation helpers', () => {
+  function row(
+    ticker: string,
+    date: string,
+    value: number,
+    type: TransactionType = 'stock',
+    currency = 'EUR',
+    amount = 1
+  ): TransactionDbo {
+    return { ticker, type, date, amount, value, currency };
+  }
+
+  const base: TransactionsDbo = {
+    stock: [row('AAPL', '2023-01-01', 100, 'stock', 'USD'), row('VUSA.AS', '2023-02-01', 50)],
+    dividend: [row('AAPL', '2023-03-01', 5, 'dividend', 'USD')],
+    commission: [row('AAPL', '2023-01-01', 1, 'commission', 'USD')],
+  };
+
+  describe('getHoldingCurrency', () => {
+    it('returns the currency of the holding from its first matching transaction', () => {
+      expect(getHoldingCurrency(base, 'AAPL')).toBe('USD');
+      expect(getHoldingCurrency(base, 'VUSA.AS')).toBe('EUR');
+    });
+
+    it('returns undefined for an unknown ticker', () => {
+      expect(getHoldingCurrency(base, 'MSFT')).toBeUndefined();
+    });
+  });
+
+  describe('applyTransactionEdit', () => {
+    it('replaces the matching transaction with the updated one', () => {
+      const key: TransactionKey = { type: 'stock', ticker: 'AAPL', date: '2023-01-01', value: 100 };
+      const updated = row('AAPL', '2023-01-05', 120, 'stock', 'USD', 2);
+      const result = applyTransactionEdit(base, key, updated);
+
+      expect(result.stock).toHaveLength(2);
+      expect(result.stock).toContainEqual(updated);
+      expect(result.stock).not.toContainEqual(base.stock[0]);
+      // Unrelated lists untouched.
+      expect(result.dividend).toEqual(base.dividend);
+    });
+
+    it('moves a transaction between type lists when the type changes', () => {
+      const key: TransactionKey = { type: 'stock', ticker: 'AAPL', date: '2023-01-01', value: 100 };
+      const updated = row('AAPL', '2023-01-01', 100, 'dividend', 'USD');
+      const result = applyTransactionEdit(base, key, updated);
+
+      expect(result.stock.some((t) => t.ticker === 'AAPL')).toBe(false);
+      expect(result.dividend).toContainEqual(updated);
+      expect(result.dividend).toHaveLength(2);
+    });
+  });
+
+  describe('renameHoldingTicker', () => {
+    it('rewrites the ticker across all transaction lists, leaving others alone', () => {
+      const result = renameHoldingTicker(base, 'AAPL', 'AAPL.US');
+
+      expect(result.stock.map((t) => t.ticker)).toEqual(['AAPL.US', 'VUSA.AS']);
+      expect(result.dividend.every((t) => t.ticker === 'AAPL.US')).toBe(true);
+      expect(result.commission.every((t) => t.ticker === 'AAPL.US')).toBe(true);
+    });
+  });
+
+  describe('setHoldingCurrency', () => {
+    it('rewrites the currency for the holding across all lists, leaving others alone', () => {
+      const result = setHoldingCurrency(base, 'AAPL', 'EUR');
+
+      expect(result.stock.find((t) => t.ticker === 'AAPL')?.currency).toBe('EUR');
+      expect(result.dividend[0].currency).toBe('EUR');
+      expect(result.commission[0].currency).toBe('EUR');
+      // VUSA.AS unaffected.
+      expect(result.stock.find((t) => t.ticker === 'VUSA.AS')?.currency).toBe('EUR');
+    });
   });
 });
