@@ -147,6 +147,19 @@ export const changeHoldingCurrencyFailure = createAction(
   props<{ error: string }>()
 );
 
+export const deleteHolding = createAction(
+  '[State] Delete Holding',
+  props<{ portfolioId: string; ticker: string }>()
+);
+export const deleteHoldingSuccess = createAction(
+  '[State] Delete Holding Success',
+  props<{ data: DatabaseDto }>()
+);
+export const deleteHoldingFailure = createAction(
+  '[State] Delete Holding Failure',
+  props<{ error: string }>()
+);
+
 export const deleteAllTransactions = createAction(
   '[State] Delete All Transactions',
   props<{ portfolioId: string }>()

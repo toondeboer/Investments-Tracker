@@ -10,6 +10,9 @@ import {
   changeHoldingCurrencyFailure,
   changeHoldingCurrencySuccess,
   createPortfolio,
+  deleteHolding,
+  deleteHoldingFailure,
+  deleteHoldingSuccess,
   createPortfolioFailure,
   createPortfolioSuccess,
   deleteAllTransactions,
@@ -60,6 +63,7 @@ import {
   DatabaseDto,
   PortfolioDbo,
   applyTransactionEdit,
+  deleteHoldingTicker,
   getHoldingCurrency,
   matchesTransactionKey,
   mergeTransactions,
@@ -98,6 +102,7 @@ export class StateEffects {
           changeHoldingCurrencyFailure,
           updateHoldingFailure,
           deleteTransactionFailure,
+          deleteHoldingFailure,
           deleteAllTransactionsFailure,
           importDeGiroCsvFailure,
           importYahooCsvFailure,
@@ -331,6 +336,26 @@ export class StateEffects {
           map((data) => changeHoldingCurrencySuccess({ data })),
           catchError((error: HttpErrorResponse) =>
             of(changeHoldingCurrencyFailure({ error: error.message }))
+          )
+        );
+      })
+    )
+  );
+
+  public readonly deleteHolding$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(deleteHolding),
+      withLatestFrom(this.store.select(selectFeature)),
+      switchMap(([{ portfolioId, ticker }, state]) => {
+        const updated = state.portfoliosDbo.map((p) =>
+          p.id === portfolioId
+            ? { ...p, transactions: deleteHoldingTicker(p.transactions, ticker) }
+            : p
+        );
+        return this.service.setData(buildPayload(state, updated)).pipe(
+          map((data) => deleteHoldingSuccess({ data })),
+          catchError((error: HttpErrorResponse) =>
+            of(deleteHoldingFailure({ error: error.message }))
           )
         );
       })

@@ -431,6 +431,7 @@ function computePriceState(
         ? withConverted(t.dividend)
         : sortTransactions(
             buildDividendTransactions(ticker, allTimeSeries.aggregatedAmounts, allTimeDates, fxConvert)
+              .filter((tx) => tx.amount > 0)
           );
 
     const displayTransactions: Transactions = {

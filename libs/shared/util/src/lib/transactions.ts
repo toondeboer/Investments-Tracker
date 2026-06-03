@@ -527,6 +527,19 @@ export function renameHoldingTicker(
   };
 }
 
+/** Removes every transaction whose ticker equals `ticker` across all type lists. */
+export function deleteHoldingTicker(
+  transactions: TransactionsDbo,
+  ticker: string
+): TransactionsDbo {
+  const remove = (txs: TransactionDbo[]) => txs.filter((tx) => tx.ticker !== ticker);
+  return {
+    stock: remove(transactions.stock),
+    dividend: remove(transactions.dividend),
+    commission: remove(transactions.commission),
+  };
+}
+
 /** Rewrites the currency on every transaction whose ticker equals `ticker`. */
 export function setHoldingCurrency(
   transactions: TransactionsDbo,

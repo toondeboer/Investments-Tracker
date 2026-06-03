@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import {
+  deleteHolding,
   deleteTransaction,
   renameHolding,
   saveTransaction,
@@ -82,6 +83,11 @@ export class TransactionsTableComponent {
       value: transaction.value,
     };
     this.store.dispatch(deleteTransaction({ portfolioId: this.portfolioId, transactionKey: key }));
+  }
+
+  onDeleteHolding(stock: Stock) {
+    if (!confirm(`Delete all transactions for ${stock.ticker}? This cannot be undone.`)) return;
+    this.store.dispatch(deleteHolding({ portfolioId: this.portfolioId, ticker: stock.ticker }));
   }
 
   onEditHolding(stock: Stock) {
