@@ -60,8 +60,14 @@
               <div class="transaction-row" *ngFor="let transaction of stocks[key].transactions?.stock">
                 <span class="col-date">{{ transaction.date | date:'d MMM y' }}</span>
                 <span class="col-num">{{ transaction.amount }}</span>
-                <span class="col-num">{{ transaction.value | currency:baseCurrency:'symbol':'1.2-2' }}</span>
-                <span class="col-num">{{ transaction.value / transaction.amount | currency:baseCurrency:'symbol':'1.2-2' }}</span>
+                <span class="col-num">
+                  <span class="val-primary">{{ displayValue(transaction) | currency:baseCurrency:'symbol':'1.2-2' }}</span>
+                  <span class="val-native" *ngIf="transaction.convertedValue !== undefined">{{ transaction.value | currency:transaction.currency:'symbol':'1.2-2' }}</span>
+                </span>
+                <span class="col-num">
+                  <span class="val-primary">{{ displayValue(transaction) / transaction.amount | currency:baseCurrency:'symbol':'1.2-2' }}</span>
+                  <span class="val-native" *ngIf="transaction.convertedValue !== undefined">{{ transaction.value / transaction.amount | currency:transaction.currency:'symbol':'1.2-2' }}</span>
+                </span>
                 <span class="col-actions">
                   <ng-container *ngTemplateOutlet="rowActions; context: { $implicit: transaction }"></ng-container>
                 </span>
@@ -80,7 +86,10 @@
               </div>
               <div class="transaction-row" *ngFor="let transaction of stocks[key].transactions?.dividend">
                 <span class="col-date">{{ transaction.date | date:'d MMM y' }}</span>
-                <span class="col-num positive">{{ transaction.value | currency:baseCurrency:'symbol':'1.2-2' }}</span>
+                <span class="col-num">
+                  <span class="val-primary positive">{{ displayValue(transaction) | currency:baseCurrency:'symbol':'1.2-2' }}</span>
+                  <span class="val-native" *ngIf="transaction.convertedValue !== undefined">{{ transaction.value | currency:transaction.currency:'symbol':'1.2-2' }}</span>
+                </span>
                 <span class="col-actions">
                   <ng-container *ngTemplateOutlet="rowActions; context: { $implicit: transaction }"></ng-container>
                 </span>
@@ -99,7 +108,10 @@
               </div>
               <div class="transaction-row" *ngFor="let transaction of stocks[key].transactions?.commission">
                 <span class="col-date">{{ transaction.date | date:'d MMM y' }}</span>
-                <span class="col-num negative">{{ transaction.value | currency:baseCurrency:'symbol':'1.2-2' }}</span>
+                <span class="col-num">
+                  <span class="val-primary negative">{{ displayValue(transaction) | currency:baseCurrency:'symbol':'1.2-2' }}</span>
+                  <span class="val-native" *ngIf="transaction.convertedValue !== undefined">{{ transaction.value | currency:transaction.currency:'symbol':'1.2-2' }}</span>
+                </span>
                 <span class="col-actions">
                   <ng-container *ngTemplateOutlet="rowActions; context: { $implicit: transaction }"></ng-container>
                 </span>

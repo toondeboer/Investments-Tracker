@@ -127,6 +127,11 @@ export class TransactionsTableComponent {
       });
   }
 
+  /** Value shown in the base/display currency: converted when available, else native. */
+  displayValue(transaction: Transaction): number {
+    return transaction.convertedValue ?? transaction.value;
+  }
+
   private openTransactionDialog(data: TransactionDialogData) {
     this.dialog
       .open(TransactionDialogComponent, { data, width: '480px' })

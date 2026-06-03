@@ -152,6 +152,37 @@ function getAmountOfSharesForDate(
  * Period-based variant of updateDividends for weekly/monthly granularity.
  * Uses getTransactionAmountsAndValuesByPeriod instead of the daily version.
  */
+/**
+ * Builds discrete dividend transactions from a ticker's Yahoo dividend events,
+ * multiplying each ex-date's per-share amount by the share count held at that
+ * date. Each transaction's `value` is the native amount (in the ticker's
+ * currency); when `fxConvert` is supplied, `convertedValue` carries the value in
+ * the display currency at the ex-date's rate (spot-at-receipt).
+ *
+ * Used both to feed the dividend charts ({@link updateDividendsByPeriod}) and to
+ * show a dividend list for holdings that have no dividend rows from their CSV.
+ */
+export function buildDividendTransactions(
+  ticker: Ticker,
+  amountOfShares: number[],
+  periodDates: Date[],
+  fxConvert?: (value: number, date: Date) => number
+): Transaction[] {
+  return ticker.dividends.map((div) => {
+    const amount = getAmountOfSharesForDate(amountOfShares, periodDates, div.date);
+    const nativeValue = div.amountPerShare * amount;
+    return {
+      ticker: ticker.name,
+      type: 'dividend',
+      date: div.date,
+      amount,
+      value: nativeValue,
+      currency: ticker.currency,
+      convertedValue: fxConvert ? fxConvert(nativeValue, div.date) : undefined,
+    };
+  });
+}
+
 export function updateDividendsByPeriod(
   amountOfShares: number[],
   ticker: Ticker,
@@ -163,18 +194,15 @@ export function updateDividendsByPeriod(
   // applied when the cash was paid (spot-at-receipt).
   fxConvert?: (value: number, date: Date) => number
 ): DividendTransactionChartData {
-  const transactions: Transaction[] = ticker.dividends.map((div) => {
-    const amount = getAmountOfSharesForDate(amountOfShares, periodDates, div.date);
-    const nativeValue = div.amountPerShare * amount;
-    return {
-      ticker: ticker.name,
-      type: 'dividend',
-      date: div.date,
-      amount,
-      value: fxConvert ? fxConvert(nativeValue, div.date) : nativeValue,
-      currency: ticker.currency,
-    };
-  });
+  // The chart series consume value in the display currency, so collapse
+  // converted → value here (buildDividendTransactions keeps them separate for
+  // the list, which needs both native and converted).
+  const transactions: Transaction[] = buildDividendTransactions(
+    ticker,
+    amountOfShares,
+    periodDates,
+    fxConvert
+  ).map((tx) => ({ ...tx, value: tx.convertedValue ?? tx.value }));
 
   const dividendTransactionAmountsAndValues = getTransactionAmountsAndValuesByPeriod(
     periodDates,
