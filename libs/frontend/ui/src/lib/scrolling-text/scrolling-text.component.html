@@ -1,31 +1,31 @@
-@if ({ state: state$ | async, symbol: currencySymbol$ | async }; as vm) {
+@if ({ summary: summary$ | async, symbol: symbol$ | async }; as vm) {
   <div class="ticker-viewport">
-    @if (vm.state?.summary?.totalReturn?.absolute !== 0) {
+    @if (vm.summary && vm.summary.totalReturn.absolute !== 0) {
       <div class="ticker-track">
-        <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
-        <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
-        <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
-        <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.state, symbol: vm.symbol }"></ng-container>
+        <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.summary, symbol: vm.symbol }"></ng-container>
+        <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.summary, symbol: vm.symbol }"></ng-container>
+        <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.summary, symbol: vm.symbol }"></ng-container>
+        <ng-container *ngTemplateOutlet="items; context: { $implicit: vm.summary, symbol: vm.symbol }"></ng-container>
       </div>
     }
   </div>
 }
 
-<ng-template #items let-state let-symbol="symbol">
+<ng-template #items let-summary let-symbol="symbol">
 
   <span class="ticker-item">
     <span class="ticker-label">TOTAL</span>
-    <span class="ticker-value">{{ symbol }}{{ state.summary.portfolioValue | number:'1.0-0' }}</span>
+    <span class="ticker-value">{{ symbol }}{{ summary.portfolioValue | number:'1.0-0' }}</span>
     <span class="ticker-change"
-      [ngClass]="state.summary.totalReturn.absolute >= 0 ? 'ticker-pos' : 'ticker-neg'">
-      {{ state.summary.totalReturn.absolute >= 0 ? '▲' : '▼' }}
-      {{ state.summary.totalReturn.absolute | number:'1.2-2' }}
-      ({{ state.summary.totalReturn.percentage | number:'1.2-2' }}%)
+      [ngClass]="summary.totalReturn.absolute >= 0 ? 'ticker-pos' : 'ticker-neg'">
+      {{ summary.totalReturn.absolute >= 0 ? '▲' : '▼' }}
+      {{ summary.totalReturn.absolute | number:'1.2-2' }}
+      ({{ summary.totalReturn.percentage | number:'1.2-2' }}%)
     </span>
   </span>
   <span class="ticker-sep">◆</span>
 
-  @if (state.summary.dailyReturn; as r) {
+  @if (summary.dailyReturn; as r) {
     <span class="ticker-item">
       <span class="ticker-label">1D</span>
       <span class="ticker-change" [ngClass]="r.absolute >= 0 ? 'ticker-pos' : 'ticker-neg'">
@@ -37,7 +37,7 @@
     <span class="ticker-sep">◆</span>
   }
 
-  @if (state.summary.weeklyReturn; as r) {
+  @if (summary.weeklyReturn; as r) {
     <span class="ticker-item">
       <span class="ticker-label">1W</span>
       <span class="ticker-change" [ngClass]="r.absolute >= 0 ? 'ticker-pos' : 'ticker-neg'">
@@ -49,7 +49,7 @@
     <span class="ticker-sep">◆</span>
   }
 
-  @if (state.summary.monthlyReturn; as r) {
+  @if (summary.monthlyReturn; as r) {
     <span class="ticker-item">
       <span class="ticker-label">1M</span>
       <span class="ticker-change" [ngClass]="r.absolute >= 0 ? 'ticker-pos' : 'ticker-neg'">

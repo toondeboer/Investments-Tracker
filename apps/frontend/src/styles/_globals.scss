@@ -16,6 +16,11 @@
   font-family: $font-sans;
   letter-spacing: 0.03em;
 
+  &:focus-visible {
+    outline: none;
+    box-shadow: $shadow-focus-gold;
+  }
+
   &.btn-large {
     padding: 1rem 2rem;
     font-size: 1.1rem;
@@ -115,6 +120,11 @@
   100% {
     left: 100%;
   }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
 }
 
 // ─── Toast notifications ──────────────────────────────────────────────────────

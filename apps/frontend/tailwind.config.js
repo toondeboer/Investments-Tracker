@@ -66,10 +66,15 @@ module.exports = {
           '0%':   { opacity: '0', transform: 'translateY(8px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%':      { transform: 'translateY(-8px)' },
+        },
       },
       animation: {
-        shimmer:   'shimmer 1.5s ease-in-out infinite',
-        fadeInUp:  'fadeInUp 0.3s ease forwards',
+        shimmer:  'shimmer 1.5s ease-in-out infinite',
+        fadeInUp: 'fadeInUp 0.3s ease forwards',
+        float:    'float 5s ease-in-out infinite',
       },
     },
   },
