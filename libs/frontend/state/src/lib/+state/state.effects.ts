@@ -45,6 +45,9 @@ import {
   saveTransaction,
   saveTransactionFailure,
   saveTransactionSuccess,
+  updateHolding,
+  updateHoldingFailure,
+  updateHoldingSuccess,
   updateSettings,
   updateSettingsFailure,
   updateSettingsSuccess,
@@ -93,6 +96,7 @@ export class StateEffects {
           updateTransactionFailure,
           renameHoldingFailure,
           changeHoldingCurrencyFailure,
+          updateHoldingFailure,
           deleteTransactionFailure,
           deleteAllTransactionsFailure,
           importDeGiroCsvFailure,
@@ -285,6 +289,28 @@ export class StateEffects {
           map((data) => renameHoldingSuccess({ data })),
           catchError((error: HttpErrorResponse) =>
             of(renameHoldingFailure({ error: error.message }))
+          )
+        );
+      })
+    )
+  );
+
+  public readonly updateHolding$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(updateHolding),
+      withLatestFrom(this.store.select(selectFeature)),
+      switchMap(([{ portfolioId, oldTicker, newTicker, currency }, state]) => {
+        const updated = state.portfoliosDbo.map((p) => {
+          if (p.id !== portfolioId) return p;
+          // Rename first, then set the currency on the (possibly renamed) ticker
+          // — a single transactions object, one document write.
+          const renamed = renameHoldingTicker(p.transactions, oldTicker, newTicker);
+          return { ...p, transactions: setHoldingCurrency(renamed, newTicker, currency) };
+        });
+        return this.service.setData(buildPayload(state, updated)).pipe(
+          map((data) => updateHoldingSuccess({ data })),
+          catchError((error: HttpErrorResponse) =>
+            of(updateHoldingFailure({ error: error.message }))
           )
         );
       })

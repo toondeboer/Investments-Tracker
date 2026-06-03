@@ -1,0 +1,30 @@
+<h2 class="dialog-title">Edit holding</h2>
+
+<div class="dialog-content">
+  <div class="field-group">
+    <label class="field-label">Ticker</label>
+    <input
+      class="field-input"
+      type="text"
+      [(ngModel)]="ticker"
+      (keyup.enter)="confirm()"
+      placeholder="e.g. AAPL"
+      autofocus
+    />
+  </div>
+
+  <div class="field-group">
+    <label class="field-label">Currency</label>
+    <select class="field-input" [(ngModel)]="currency">
+      <option *ngIf="currency !== 'EUR' && currency !== 'USD'" [value]="currency">{{ currency }}</option>
+      <option value="EUR">EUR</option>
+      <option value="USD">USD</option>
+    </select>
+    <span class="field-hint">Applies to every transaction in this holding.</span>
+  </div>
+</div>
+
+<div class="dialog-actions">
+  <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
+  <button class="btn btn-primary" (click)="confirm()" [disabled]="!canConfirm">Save</button>
+</div>

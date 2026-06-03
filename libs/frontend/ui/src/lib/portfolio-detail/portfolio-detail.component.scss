@@ -32,6 +32,18 @@
   margin: 0;
 }
 
+.detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.add-holding-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .no-selection {
   display: flex;
   flex-direction: column;
