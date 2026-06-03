@@ -118,6 +118,22 @@ export const renameHoldingFailure = createAction(
   props<{ error: string }>()
 );
 
+// Atomic holding edit: renames the ticker and/or sets the currency in a single
+// document write. Used by the holding-edit dialog so changing both at once can't
+// race two separate full-document PUTs against each other.
+export const updateHolding = createAction(
+  '[State] Update Holding',
+  props<{ portfolioId: string; oldTicker: string; newTicker: string; currency: string }>()
+);
+export const updateHoldingSuccess = createAction(
+  '[State] Update Holding Success',
+  props<{ data: DatabaseDto }>()
+);
+export const updateHoldingFailure = createAction(
+  '[State] Update Holding Failure',
+  props<{ error: string }>()
+);
+
 export const changeHoldingCurrency = createAction(
   '[State] Change Holding Currency',
   props<{ portfolioId: string; ticker: string; currency: string }>()

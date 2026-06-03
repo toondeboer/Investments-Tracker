@@ -1,0 +1,106 @@
+@use 'tokens' as *;
+@use 'mixins' as *;
+
+:host {
+  display: block;
+  background: $color-bg-elevated;
+}
+
+.dialog-title {
+  @include serif-heading;
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 24px 24px 0;
+  margin: 0;
+}
+
+.dialog-content {
+  padding: 20px 24px 8px;
+  min-width: 360px;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field-group--full {
+  grid-column: 1 / -1;
+}
+
+.field-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: $color-muted;
+}
+
+.field-input {
+  background: $color-bg-surface;
+  border: 1px solid $color-border-strong;
+  border-radius: $radius-sm;
+  padding: 10px 14px;
+  color: $color-cream;
+  font-family: $font-sans;
+  font-size: 0.9rem;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: $transition-base;
+
+  &::placeholder {
+    color: rgba($color-muted, 0.5);
+  }
+
+  &:focus {
+    border-color: $color-gold;
+    box-shadow: 0 0 0 2px rgba($color-gold, 0.15);
+  }
+
+  &.locked,
+  &[readonly],
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  option {
+    background: $color-bg-elevated;
+    color: $color-cream;
+  }
+}
+
+select.field-input {
+  @include themed-select;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 24px 20px;
+}
+
+.btn[disabled] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+@include respond-to($bp-sm) {
+  .field-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dialog-content {
+    min-width: 0;
+  }
+}
