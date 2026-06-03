@@ -47,3 +47,4 @@ Thumbs.db
 .nx
 docker
 .aws-sam
+.claude
