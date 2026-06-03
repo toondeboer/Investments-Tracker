@@ -60,6 +60,13 @@
   text-decoration: none;
 }
 
+// ─── Live ticker ───────────────────────────────────────────────────────────────
+.demo-ticker {
+  height: 44px;
+  background: $color-bg-surface;
+  border-bottom: 1px solid $color-border;
+}
+
 // ─── Body ──────────────────────────────────────────────────────────────────────
 .demo-body {
   max-width: 1200px;

@@ -8,6 +8,7 @@ import { BarChartComponent } from '../bar-chart/bar-chart.component';
 import { BarAndLineChartComponent } from '../bar-and-line-chart/bar-and-line-chart.component';
 import { BarChartPerQuarterByYearComponent } from '../bar-chart-per-quarter-by-year/bar-chart-per-quarter-by-year.component';
 import { SummaryComponent } from '../summary/summary.component';
+import { ScrollingTextComponent } from '../scrolling-text/scrolling-text.component';
 import {
   buildDemoAnnualReturns,
   buildDemoQuarterlyDividends,
@@ -34,6 +35,7 @@ import {
     BarAndLineChartComponent,
     BarChartPerQuarterByYearComponent,
     SummaryComponent,
+    ScrollingTextComponent,
   ],
   templateUrl: './demo.component.html',
   styleUrl: './demo.component.scss',

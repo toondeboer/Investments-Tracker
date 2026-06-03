@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { provideMockStore } from '@ngrx/store/testing';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { DemoComponent } from './demo.component';
 
@@ -10,7 +11,7 @@ describe('DemoComponent', () => {
         DemoComponent,
         NgxEchartsModule.forRoot({ echarts: () => import('echarts') }),
       ],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), provideMockStore()],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(DemoComponent);
