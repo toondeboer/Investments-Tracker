@@ -5,7 +5,7 @@
 // CI rather than only surfacing for users outside UTC.
 process.env.TZ = 'America/New_York';
 
-export default {
+module.exports = {
   displayName: 'util',
   preset: '../../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
