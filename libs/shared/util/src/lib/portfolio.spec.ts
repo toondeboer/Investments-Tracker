@@ -156,7 +156,9 @@ describe('computePortfolioState', () => {
   it('computes realized profit correctly after a position is fully sold', () => {
     // Buy 10 @ €100 (cost €1000), later sell all 10 @ €120 (proceeds €1200,
     // recorded with a negative value per the signed convention), €5 commission.
-    // Fully sold -> 0 shares, €0 market value, realized profit = 1200-1000-5 = 195.
+    // Fully sold -> 0 shares, €0 market value. Total return (simple formula,
+    // commission excluded) = proceeds 1200 - cost 1000 = 200; the profit chart
+    // (which nets out commission) shows 1200-1000-5 = 195.
     const dbo: TransactionsDbo = {
       stock: [
         { ticker: 'VUSA.AS', type: 'stock', date: '2023-01-10', amount: 10, value: 1000, currency: 'EUR' },
@@ -177,8 +179,8 @@ describe('computePortfolioState', () => {
 
     expect(stock.summary.amountOfShares).toBe(0);
     expect(stock.summary.portfolioValue).toBe(0);
-    expect(stock.summary.totalReturn.absolute).toBeCloseTo(195);
-    expect(result.summary.totalReturn.absolute).toBeCloseTo(195);
+    expect(stock.summary.totalReturn.absolute).toBeCloseTo(200);
+    expect(result.summary.totalReturn.absolute).toBeCloseTo(200);
 
     // Profit on every sold-out day must be the realized 195 — never NaN from a
     // missing price multiplied by 0 shares.
@@ -190,7 +192,8 @@ describe('computePortfolioState', () => {
   it('keeps the aggregate return % sane when one position is fully sold at a large gain', () => {
     // Regression: an active position worth little, aggregated with a fully-sold
     // position carrying a large realized gain, used to divide total profit by the
-    // tiny current value -> thousands of percent. Time-weighted return fixes it.
+    // tiny current value -> thousands of percent. Dividing by gross purchase cost
+    // (which never shrinks back) fixes it.
     //
     //   ACTIVE:   buy 1 @ €100, still worth ~€100 (flat).
     //   SOLD:     buy 10 @ €100 (€1000), price rises to €500, sell all @ €500
@@ -229,7 +232,7 @@ describe('computePortfolioState', () => {
     // but on DIFFERENT market calendars (one closed Mondays, one Tuesdays). On a
     // day one ticker is closed and the other isn't, the aggregate must carry the
     // closed stock's last value forward — not drop it to 0, which used to send
-    // the time-weighted return to absurd values (e.g. 1525%/-100%).
+    // the windowed (1W/1M) return to absurd values (e.g. 1525%/-100%).
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-06-01T12:00:00.000Z'));
     try {
@@ -413,8 +416,9 @@ describe('computePortfolioState', () => {
     //   commission= $10  * 0.8 = €8
     expect(s.totalInvested).toBeCloseTo(80);
     expect(s.totalCommission).toBeCloseTo(8);
-    // Total return captures both the price move and the FX move: 200 - 80 - 8 = 112.
-    expect(s.totalReturn.absolute).toBeCloseTo(112);
+    // Total return captures both the price move and the FX move: 200 - 80 = 120
+    // (the simple formula does not net out commission).
+    expect(s.totalReturn.absolute).toBeCloseTo(120);
   });
 
   it('skips FX conversion when displayCurrency matches stock currency', () => {

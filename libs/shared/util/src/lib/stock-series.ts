@@ -39,7 +39,7 @@ export interface StockSeriesParams {
   /**
    * Carry the last known market value across the stock's own closed days. Used
    * by the return window so summing stocks on different calendars doesn't zero
-   * out the ones that are merely closed and corrupt the time-weighted return.
+   * out the ones that are merely closed and corrupt the windowed return.
    */
   forwardFill?: boolean;
 }
