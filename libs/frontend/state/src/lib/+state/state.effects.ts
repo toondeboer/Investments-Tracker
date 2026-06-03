@@ -6,6 +6,9 @@ import { Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { switchMap, catchError, of, map, tap, withLatestFrom } from 'rxjs';
 import {
+  changeHoldingCurrency,
+  changeHoldingCurrencyFailure,
+  changeHoldingCurrencySuccess,
   createPortfolio,
   createPortfolioFailure,
   createPortfolioSuccess,
@@ -33,6 +36,9 @@ import {
   importYahooCsvParsed,
   importYahooCsvReady,
   importYahooCsvSuccess,
+  renameHolding,
+  renameHoldingFailure,
+  renameHoldingSuccess,
   renamePortfolio,
   renamePortfolioFailure,
   renamePortfolioSuccess,
@@ -42,15 +48,22 @@ import {
   updateSettings,
   updateSettingsFailure,
   updateSettingsSuccess,
+  updateTransaction,
+  updateTransactionFailure,
+  updateTransactionSuccess,
 } from './state.actions';
 import { selectFeature, selectLastFetched } from './state.selectors';
 import {
   DatabaseDto,
   PortfolioDbo,
+  applyTransactionEdit,
+  getHoldingCurrency,
   matchesTransactionKey,
   mergeTransactions,
   parseCsvInput,
   parseYahooCsvInput,
+  renameHoldingTicker,
+  setHoldingCurrency,
   transactionToTransactionDbo,
   translateToDutch,
 } from '@aws/util';
@@ -77,6 +90,9 @@ export class StateEffects {
           renamePortfolioFailure,
           deletePortfolioFailure,
           saveTransactionFailure,
+          updateTransactionFailure,
+          renameHoldingFailure,
+          changeHoldingCurrencyFailure,
           deleteTransactionFailure,
           deleteAllTransactionsFailure,
           importDeGiroCsvFailure,
@@ -173,9 +189,15 @@ export class StateEffects {
       ofType(saveTransaction),
       withLatestFrom(this.store.select(selectFeature)),
       switchMap(([{ portfolioId, transaction }, state]) => {
-        const dbo = transactionToTransactionDbo(transaction);
         const updated = state.portfoliosDbo.map((p) => {
           if (p.id !== portfolioId) return p;
+          // Holdings are single-currency: coerce to the holding's existing
+          // currency if one is already set for this ticker.
+          const holdingCurrency = getHoldingCurrency(p.transactions, transaction.ticker);
+          const dbo = {
+            ...transactionToTransactionDbo(transaction),
+            currency: holdingCurrency ?? transaction.currency,
+          };
           const typeKey = transaction.type as 'stock' | 'dividend' | 'commission';
           return {
             ...p,
@@ -217,6 +239,72 @@ export class StateEffects {
           map((data) => deleteTransactionSuccess({ data })),
           catchError((error: HttpErrorResponse) =>
             of(deleteTransactionFailure({ error: error.message }))
+          )
+        );
+      })
+    )
+  );
+
+  public readonly updateTransaction$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(updateTransaction),
+      withLatestFrom(this.store.select(selectFeature)),
+      switchMap(([{ portfolioId, originalKey, transaction }, state]) => {
+        const updated = state.portfoliosDbo.map((p) => {
+          if (p.id !== portfolioId) return p;
+          // Holdings are single-currency: coerce to the holding's existing
+          // currency (computed before the edit is applied).
+          const holdingCurrency = getHoldingCurrency(p.transactions, transaction.ticker);
+          const dbo = {
+            ...transactionToTransactionDbo(transaction),
+            currency: holdingCurrency ?? transaction.currency,
+          };
+          return { ...p, transactions: applyTransactionEdit(p.transactions, originalKey, dbo) };
+        });
+        return this.service.setData(buildPayload(state, updated)).pipe(
+          map((data) => updateTransactionSuccess({ data })),
+          catchError((error: HttpErrorResponse) =>
+            of(updateTransactionFailure({ error: error.message }))
+          )
+        );
+      })
+    )
+  );
+
+  public readonly renameHolding$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(renameHolding),
+      withLatestFrom(this.store.select(selectFeature)),
+      switchMap(([{ portfolioId, oldTicker, newTicker }, state]) => {
+        const updated = state.portfoliosDbo.map((p) =>
+          p.id === portfolioId
+            ? { ...p, transactions: renameHoldingTicker(p.transactions, oldTicker, newTicker) }
+            : p
+        );
+        return this.service.setData(buildPayload(state, updated)).pipe(
+          map((data) => renameHoldingSuccess({ data })),
+          catchError((error: HttpErrorResponse) =>
+            of(renameHoldingFailure({ error: error.message }))
+          )
+        );
+      })
+    )
+  );
+
+  public readonly changeHoldingCurrency$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(changeHoldingCurrency),
+      withLatestFrom(this.store.select(selectFeature)),
+      switchMap(([{ portfolioId, ticker, currency }, state]) => {
+        const updated = state.portfoliosDbo.map((p) =>
+          p.id === portfolioId
+            ? { ...p, transactions: setHoldingCurrency(p.transactions, ticker, currency) }
+            : p
+        );
+        return this.service.setData(buildPayload(state, updated)).pipe(
+          map((data) => changeHoldingCurrencySuccess({ data })),
+          catchError((error: HttpErrorResponse) =>
+            of(changeHoldingCurrencyFailure({ error: error.message }))
           )
         );
       })

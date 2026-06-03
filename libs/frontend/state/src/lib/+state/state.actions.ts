@@ -92,6 +92,45 @@ export const deleteTransactionFailure = createAction(
   props<{ error: string }>()
 );
 
+export const updateTransaction = createAction(
+  '[State] Update Transaction',
+  props<{ portfolioId: string; originalKey: TransactionKey; transaction: Transaction }>()
+);
+export const updateTransactionSuccess = createAction(
+  '[State] Update Transaction Success',
+  props<{ data: DatabaseDto }>()
+);
+export const updateTransactionFailure = createAction(
+  '[State] Update Transaction Failure',
+  props<{ error: string }>()
+);
+
+export const renameHolding = createAction(
+  '[State] Rename Holding',
+  props<{ portfolioId: string; oldTicker: string; newTicker: string }>()
+);
+export const renameHoldingSuccess = createAction(
+  '[State] Rename Holding Success',
+  props<{ data: DatabaseDto }>()
+);
+export const renameHoldingFailure = createAction(
+  '[State] Rename Holding Failure',
+  props<{ error: string }>()
+);
+
+export const changeHoldingCurrency = createAction(
+  '[State] Change Holding Currency',
+  props<{ portfolioId: string; ticker: string; currency: string }>()
+);
+export const changeHoldingCurrencySuccess = createAction(
+  '[State] Change Holding Currency Success',
+  props<{ data: DatabaseDto }>()
+);
+export const changeHoldingCurrencyFailure = createAction(
+  '[State] Change Holding Currency Failure',
+  props<{ error: string }>()
+);
+
 export const deleteAllTransactions = createAction(
   '[State] Delete All Transactions',
   props<{ portfolioId: string }>()

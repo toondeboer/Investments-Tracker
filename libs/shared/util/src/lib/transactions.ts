@@ -472,3 +472,72 @@ export function matchesTransactionKey(tx: TransactionDbo, key: TransactionKey): 
     tx.value === key.value
   );
 }
+
+/**
+ * The currency of a holding, taken from its first transaction across all type
+ * lists. Holdings are single-currency, so this is the canonical currency every
+ * transaction for the ticker must share. Returns undefined when the ticker has
+ * no transactions yet (a brand-new holding).
+ */
+export function getHoldingCurrency(
+  transactions: TransactionsDbo,
+  ticker: string
+): string | undefined {
+  for (const list of [transactions.stock, transactions.dividend, transactions.commission]) {
+    const match = list.find((tx) => tx.ticker === ticker);
+    if (match) return match.currency;
+  }
+  return undefined;
+}
+
+/**
+ * Removes the transaction matching `originalKey` (searched across all type
+ * lists, reusing {@link matchesTransactionKey}) and adds `updated` to the list
+ * for its type. Editing a transaction's type therefore moves it between lists.
+ */
+export function applyTransactionEdit(
+  transactions: TransactionsDbo,
+  originalKey: TransactionKey,
+  updated: TransactionDbo
+): TransactionsDbo {
+  const removeMatch = (txs: TransactionDbo[]) =>
+    txs.filter((tx) => !matchesTransactionKey(tx, originalKey));
+  const next: TransactionsDbo = {
+    stock: removeMatch(transactions.stock),
+    dividend: removeMatch(transactions.dividend),
+    commission: removeMatch(transactions.commission),
+  };
+  const typeKey = updated.type as 'stock' | 'dividend' | 'commission';
+  next[typeKey] = [...next[typeKey], updated];
+  return next;
+}
+
+/** Rewrites the ticker on every transaction whose ticker equals `oldTicker`. */
+export function renameHoldingTicker(
+  transactions: TransactionsDbo,
+  oldTicker: string,
+  newTicker: string
+): TransactionsDbo {
+  const rename = (txs: TransactionDbo[]) =>
+    txs.map((tx) => (tx.ticker === oldTicker ? { ...tx, ticker: newTicker } : tx));
+  return {
+    stock: rename(transactions.stock),
+    dividend: rename(transactions.dividend),
+    commission: rename(transactions.commission),
+  };
+}
+
+/** Rewrites the currency on every transaction whose ticker equals `ticker`. */
+export function setHoldingCurrency(
+  transactions: TransactionsDbo,
+  ticker: string,
+  currency: string
+): TransactionsDbo {
+  const setCurrency = (txs: TransactionDbo[]) =>
+    txs.map((tx) => (tx.ticker === ticker ? { ...tx, currency } : tx));
+  return {
+    stock: setCurrency(transactions.stock),
+    dividend: setCurrency(transactions.dividend),
+    commission: setCurrency(transactions.commission),
+  };
+}
