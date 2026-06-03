@@ -295,6 +295,10 @@ function computePriceState(
     } as const;
 
     // --- Selected-range series (drives the performance charts) ---
+    // forwardFill: on daily ranges the market is closed on weekends/holidays, so
+    // getPortfolioValues yields NaN there; carry the last known value across them
+    // so the value/profit charts stay continuous instead of dropping to the axis.
+    // (No-op at weekly/monthly granularity, which already carries the last price.)
     const rangeSeries = buildStockSeries({
       ...fxArgs,
       dates,
@@ -302,6 +306,7 @@ function computePriceState(
       snapshotCutoff: windowStart,
       periodRangeStart: effectiveRangeStart,
       commissionSnapshotAmount: 'snapshot',
+      forwardFill: true,
     });
     const portfolioValues = rangeSeries.portfolioValues;
     const investedForProfit = rangeSeries.invested;

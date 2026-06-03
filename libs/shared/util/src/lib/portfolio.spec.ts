@@ -271,6 +271,52 @@ describe('computePortfolioState', () => {
     }
   });
 
+  it('carries the chart value across weekends on a daily range (no NaN gaps)', () => {
+    // Yahoo tickers have no weekend rows, so getPortfolioValues yields NaN on
+    // Sat/Sun. The daily value/profit charts must carry the last known value
+    // across those days instead of dropping to the axis.
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-06-01T12:00:00.000Z'));
+    try {
+      const dbo: TransactionsDbo = {
+        stock: [
+          { ticker: 'AAA', type: 'stock', date: '2026-03-02', amount: 10, value: 1000, currency: 'EUR' },
+        ],
+        dividend: [],
+        commission: [],
+      };
+      const today = new Date('2026-06-01T00:00:00.000Z');
+      // Weekday-only prices (constant 100) for the last ~70 days.
+      const dates: Date[] = [];
+      const values: number[] = [];
+      for (let i = 70; i >= 0; i--) {
+        const d = new Date(today);
+        d.setUTCDate(d.getUTCDate() - i);
+        const dow = d.getUTCDay();
+        if (dow === 0 || dow === 6) continue; // weekends absent, like Yahoo
+        dates.push(d);
+        values.push(100);
+      }
+      const ticker: Ticker = { name: 'AAA', currency: 'EUR', dates, values, dividends: [] };
+
+      const result = computePortfolioState(dbo, { AAA: ticker }, undefined, '1M');
+      const pv = result.stocks['AAA'].chartData.portfolioValues;
+      const profit = result.stocks['AAA'].chartData.profit;
+
+      // Position held throughout the window -> every charted day is the held
+      // value (10 * 100), weekends included, and nothing is NaN.
+      expect(pv.every(Number.isFinite)).toBe(true);
+      expect(profit.every(Number.isFinite)).toBe(true);
+      const weekendIdx = result.dates.findIndex(
+        (d) => d.getUTCDay() === 0 || d.getUTCDay() === 6
+      );
+      expect(weekendIdx).toBeGreaterThan(-1);
+      expect(pv[weekendIdx]).toBe(1000);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   it('returns an empty portfolio for no transactions', () => {
     const result = computePortfolioState(
       { stock: [], dividend: [], commission: [] },
