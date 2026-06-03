@@ -1,0 +1,89 @@
+<h2 class="dialog-title">{{ title }}</h2>
+
+<div class="dialog-content">
+  <div class="field-grid">
+    <div class="field-group">
+      <label class="field-label">Type</label>
+      <select class="field-input" [(ngModel)]="type">
+        <option value="stock">Stock</option>
+        <option value="dividend">Dividend</option>
+        <option value="commission">Commission</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Ticker</label>
+      <input
+        class="field-input"
+        type="text"
+        [(ngModel)]="ticker"
+        [readonly]="tickerLocked"
+        [class.locked]="tickerLocked"
+        placeholder="e.g. AAPL"
+      />
+    </div>
+
+    <div class="field-group field-group--full">
+      <label class="field-label">Date</label>
+      <aws-date-picker [(ngModel)]="date"></aws-date-picker>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Amount (shares)</label>
+      <input
+        class="field-input"
+        type="number"
+        [(ngModel)]="amount"
+        (ngModelChange)="onAmountChange()"
+        placeholder="0"
+      />
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Currency</label>
+      <select
+        class="field-input"
+        [(ngModel)]="currency"
+        [disabled]="currencyLocked"
+        [class.locked]="currencyLocked"
+      >
+        <!-- Existing/imported holdings may use a currency outside the manual
+             set (e.g. GBP); show it so the locked value still renders. -->
+        <option *ngIf="currencyLocked && currency !== 'EUR' && currency !== 'USD'" [value]="currency">
+          {{ currency }}
+        </option>
+        <option value="EUR">EUR</option>
+        <option value="USD">USD</option>
+      </select>
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Total value</label>
+      <input
+        class="field-input"
+        type="number"
+        [(ngModel)]="value"
+        (ngModelChange)="recomputePerShareFromTotal()"
+        placeholder="0.00"
+      />
+    </div>
+
+    <div class="field-group">
+      <label class="field-label">Value per share</label>
+      <input
+        class="field-input"
+        type="number"
+        [(ngModel)]="pricePerShare"
+        (ngModelChange)="recomputeTotalFromPerShare()"
+        placeholder="0.00"
+      />
+    </div>
+  </div>
+</div>
+
+<div class="dialog-actions">
+  <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
+  <button class="btn btn-primary" (click)="confirm()" [disabled]="!canConfirm">
+    {{ data.mode === 'edit' ? 'Save' : 'Add' }}
+  </button>
+</div>

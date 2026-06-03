@@ -79,8 +79,13 @@ export type Transaction = {
   date: Date;
   time?: string;
   amount: number;
+  // Native value, in the transaction's own `currency`.
   value: number;
   currency: string;
+  // Value converted into the display/base currency at this transaction's own
+  // date's FX rate (spot-at-purchase). Set by the engine when a display currency
+  // differs from the holding currency; undefined means "show the native value".
+  convertedValue?: number;
 };
 
 export type TransactionKey = {

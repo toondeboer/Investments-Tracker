@@ -1,27 +1,32 @@
-import { ChangeDetectorRef, Component, Input } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
-  deleteAllTransactions,
   deleteTransaction,
-  handleFileInput,
+  renameHolding,
   saveTransaction,
+  updateHolding,
+  updateTransaction,
 } from '@aws/state';
-import {
-  Transaction,
-  TransactionKey,
-  TransactionType,
-  Transactions,
-  Stock,
-} from '@aws/util';
+import { Transaction, TransactionKey, Transactions, Stock } from '@aws/util';
 import { Store } from '@ngrx/store';
-import { Papa } from 'ngx-papaparse';
-import { FormsModule } from '@angular/forms';
 import { CommonModule, DecimalPipe } from '@angular/common';
+import { LucideAngularModule } from 'lucide-angular';
+import { DialogService } from '../dialog/dialog.service';
+import {
+  TransactionDialogComponent,
+  TransactionDialogData,
+  TransactionDialogResult,
+} from '../transaction-dialog/transaction-dialog.component';
+import {
+  HoldingEditDialogComponent,
+  HoldingEditDialogData,
+  HoldingEditResult,
+} from '../holding-edit-dialog/holding-edit-dialog.component';
 
 @Component({
   selector: 'aws-transactions-table',
   templateUrl: './transactions-table.component.html',
   styleUrls: ['./transactions-table.component.scss'],
-  imports: [FormsModule, DecimalPipe, CommonModule],
+  imports: [DecimalPipe, CommonModule, LucideAngularModule],
 })
 export class TransactionsTableComponent {
   @Input() stocks: { [ticker: string]: Stock } = {};
@@ -31,34 +36,44 @@ export class TransactionsTableComponent {
 
   constructor(
     private readonly store: Store,
-    private papa: Papa,
-    private cdr: ChangeDetectorRef
+    private readonly dialog: DialogService
   ) {}
 
-  ticker = '';
-  type: TransactionType = 'stock';
-  date = new Date();
-  amount = 0;
-  value = 0;
-  currency: 'EUR' | 'USD' = 'EUR';
-
-  csvData: any[] = [];
-
-  saveTransaction() {
-    const newTransaction: Transaction = {
-      ticker: this.ticker,
-      type: this.type,
-      date: new Date(this.date),
-      amount: this.amount,
-      value: this.value,
-      currency: this.currency,
-    };
-    this.store.dispatch(
-      saveTransaction({ portfolioId: this.portfolioId, transaction: newTransaction })
-    );
+  /** Open the dialog to add a brand-new holding (ticker + currency editable). */
+  onAddHolding() {
+    const data: TransactionDialogData = { mode: 'add' };
+    this.openTransactionDialog(data);
   }
 
-  deleteTransactionEntry(transaction: Transaction) {
+  /** Open the dialog to add a transaction to an existing, single-currency holding. */
+  onAddTransaction(stock: Stock) {
+    const data: TransactionDialogData = {
+      mode: 'add',
+      ticker: stock.ticker,
+      lockedCurrency: stock.currency.value,
+    };
+    this.openTransactionDialog(data);
+  }
+
+  onEditTransaction(transaction: Transaction) {
+    const data: TransactionDialogData = { mode: 'edit', transaction };
+    this.dialog
+      .open(TransactionDialogComponent, { data, width: '480px' })
+      .afterClosed()
+      .subscribe((result) => {
+        const r = result as TransactionDialogResult | undefined;
+        if (!r || !r.originalKey) return;
+        this.store.dispatch(
+          updateTransaction({
+            portfolioId: this.portfolioId,
+            originalKey: r.originalKey,
+            transaction: r.transaction,
+          })
+        );
+      });
+  }
+
+  onDeleteTransaction(transaction: Transaction) {
     const key: TransactionKey = {
       type: transaction.type,
       ticker: transaction.ticker,
@@ -69,23 +84,65 @@ export class TransactionsTableComponent {
     this.store.dispatch(deleteTransaction({ portfolioId: this.portfolioId, transactionKey: key }));
   }
 
-  deleteAll() {
-    this.store.dispatch(deleteAllTransactions({ portfolioId: this.portfolioId }));
+  onEditHolding(stock: Stock) {
+    const data: HoldingEditDialogData = {
+      ticker: stock.ticker,
+      currency: stock.currency.value,
+    };
+    this.dialog
+      .open(HoldingEditDialogComponent, { data, width: '380px' })
+      .afterClosed()
+      .subscribe((result) => {
+        const r = result as HoldingEditResult | undefined;
+        if (!r) return;
+        const tickerChanged = r.newTicker !== stock.ticker;
+        const currencyChanged = r.currency !== stock.currency.value;
+        if (tickerChanged && currencyChanged) {
+          this.store.dispatch(
+            updateHolding({
+              portfolioId: this.portfolioId,
+              oldTicker: stock.ticker,
+              newTicker: r.newTicker,
+              currency: r.currency,
+            })
+          );
+        } else if (tickerChanged) {
+          this.store.dispatch(
+            renameHolding({
+              portfolioId: this.portfolioId,
+              oldTicker: stock.ticker,
+              newTicker: r.newTicker,
+            })
+          );
+        } else if (currencyChanged) {
+          this.store.dispatch(
+            updateHolding({
+              portfolioId: this.portfolioId,
+              oldTicker: stock.ticker,
+              newTicker: stock.ticker,
+              currency: r.currency,
+            })
+          );
+        }
+      });
   }
 
-  handleFileInput(event: Event) {
-    const inputElement = event.target as HTMLInputElement;
-    if (inputElement.files && inputElement.files.length > 0) {
-      const file = inputElement.files[0];
-      this.papa.parse(file, {
-        complete: (result) => {
-          this.csvData = result.data;
-          this.cdr.detectChanges();
-          this.store.dispatch(handleFileInput({ data: result.data }));
-        },
-        header: true,
+  /** Value shown in the base/display currency: converted when available, else native. */
+  displayValue(transaction: Transaction): number {
+    return transaction.convertedValue ?? transaction.value;
+  }
+
+  private openTransactionDialog(data: TransactionDialogData) {
+    this.dialog
+      .open(TransactionDialogComponent, { data, width: '480px' })
+      .afterClosed()
+      .subscribe((result) => {
+        const r = result as TransactionDialogResult | undefined;
+        if (!r) return;
+        this.store.dispatch(
+          saveTransaction({ portfolioId: this.portfolioId, transaction: r.transaction })
+        );
       });
-    }
   }
 
   protected readonly Object = Object;

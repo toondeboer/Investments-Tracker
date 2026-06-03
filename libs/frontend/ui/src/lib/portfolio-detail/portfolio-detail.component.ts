@@ -1,13 +1,14 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PortfolioDbo, Stock } from '@aws/util';
+import { LucideAngularModule } from 'lucide-angular';
 import { TransactionsTableComponent } from '../transactions-table/transactions-table.component';
 
 @Component({
   selector: 'aws-portfolio-detail',
   templateUrl: './portfolio-detail.component.html',
   styleUrls: ['./portfolio-detail.component.scss'],
-  imports: [CommonModule, TransactionsTableComponent],
+  imports: [CommonModule, LucideAngularModule, TransactionsTableComponent],
 })
 export class PortfolioDetailComponent {
   @Input() portfolio: PortfolioDbo | null = null;
@@ -16,7 +17,13 @@ export class PortfolioDetailComponent {
 
   @Output() importCsv = new EventEmitter<string>();
 
+  @ViewChild(TransactionsTableComponent) table?: TransactionsTableComponent;
+
   get portfolioId(): string {
     return this.portfolio?.id ?? 'default';
+  }
+
+  onAddHolding() {
+    this.table?.onAddHolding();
   }
 }

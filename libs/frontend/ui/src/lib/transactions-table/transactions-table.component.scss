@@ -213,88 +213,97 @@
   text-align: right;
 }
 
+.col-actions {
+  flex: 0 0 64px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
 .positive {
   color: $color-success;
 }
 
-// ─── Add transaction form ─────────────────────────────────────────────────────
-.form-card {
-  @include nautical-card;
-  padding: 24px;
+// Stacked value: converted (base currency) on top, native underneath.
+.val-primary {
+  display: block;
 }
 
-.form-title {
-  @include serif-heading;
-  font-size: 1.25rem;
+.val-native {
+  display: block;
+  font-size: 0.72rem;
+  color: $color-muted;
+}
+
+// ─── Currency badge ────────────────────────────────────────────────────────────
+.currency-badge {
+  font-size: 0.65rem;
   font-weight: 600;
-  margin-bottom: 20px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: $color-gold;
+  background: rgba($color-gold, 0.1);
+  border: 1px solid rgba($color-gold, 0.3);
+  border-radius: $radius-sm;
+  padding: 2px 6px;
 }
 
-.transaction-form {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 16px;
-  align-items: end;
+// ─── Action buttons ────────────────────────────────────────────────────────────
+.holding-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.form-group {
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: $radius-sm;
+  color: $color-muted;
+  cursor: pointer;
+  padding: 5px;
+  transition: $transition-base;
+
+  &:hover {
+    color: $color-gold;
+    border-color: rgba($color-gold, 0.3);
+    background: rgba($color-gold, 0.08);
+  }
+
+  &--danger:hover {
+    color: $color-error;
+    border-color: rgba($color-error, 0.3);
+    background: rgba($color-error, 0.08);
+  }
+}
+
+// ─── Empty state ─────────────────────────────────────────────────────────────
+.empty-holdings {
+  @include nautical-card;
+  padding: 40px 24px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  gap: 16px;
 }
 
-.form-label {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+.empty-text {
   color: $color-muted;
-  font-weight: 500;
+  font-size: 0.95rem;
 }
 
-.form-control {
-  background: $color-bg-elevated;
-  border: 1px solid $color-border;
-  border-radius: $radius-sm;
-  padding: 8px 12px;
-  color: $color-cream;
-
-  font-family: $font-sans;
-  font-size: 0.9rem;
-  transition: $transition-base;
-  outline: none;
-
-  &::placeholder {
-    color: rgba($color-muted, 0.5);
-  }
-
-  &:focus {
-    border-color: $color-gold;
-    box-shadow: 0 0 0 2px rgba($color-gold, 0.15);
-  }
-
-  option {
-    background: $color-bg-elevated;
-    color: $color-cream;
-  }
-}
-
-select.form-control {
-  @include themed-select;
-}
-
-.form-actions {
-  display: flex;
-  align-items: flex-end;
-  padding-bottom: 1px;
+.empty-holdings .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 @include respond-to($bp-md) {
   :host {
     padding: 16px;
-  }
-
-  .transaction-form {
-    grid-template-columns: 1fr 1fr;
   }
 
   .holding-shares {
@@ -303,19 +312,5 @@ select.form-control {
 
   .col-date {
     flex: 0 0 80px;
-  }
-}
-
-@include respond-to($bp-sm) {
-  .transaction-form {
-    grid-template-columns: 1fr;
-  }
-
-  .form-actions {
-    padding-bottom: 0;
-  }
-
-  .btn {
-    width: 100%;
   }
 }
