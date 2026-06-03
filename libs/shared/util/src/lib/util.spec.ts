@@ -12,6 +12,7 @@ import {
 import {
   addLists,
   applyTransactionEdit,
+  buildDividendTransactions,
   getCurrencies,
   getCurrencySymbol,
   getHoldingCurrency,
@@ -636,6 +637,33 @@ describe('yahooObjectToTicker', () => {
     // Aligned to the shorter length (1) so dates[i] always matches values[i].
     expect(result.values).toEqual([150]);
     expect(result.dates).toEqual([new Date(ts1 * 1000)]);
+  });
+});
+
+describe('buildDividendTransactions', () => {
+  const ticker: Ticker = {
+    name: 'AAPL',
+    currency: 'USD',
+    dates: [],
+    values: [],
+    dividends: [{ date: new Date('2023-06-15'), amountPerShare: 2 }],
+  };
+  // Period boundaries: holding 10 shares from end of May onward.
+  const periodDates = [new Date('2023-05-31'), new Date('2023-06-30')];
+  const amountOfShares = [10, 10];
+
+  it('multiplies per-share dividend by shares held at the ex-date (native value)', () => {
+    const [tx] = buildDividendTransactions(ticker, amountOfShares, periodDates);
+    expect(tx.amount).toBe(10);
+    expect(tx.value).toBe(20); // 2 * 10
+    expect(tx.currency).toBe('USD');
+    expect(tx.convertedValue).toBeUndefined();
+  });
+
+  it('sets convertedValue from the converter at the ex-date', () => {
+    const [tx] = buildDividendTransactions(ticker, amountOfShares, periodDates, (v) => v * 0.9);
+    expect(tx.value).toBe(20);
+    expect(tx.convertedValue).toBeCloseTo(18); // 20 * 0.9
   });
 });
 

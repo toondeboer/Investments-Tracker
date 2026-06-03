@@ -382,6 +382,48 @@ describe('computePortfolioState', () => {
     expect(result.summary.portfolioValue).toBeCloseTo(180);
     expect(result.stocks['AAPL'].summary.portfolioValue).toBeCloseTo(180);
     expect(result.stocks['AAPL'].summary.currentSharePrice).toBeCloseTo(180);
+
+    // The displayed transaction keeps its native value and gains a
+    // convertedValue at the purchase-date rate (0.9): $100 -> €90.
+    const tx = result.stocks['AAPL'].transactions.stock[0];
+    expect(tx.value).toBe(100);
+    expect(tx.currency).toBe('USD');
+    expect(tx.convertedValue).toBeCloseTo(90);
+  });
+
+  it('leaves convertedValue undefined when no FX conversion is needed', () => {
+    const dates = getDailyDates(getStartDate(transactionsDboToStocks(dbo)), new Date());
+    const ticker: Ticker = {
+      name: 'VUSA.AS', currency: 'EUR', dates, values: dates.map(() => 150), dividends: [],
+    };
+    const result = computePortfolioState(dbo, { 'VUSA.AS': ticker }, 'EUR');
+    expect(result.stocks['VUSA.AS'].transactions.stock[0].convertedValue).toBeUndefined();
+  });
+
+  it('fills the dividend list from Yahoo when the holding has no CSV dividends', () => {
+    const noDivDbo: TransactionsDbo = {
+      stock: [
+        { ticker: 'AAPL', type: 'stock', date: '2023-01-10', amount: 10, value: 1000, currency: 'USD' },
+      ],
+      dividend: [],
+      commission: [],
+    };
+    const dates = getDailyDates(getStartDate(transactionsDboToStocks(noDivDbo)), new Date());
+    const ticker: Ticker = {
+      name: 'AAPL',
+      currency: 'USD',
+      dates,
+      values: dates.map(() => 200),
+      dividends: [{ date: new Date('2023-03-01'), amountPerShare: 0.5 }],
+    };
+
+    const result = computePortfolioState(noDivDbo, { AAPL: ticker }, 'USD');
+    const divs = result.stocks['AAPL'].transactions.dividend;
+
+    // No CSV dividends, so the Yahoo dividend event is surfaced: 10 shares * $0.5.
+    expect(divs).toHaveLength(1);
+    expect(divs[0].value).toBeCloseTo(5);
+    expect(divs[0].currency).toBe('USD');
   });
 
   it('locks cost basis at the purchase-date FX rate (spot-at-purchase)', () => {

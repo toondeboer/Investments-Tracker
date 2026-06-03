@@ -224,6 +224,17 @@
   color: $color-success;
 }
 
+// Stacked value: converted (base currency) on top, native underneath.
+.val-primary {
+  display: block;
+}
+
+.val-native {
+  display: block;
+  font-size: 0.72rem;
+  color: $color-muted;
+}
+
 // ─── Currency badge ────────────────────────────────────────────────────────────
 .currency-badge {
   font-size: 0.65rem;

@@ -1,6 +1,7 @@
-import { ChartGranularity, PortfolioDbo, Stock, Summary, Ticker, TimeRange, Transactions, TransactionsDbo } from './types';
+import { ChartGranularity, PortfolioDbo, Stock, Summary, Ticker, TimeRange, Transaction, Transactions, TransactionsDbo } from './types';
 import {
   addLists,
+  buildDividendTransactions,
   buildStockSeries,
   createFxConverter,
   getCurrencies,
@@ -20,6 +21,7 @@ import {
   computePreRangeSnapshot,
   getYieldPerYear,
   isBeforeDay,
+  sortTransactions,
   transactionsDboToStocks,
   transactionsDboToTransactions,
   updateDividendsByPeriod,
@@ -417,8 +419,29 @@ function computePriceState(
     chartTotalCommissionSummary += stockTotalCommission;
     chartTotalDividendSummary += allTimeTotalDividend;
 
+    // Display transactions for the list: keep the native value, and attach a
+    // convertedValue (display currency, spot-at-date) when an FX converter is
+    // present. Holdings with no CSV dividend rows fall back to the Yahoo
+    // dividend events so a dividend list is still shown.
+    const withConverted = (txs: Transaction[]): Transaction[] =>
+      fx ? txs.map((d) => ({ ...d, convertedValue: fx.convert(d.value, d.date) })) : txs;
+
+    const displayDividends =
+      t.dividend.length > 0
+        ? withConverted(t.dividend)
+        : sortTransactions(
+            buildDividendTransactions(ticker, allTimeSeries.aggregatedAmounts, allTimeDates, fxConvert)
+          );
+
+    const displayTransactions: Transactions = {
+      stock: withConverted(t.stock),
+      dividend: displayDividends,
+      commission: withConverted(t.commission),
+    };
+
     chartedStocks[key] = {
       ...stock,
+      transactions: displayTransactions,
       summary: {
         ...stock.summary,
         portfolioValue,
