@@ -334,14 +334,6 @@ function computePriceState(
     const allTimeInvested = allTimeSeries.invested;
     const allTimeProfit = allTimeSeries.profit;
 
-    // Cumulative gross purchase cost (buys only) per all-time date, at
-    // spot-at-purchase FX — the stable denominator for the per-year total
-    // return. Sells are excluded so it never shrinks back toward zero.
-    const grossBuysTxFx = stockTxFx.filter((tx) => tx.value > 0);
-    const allTimeGrossInvested = getTransactionAmountsAndValuesByPeriod(
-      allTimeDates, grossBuysTxFx, startDate
-    ).aggregatedValues;
-
     // Dividends use the native all-time share counts and are converted at the
     // ex-date inside updateDividendsByPeriod, so they're already in the display
     // currency — no second per-period scaling.
@@ -359,13 +351,12 @@ function computePriceState(
     };
     const allTimeTotalDividend = getMostRecentValueFromList(allTimeDividendBase.aggregatedValues).value;
 
-    // Per-year total return (%), same simple formula as the headline figure,
-    // including dividends received and using gross purchase cost as the base.
+    // Per-year annual return (%) via Modified Dietz — each year in isolation,
+    // money-weighted, including dividends received.
     const yieldPerYear = getYieldPerYear(
       allTimeDates,
       allTimePortfolioValues,
       allTimeInvested,
-      allTimeGrossInvested,
       allTimeDividendBase.aggregatedValues
     );
 
@@ -452,7 +443,6 @@ function computePriceState(
         allTimeDates,
         allTimePortfolioValues,
         allTimeInvested,
-        allTimeGrossInvested,
         allTimeProfit,
         stock: {
           ...stock.chartData.stock,

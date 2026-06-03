@@ -61,8 +61,7 @@ describe('date helpers are timezone-independent (UTC)', () => {
     const result = getYieldPerYear(
       dates,
       [100, 100, 200], // portfolio value
-      [100, 100, 100], // net invested
-      [100, 100, 100], // gross purchase cost
+      [100, 100, 100], // cumulative net invested
       [0, 0, 0]        // cumulative dividends
     );
     expect(result.years).toEqual(['2023', '2024']);

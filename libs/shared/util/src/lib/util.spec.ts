@@ -364,72 +364,84 @@ describe('getDividendTtmPerQuarter', () => {
   });
 });
 
-describe('getYieldPerYear', () => {
-  it('computes the cumulative total return % at each year-end', () => {
+describe('getYieldPerYear (Modified Dietz, per year in isolation)', () => {
+  it('reports each year in isolation, not cumulatively', () => {
     const dates = [
-      new Date(Date.UTC(2023, 11, 30)),
+      new Date(Date.UTC(2023, 0, 31)), // first point: €100 invested
       new Date(Date.UTC(2023, 11, 31)), // 2023 year-end
       new Date(Date.UTC(2024, 11, 31)), // 2024 year-end (final point)
     ];
-    // No cash flows after the initial €100 buy, no dividends: value 100 -> 120
-    // by end 2023, then -> 240 by end 2024.
-    const portfolioValues = [100, 120, 240];
+    // Buy €100 at the start, hold throughout; value 100 -> 120 in 2023, then
+    // 120 -> 144 in 2024 (no further cash flows, no dividends).
+    const portfolioValues = [100, 120, 144];
     const netInvested = [100, 100, 100];
-    const grossInvested = [100, 100, 100];
     const dividends = [0, 0, 0];
 
-    const result = getYieldPerYear(dates, portfolioValues, netInvested, grossInvested, dividends);
+    const result = getYieldPerYear(dates, portfolioValues, netInvested, dividends);
     expect(result.years).toEqual(['2023', '2024']);
-    // Total-return profit: (120-100) then (240-100).
-    expect(result.profit).toEqual([20, 120]); // 20-0, then 140-20
-    expect(result.yields[0]).toBeCloseTo(20, 10); // (120-100)/100 * 100
-    expect(result.yields[1]).toBeCloseTo(140, 10); // (240-100)/100 * 100 (cumulative)
+    // Each year stands alone: +20% then +20% (cumulative would be +20%, +44%).
+    expect(result.yields[0]).toBeCloseTo(20, 10); // (120-100)/100
+    expect(result.yields[1]).toBeCloseTo(20, 10); // (144-120)/120
+    expect(result.profit).toEqual([20, 24]); // money made each year
   });
 
-  it('includes dividends received in the total return', () => {
+  it('money-weights within-year contributions (capital deployed for less time)', () => {
+    const dates = [
+      new Date(Date.UTC(2024, 0, 1)), // year start, nothing held yet
+      new Date(Date.UTC(2024, 6, 1)), // mid-year: invest €100
+      new Date(Date.UTC(2024, 11, 31)), // year-end: worth €110
+    ];
+    const portfolioValues = [0, 100, 110];
+    const netInvested = [0, 100, 100];
+    const dividends = [0, 0, 0];
+
+    const result = getYieldPerYear(dates, portfolioValues, netInvested, dividends);
+    // €10 gain on €100 invested for ~half the year. Average capital ≈ €50, so
+    // the period return is ≈ +20% (not +10%), because the money was only at work
+    // for part of the year. (183/365 weight on the mid-year buy.)
+    expect(result.yields[0]).toBeCloseTo(19.95, 1);
+    expect(result.profit[0]).toBeCloseTo(10, 10);
+  });
+
+  it('includes dividends received as part of the annual return', () => {
     const dates = [new Date(Date.UTC(2023, 11, 31)), new Date(Date.UTC(2024, 11, 31))];
-    // Held flat at €100 on €100 cost; cumulative dividends €5 then €8.
+    // Held flat at €100; €5 dividend in 2023, a further €3 in 2024 (cumulative).
     const portfolioValues = [100, 100];
     const netInvested = [100, 100];
-    const grossInvested = [100, 100];
     const dividends = [5, 8];
 
-    const result = getYieldPerYear(dates, portfolioValues, netInvested, grossInvested, dividends);
-    expect(result.yields[0]).toBeCloseTo(5, 10); // 5 dividend / 100 cost
-    expect(result.yields[1]).toBeCloseTo(8, 10); // 8 dividend / 100 cost
-    expect(result.profit).toEqual([5, 3]); // 5, then 8-5
+    const result = getYieldPerYear(dates, portfolioValues, netInvested, dividends);
+    expect(result.profit).toEqual([5, 3]); // dividend income each year
+    expect(result.yields[0]).toBeGreaterThan(0);
+    expect(result.yields[1]).toBeCloseTo(3, 10); // €3 income on €100 base
   });
 
-  it('stays finite and stable for a year fully bought and sold (regression)', () => {
+  it('stays finite for a year fully bought and sold (regression)', () => {
     const dates = [
-      new Date(Date.UTC(2023, 5, 30)),
-      new Date(Date.UTC(2023, 8, 30)),
-      new Date(Date.UTC(2023, 11, 31)), // 2023 year-end — position closed by now
+      new Date(Date.UTC(2023, 5, 30)), // buy 100
+      new Date(Date.UTC(2023, 11, 31)), // 2023 year-end — sold all for 150
       new Date(Date.UTC(2024, 11, 31)), // 2024 year-end — never held anything
     ];
-    // Buy 100, grow to 150, sell everything for 150 (net invested 100 -> -50).
-    // Gross purchase cost stays 100 (sells excluded), so the % can't blow up.
-    const portfolioValues = [100, 150, 0, 0];
-    const netInvested = [100, 100, -50, -50];
-    const grossInvested = [100, 100, 100, 100];
-    const dividends = [0, 0, 0, 0];
+    // Buy 100, sell everything for 150 by year-end (net invested 100 -> -50).
+    const portfolioValues = [100, 0, 0];
+    const netInvested = [100, -50, -50];
+    const dividends = [0, 0, 0];
 
-    const result = getYieldPerYear(dates, portfolioValues, netInvested, grossInvested, dividends);
+    const result = getYieldPerYear(dates, portfolioValues, netInvested, dividends);
     expect(result.years).toEqual(['2023', '2024']);
-    expect(result.yields[0]).toBeCloseTo(50, 10); // realized +50%, not a blow-up
-    expect(result.yields[1]).toBeCloseTo(50, 10); // realized gain persists (cumulative)
-    expect(result.profit).toEqual([50, 0]); // made 50 in 2023, nothing more in 2024
+    expect(result.yields[0]).toBeCloseTo(50, 10); // realized +50% in 2023
+    expect(result.yields[1]).toBe(0); // nothing held in 2024 (isolated)
+    expect(result.profit).toEqual([50, 0]);
     result.yields.forEach((y) => expect(Number.isFinite(y)).toBe(true));
   });
 
-  it('returns 0% (not Infinity/NaN) when there is no purchase cost', () => {
+  it('returns 0% (not Infinity/NaN) when no capital was at work', () => {
     const dates = [new Date(Date.UTC(2023, 11, 31)), new Date(Date.UTC(2024, 11, 31))];
     const portfolioValues = [0, 0];
     const netInvested = [0, 0];
-    const grossInvested = [0, 0];
     const dividends = [0, 0];
 
-    const result = getYieldPerYear(dates, portfolioValues, netInvested, grossInvested, dividends);
+    const result = getYieldPerYear(dates, portfolioValues, netInvested, dividends);
     expect(result.yields).toEqual([0, 0]);
     result.yields.forEach((y) => expect(Number.isFinite(y)).toBe(true));
   });
