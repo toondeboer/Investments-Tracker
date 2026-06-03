@@ -273,8 +273,8 @@ describe('getTransactionAmountsAndValues', () => {
     const transactions = [tx(new Date(2023, 0, 2), 6, 463.06)];
 
     expect(getTransactionAmountsAndValues(dates, transactions)).toEqual({
-      transactionAmounts: [0, 6, NaN],
-      transactionValues: [0, 463.06, NaN],
+      transactionAmounts: [NaN, 6, NaN],
+      transactionValues: [NaN, 463.06, NaN],
       aggregatedAmounts: [0, 6, 6],
       aggregatedValues: [0, 463.06, 463.06],
     });
@@ -288,8 +288,8 @@ describe('getTransactionAmountsAndValues', () => {
     ];
 
     const result = getTransactionAmountsAndValues(dates, transactions);
-    expect(result.transactionAmounts).toEqual([0, 5]);
-    expect(result.transactionValues).toEqual([0, 250]);
+    expect(result.transactionAmounts).toEqual([NaN, 5]);
+    expect(result.transactionValues).toEqual([NaN, 250]);
     expect(result.aggregatedAmounts).toEqual([0, 5]);
     expect(result.aggregatedValues).toEqual([0, 250]);
   });
@@ -329,6 +329,44 @@ describe('getPortfolioValues', () => {
     };
     // No NaN must leak in: holding nothing is worth 0 on every day.
     expect(getPortfolioValues(dates, aggregatedAmounts, ticker)).toEqual([0, 0, 0]);
+  });
+
+  it('forward-fills the last known price on closed days (no NaN produced)', () => {
+    const dates = [
+      new Date('2023-01-06T00:00:00.000Z'), // Friday  — has price
+      new Date('2023-01-07T00:00:00.000Z'), // Saturday — no ticker entry
+      new Date('2023-01-08T00:00:00.000Z'), // Sunday   — no ticker entry
+      new Date('2023-01-09T00:00:00.000Z'), // Monday  — has price
+    ];
+    const aggregatedAmounts = [2, 2, 2, 2];
+    const ticker: Ticker = {
+      name: 'X',
+      currency: 'EUR',
+      dates: [new Date('2023-01-06T00:00:00.000Z'), new Date('2023-01-09T00:00:00.000Z')],
+      values: [100, 110],
+      dividends: [],
+    };
+    // Saturday and Sunday must carry Friday's price, not NaN or 0.
+    expect(getPortfolioValues(dates, aggregatedAmounts, ticker)).toEqual([200, 200, 200, 220]);
+  });
+
+  it('uses the last known price on the leading date when it is a closed day', () => {
+    // Ticker has data before dates[0]; dates[0] itself is a weekend.
+    // Previously this produced a leading NaN that forwardFillValues could not fix.
+    const dates = [
+      new Date('2023-01-08T00:00:00.000Z'), // Sunday  — no ticker entry
+      new Date('2023-01-09T00:00:00.000Z'), // Monday  — has price
+    ];
+    const aggregatedAmounts = [1, 1];
+    const ticker: Ticker = {
+      name: 'X',
+      currency: 'EUR',
+      dates: [new Date('2023-01-06T00:00:00.000Z'), new Date('2023-01-09T00:00:00.000Z')],
+      values: [90, 100],
+      dividends: [],
+    };
+    // Sunday should use Friday's price (90), not 0 or NaN.
+    expect(getPortfolioValues(dates, aggregatedAmounts, ticker)).toEqual([90, 100]);
   });
 });
 

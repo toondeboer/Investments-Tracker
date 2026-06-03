@@ -58,29 +58,25 @@ export class ActiveTickersComponent implements OnChanges {
   }
 
   addChartDatas(chartData1: ChartData, chartData2: ChartData): ChartData {
-    // nanAsZero: stocks on different market calendars have NaN on each other's
-    // closed days; summing without it would void the whole portfolio's value on
-    // any day one market is shut. This matches how the engine sums its return
-    // window across mixed calendars.
+    // getPortfolioValues forward-fills closed days at the source, so all series
+    // are continuous — no NaN to guard against when summing.
     const portfolioValues = addLists(
       chartData1.portfolioValues,
-      chartData2.portfolioValues,
-      true
+      chartData2.portfolioValues
     );
-    const profit = addLists(chartData1.profit, chartData2.profit, true);
+    const profit = addLists(chartData1.profit, chartData2.profit);
 
     // Merge full-history data (same monthly dates for all stocks in the portfolio).
     const allTimeDates = chartData1.allTimeDates;
-    const allTimePortfolioValues = addLists(chartData1.allTimePortfolioValues, chartData2.allTimePortfolioValues, true);
-    const allTimeInvested = addLists(chartData1.allTimeInvested, chartData2.allTimeInvested, true);
-    const allTimeProfit = addLists(chartData1.allTimeProfit, chartData2.allTimeProfit, true);
+    const allTimePortfolioValues = addLists(chartData1.allTimePortfolioValues, chartData2.allTimePortfolioValues);
+    const allTimeInvested = addLists(chartData1.allTimeInvested, chartData2.allTimeInvested);
+    const allTimeProfit = addLists(chartData1.allTimeProfit, chartData2.allTimeProfit);
 
     // Cumulative dividends per all-time date, summed across the active stocks —
     // the dividend term in the per-year annual return.
     const allTimeDividends = addLists(
       chartData1.dividend.aggregatedValues,
-      chartData2.dividend.aggregatedValues,
-      true
+      chartData2.dividend.aggregatedValues
     );
 
     return {

@@ -63,30 +63,45 @@ describe('buildStockSeries', () => {
     });
   });
 
-  describe('forwardFill across closed days', () => {
-    const base = {
-      dates: [d('2023-01-10'), d('2023-01-11'), d('2023-01-12')],
-      granularity: 'daily' as const,
-      // 2023-01-11 has no price (market closed) -> getPortfolioValues yields NaN there.
-      ticker: ticker('ACME', [['2023-01-10', 100], ['2023-01-12', 120]]),
-      fx: null,
-      stockTxs: [stockTx('2023-01-10', 1, 100)],
-      stockTxsFx: [stockTx('2023-01-10', 1, 100)],
-      commissionTxs: [],
-      commissionTxsFx: [],
-      snapshotCutoff: d('2023-01-10'),
-      periodRangeStart: d('2023-01-10'),
-    };
-
-    it('leaves a NaN gap when forwardFill is off', () => {
-      const series = buildStockSeries(base);
-      expect(Number.isNaN(series.portfolioValues[1])).toBe(true);
-    });
-
-    it('carries the last known value across the gap when forwardFill is on', () => {
-      const series = buildStockSeries({ ...base, forwardFill: true });
+  describe('closed-day handling', () => {
+    it('carries the last known price across days with no ticker entry', () => {
+      // 2023-01-11 has no ticker entry (e.g. a market holiday).
+      const series = buildStockSeries({
+        dates: [d('2023-01-10'), d('2023-01-11'), d('2023-01-12')],
+        granularity: 'daily',
+        ticker: ticker('ACME', [['2023-01-10', 100], ['2023-01-12', 120]]),
+        fx: null,
+        stockTxs: [stockTx('2023-01-10', 1, 100)],
+        stockTxsFx: [stockTx('2023-01-10', 1, 100)],
+        commissionTxs: [],
+        commissionTxsFx: [],
+        snapshotCutoff: d('2023-01-10'),
+        periodRangeStart: d('2023-01-10'),
+      });
       expect(series.portfolioValues).toEqual([100, 100, 120]);
       expect(series.profit).toEqual([0, 0, 20]);
+    });
+
+    it('uses the last known price on the leading date when it is a closed day', () => {
+      // dates[0] is a closed day but shares were already held — previously this
+      // produced a leading NaN that forwardFill could not backfill.
+      const series = buildStockSeries({
+        // dates[0] = Sunday (closed), dates[1] = Monday with price
+        dates: [d('2023-01-08'), d('2023-01-09'), d('2023-01-10')],
+        granularity: 'daily',
+        ticker: ticker('ACME', [['2023-01-06', 90], ['2023-01-09', 100], ['2023-01-10', 110]]),
+        fx: null,
+        // stock was purchased before the range; snapshot carries 1 share in
+        stockTxs: [stockTx('2023-01-05', 1, 90)],
+        stockTxsFx: [stockTx('2023-01-05', 1, 90)],
+        commissionTxs: [],
+        commissionTxsFx: [],
+        snapshotCutoff: d('2023-01-08'),
+        periodRangeStart: d('2023-01-08'),
+      });
+      // Sunday: last known price before 2023-01-08 is 90 (from 2023-01-06)
+      expect(series.portfolioValues[0]).toBe(90);
+      expect(Number.isNaN(series.portfolioValues[0])).toBe(false);
     });
   });
 

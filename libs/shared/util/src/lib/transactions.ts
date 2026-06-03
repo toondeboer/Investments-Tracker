@@ -263,8 +263,8 @@ export function getTransactionAmountsAndValues(
   for (const date of dates) {
     if (index >= transactions.length || !isSameDay(date, currentTransaction.date)) {
       if (aggregatedAmounts.length === 0) {
-        amounts.push(0);
-        values.push(0);
+        amounts.push(NaN);
+        values.push(NaN);
         aggregatedAmounts.push(initialAmount);
         aggregatedValues.push(initialValue);
       } else {

@@ -44,17 +44,17 @@ describe('ActiveTickersComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  describe('addChartDatas across mixed market calendars', () => {
-    it('does not let one stock’s closed-day NaN void the combined value/profit', () => {
-      // Stock A trades on day 0 (B closed -> NaN); stock B trades on day 1.
-      const a = chartData([100, NaN], [10, NaN]);
-      const b = chartData([NaN, 50], [NaN, 5]);
+  describe('addChartDatas across multiple stocks', () => {
+    it('sums portfolio values and profit element-wise', () => {
+      // getPortfolioValues forward-fills closed days at the source, so all
+      // series are continuous by the time they are aggregated here.
+      const a = chartData([100, 100], [10, 10]);
+      const b = chartData([50, 60], [5, 8]);
 
       const merged = component.addChartDatas(a, b);
 
-      expect(merged.portfolioValues).toEqual([100, 50]);
-      expect(merged.profit).toEqual([10, 5]);
-      expect(merged.portfolioValues.some(Number.isNaN)).toBe(false);
+      expect(merged.portfolioValues).toEqual([150, 160]);
+      expect(merged.profit).toEqual([15, 18]);
     });
   });
 });

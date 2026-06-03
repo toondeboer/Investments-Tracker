@@ -131,8 +131,9 @@ export function getPortfolioValues(
       if (price > 0) lastKnownPrice = price;
       values.push(price * aggregatedAmounts[i]);
     } else {
-      // No ticker entry for this date (weekend / holiday / before ticker starts).
-      values.push(lastKnownPrice === 0 ? 0 : NaN);
+      // No ticker entry for this date (weekend / holiday). Use the last known
+      // price — forward-fill at the source so the series is always continuous.
+      values.push(lastKnownPrice * aggregatedAmounts[i]);
     }
   }
   return values;

@@ -1,6 +1,6 @@
 import { ChartGranularity, Ticker, Transaction } from './types';
 import { FxConverter } from './fx';
-import { forwardFillValues, multiplyLists, subtractLists } from './core';
+import { multiplyLists, subtractLists } from './core';
 import { getPortfolioValues, getPortfolioValuesByPeriod } from './returns';
 import {
   computePreRangeSnapshot,
@@ -36,12 +36,6 @@ export interface StockSeriesParams {
    * the stage-1 commission arrays. Ignored for period granularity.
    */
   commissionSnapshotAmount?: 'snapshot' | 'zero';
-  /**
-   * Carry the last known market value across the stock's own closed days. Used
-   * by the return window so summing stocks on different calendars doesn't zero
-   * out the ones that are merely closed and corrupt the windowed return.
-   */
-  forwardFill?: boolean;
 }
 
 /**
@@ -106,10 +100,6 @@ export function buildStockSeries(p: StockSeriesParams): StockSeries {
     commission = commAggFx.aggregatedValues;
     stockTransactionValues = stockAggFx.transactionValues;
     commissionTransactionValues = commAggFx.transactionValues;
-  }
-
-  if (p.forwardFill) {
-    portfolioValues = forwardFillValues(portfolioValues);
   }
 
   const profit = subtractLists(subtractLists(portfolioValues, invested), commission);

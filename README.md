@@ -237,13 +237,20 @@ conversion.
 
 ### Multi-stock aggregation
 
-When summing across stocks, a day where one stock has no price data (e.g. a foreign holiday)
-must not poison the whole portfolio's return for that day. Aggregation therefore treats
-`NaN` as `0` when adding profit series:
+When a stock's market is closed on a given day (weekend, holiday, or any other gap in the
+price feed), `getPortfolioValues` carries the last known price forward to that date instead
+of producing a `NaN` placeholder. This means every stock's value and profit series is always
+continuous before it is summed across stocks:
 
 ```
-portfolio_profit[t] = Σ stock_profit_i[t]     (NaN treated as 0)
+portfolio_profit[t] = Σ stock_profit_i[t]
+stock_profit_i[t]   = price_last_known_i[t] × shares_i[t] − invested_i[t] − commission_i[t]
 ```
+
+Forward-filling is applied at the source (inside `getPortfolioValues`) so it covers the
+leading edge of a date range too — previously a range starting on a weekend could produce
+a leading `NaN` that could not be back-filled and caused the portfolio to show zero on that
+day.
 
 ---
 

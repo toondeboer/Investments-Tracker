@@ -52,8 +52,8 @@
 
     <div class="chart-card">
       <aws-chart
-        [x]="chartData?.allTimeDates ?? []"
-        [y]="chartData?.dividend?.transactionValues ?? []"
+        [x]="quarterDates(chartData?.dividend?.perQuarter?.yearQuarters ?? [])"
+        [y]="quarterValues(chartData?.dividend?.perQuarter?.dividends ?? [])"
         label="Dividend per Quarter"
         [showSymbols]="true"
         [currencySymbol]="currencySymbol"

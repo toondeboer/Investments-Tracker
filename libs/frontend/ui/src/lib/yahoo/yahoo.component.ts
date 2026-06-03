@@ -1,5 +1,5 @@
 import { Component, Input, inject } from '@angular/core';
-import { ChartData } from '@aws/util';
+import { ChartData, YearQuarter } from '@aws/util';
 import { selectYahoo } from '@aws/yahoo';
 import { Store } from '@ngrx/store';
 import { ChartComponent } from '../chart/chart.component';
@@ -31,4 +31,16 @@ export class YahooComponent {
   yahoo$ = this.store.select(selectYahoo);
 
   protected readonly Object = Object;
+
+  /** Last day of each quarter (e.g. Q0 → March 31) for use as x-axis dates. */
+  quarterDates(yearQuarters: YearQuarter[]): Date[] {
+    return yearQuarters.map(({ year, quarter }) =>
+      new Date(Date.UTC(parseInt(year), (quarter + 1) * 3, 0))
+    );
+  }
+
+  /** Map 0-dividend quarters to NaN so the chart only draws dots on active quarters. */
+  quarterValues(dividends: number[]): number[] {
+    return dividends.map(v => v === 0 ? NaN : v);
+  }
 }

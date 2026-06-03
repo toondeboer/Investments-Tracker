@@ -297,10 +297,6 @@ function computePriceState(
     } as const;
 
     // --- Selected-range series (drives the performance charts) ---
-    // forwardFill: on daily ranges the market is closed on weekends/holidays, so
-    // getPortfolioValues yields NaN there; carry the last known value across them
-    // so the value/profit charts stay continuous instead of dropping to the axis.
-    // (No-op at weekly/monthly granularity, which already carries the last price.)
     const rangeSeries = buildStockSeries({
       ...fxArgs,
       dates,
@@ -308,7 +304,6 @@ function computePriceState(
       snapshotCutoff: windowStart,
       periodRangeStart: effectiveRangeStart,
       commissionSnapshotAmount: 'snapshot',
-      forwardFill: true,
     });
     const portfolioValues = rangeSeries.portfolioValues;
     const investedForProfit = rangeSeries.invested;
@@ -372,9 +367,6 @@ function computePriceState(
     grossInvestedSummary += stockGrossInvested;
 
     // --- 30-day daily return window (accurate regardless of chart granularity) ---
-    // Commission seeds at amount 0 (share counts irrelevant here) and values are
-    // forward-filled across closed days so a stock that's merely closed doesn't
-    // zero out and corrupt the summed windowed (1D/1W/1M) return.
     const returnSeries = buildStockSeries({
       ...fxArgs,
       dates: returnDates,
@@ -382,15 +374,12 @@ function computePriceState(
       snapshotCutoff: returnDates[0] ?? today,
       periodRangeStart: returnDates[0] ?? today, // unused at daily granularity
       commissionSnapshotAmount: 'zero',
-      forwardFill: true,
     });
     const returnProfit = returnSeries.profit;
 
-    // nanAsZero: one stock with a missing price on a given day must not turn the
-    // whole portfolio's return for that day into NaN.
     returnWindowProfit =
       returnWindowProfit.length > 0
-        ? addLists(returnWindowProfit, returnProfit, true)
+        ? addLists(returnWindowProfit, returnProfit)
         : returnProfit;
 
     // --- Per-stock return figures from the 30-day window ---
