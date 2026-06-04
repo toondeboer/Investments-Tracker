@@ -18,6 +18,11 @@ export const selectChatError = createSelector(
   (state) => state.chatError
 );
 
+export const selectChatQuotaExceeded = createSelector(
+  selectFeature,
+  (state) => state.chatQuotaExceeded
+);
+
 export const selectInsight = createSelector(
   selectFeature,
   (state) => state.insight

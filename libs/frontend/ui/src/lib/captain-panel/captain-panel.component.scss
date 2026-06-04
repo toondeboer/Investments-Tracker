@@ -137,6 +137,44 @@
   font-size: 0.82rem;
 }
 
+.captain-quota {
+  align-self: center;
+  text-align: center;
+  max-width: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px;
+
+  lucide-icon {
+    color: $color-gold;
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: $color-sand;
+  }
+}
+
+.upgrade-btn {
+  background: $accent-gradient;
+  border: none;
+  border-radius: $radius-sm;
+  color: $color-bg-base;
+  font-family: $font-sans;
+  font-weight: 600;
+  font-size: 0.82rem;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: $transition-base;
+
+  &:hover {
+    opacity: 0.92;
+  }
+}
+
 .captain-prompts {
   display: flex;
   flex-wrap: wrap;

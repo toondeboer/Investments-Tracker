@@ -1,7 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
-import { Store } from '@ngrx/store';
-import { sendMessage, clearChat } from '@aws/captain';
+import { BillingService, sendMessage, clearChat } from '@aws/captain';
 import { CaptainPanelComponent } from './captain-panel.component';
 import { DialogRef, DIALOG_DATA, DIALOG_REF } from '../dialog/dialog-ref';
 
@@ -10,15 +9,18 @@ describe('CaptainPanelComponent', () => {
   let store: MockStore;
   let dispatch: jest.SpyInstance;
   let dialogRef: DialogRef<CaptainPanelComponent>;
+  let billing: { startUpgrade: jest.Mock };
 
   function setup(data: { demo?: boolean } = {}) {
     dialogRef = new DialogRef<CaptainPanelComponent>();
+    billing = { startUpgrade: jest.fn() };
     TestBed.configureTestingModule({
       imports: [CaptainPanelComponent],
       providers: [
         provideMockStore(),
         { provide: DIALOG_REF, useValue: dialogRef },
         { provide: DIALOG_DATA, useValue: data },
+        { provide: BillingService, useValue: billing },
       ],
     });
     const fixture = TestBed.createComponent(CaptainPanelComponent);
@@ -62,5 +64,17 @@ describe('CaptainPanelComponent', () => {
     const spy = jest.spyOn(dialogRef, 'close');
     component.close();
     expect(spy).toHaveBeenCalled();
+  });
+
+  it('upgrade() starts the Stripe checkout flow', () => {
+    setup();
+    component.upgrade();
+    expect(billing.startUpgrade).toHaveBeenCalled();
+  });
+
+  it('upgrade() is a no-op in demo mode', () => {
+    setup({ demo: true });
+    component.upgrade();
+    expect(billing.startUpgrade).not.toHaveBeenCalled();
   });
 });

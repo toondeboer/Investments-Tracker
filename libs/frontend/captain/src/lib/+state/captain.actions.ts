@@ -13,7 +13,7 @@ export const sendMessageSuccess = createAction(
 );
 export const sendMessageFailure = createAction(
   '[Captain] Send Message Failure',
-  props<{ error: string }>()
+  props<{ error: string; quota?: boolean }>()
 );
 export const clearChat = createAction('[Captain] Clear Chat');
 
@@ -29,5 +29,5 @@ export const loadInsightsSuccess = createAction(
 );
 export const loadInsightsFailure = createAction(
   '[Captain] Load Insights Failure',
-  props<{ error: string }>()
+  props<{ error: string; quota?: boolean }>()
 );

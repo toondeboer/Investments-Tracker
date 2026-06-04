@@ -263,6 +263,68 @@ day.
 
 ---
 
+## 💳 Captain limits & subscription
+
+Every "Ask the Captain" call costs OpenAI tokens, so the `captain` Lambda enforces two
+layers of quota before it spends (atomic, race-free DynamoDB counters that self-expire via
+TTL):
+
+- **Per-user monthly quota** — fairness. Free users get `FREE_MONTHLY_LIMIT` calls/month;
+  paid users get `PAID_MONTHLY_LIMIT`. Hitting it returns `429` and the chat panel shows an
+  **Upgrade** call-to-action.
+- **Global monthly ceiling** — the hard spend guarantee. Once the whole user base has made
+  `GLOBAL_MONTHLY_LIMIT` calls in a month, **all** captain calls stop until the next month.
+  Set it from live OpenAI pricing: `floor(monthly_budget / cost_per_call)` (0 disables it).
+
+  *Worked example (GPT-5.4 mini, $0.75/1M input · $4.50/1M output, verified 2026-06):* a
+  worst-case call is the input caps (summary ≈2k + system ≈0.5k + 20 messages ≈10k ≈ **12.5k
+  input tokens**) plus the hard 250-token output cap →
+  `12,500 × 0.75/1M + 250 × 4.50/1M ≈ $0.0105/call`. For a $5/mo budget that's
+  `floor(5 / 0.0105) ≈ 476`, so **`GLOBAL_MONTHLY_LIMIT=450`** keeps worst-case spend ≈ $4.73.
+  Real calls are far smaller than the caps, so headroom is generous; raise the ceiling as paid
+  revenue grows. Re-verify pricing before changing models.
+- **Admin bypass** — members of the Cognito `admin` group skip all quotas (free, unlimited).
+
+Upgrades go through **Stripe Checkout** (run in *test mode* until you're ready for real
+charges). The `billing` Lambda's webhook is the **only** writer of a user's `plan` — the
+client is never trusted to grant itself paid access.
+
+### One-time prod setup (out-of-band — not managed by the stack)
+
+```bash
+# 1. Counters self-clean via TTL on the 'expiresAt' attribute (free).
+aws dynamodb update-time-to-live --table-name sailor \
+  --time-to-live-specification "Enabled=true, AttributeName=expiresAt"
+
+# 2. Admin (free, unlimited) access — create the group, add yourself.
+aws cognito-idp create-group --user-pool-id us-east-1_liCB4LgDE --group-name admin
+aws cognito-idp admin-add-user-to-group --user-pool-id us-east-1_liCB4LgDE \
+  --group-name admin --username <your-email>
+
+# 3. Stripe secrets in SSM SecureStrings (free; no idle cost).
+aws ssm put-parameter --name /sailor/stripe-secret-key     --type SecureString --value sk_test_...
+aws ssm put-parameter --name /sailor/stripe-webhook-secret --type SecureString --value whsec_...
+
+# 4. Defense in depth — a hard $5 budget alarm behind the real-time global ceiling.
+#    Create an AWS Budget (Cost → Budgets) at $5/mo with an email alert.
+```
+
+Deploy with the price ID and ceiling, e.g.
+`sam deploy --parameter-overrides StripePriceId=price_... GlobalMonthlyLimit=450`, then copy
+the `BillingEndpoint` output into `environment.prod.ts → billingLambdaUrl` and configure the
+`StripeWebhookEndpoint` output as the webhook destination in the Stripe Dashboard.
+
+### Local dev
+
+Add Stripe **test** keys to `env.json` (gitignored) alongside the OpenAI key, and forward
+webhooks with the Stripe CLI:
+
+```bash
+stripe listen --forward-to http://localhost:3000/billing/webhook
+```
+
+Leave `GLOBAL_MONTHLY_LIMIT` at `0` locally to disable the global ceiling.
+
 ## 🏗 Architecture
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the complete project layout, data flow, and

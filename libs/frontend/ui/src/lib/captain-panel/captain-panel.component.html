@@ -34,7 +34,17 @@
       </div>
     }
 
-    @if (error$ | async; as error) {
+    @if (quotaExceeded$ | async) {
+      <div class="captain-quota">
+        <lucide-icon name="Anchor" [size]="22"></lucide-icon>
+        <p>You've used all your Captain questions this month.</p>
+        @if (!data?.demo) {
+          <button class="upgrade-btn" (click)="upgrade()" type="button">
+            Upgrade for more
+          </button>
+        }
+      </div>
+    } @else if (error$ | async) {
       <div class="captain-error">The Captain couldn't reply just now. Try again shortly.</div>
     }
   </div>

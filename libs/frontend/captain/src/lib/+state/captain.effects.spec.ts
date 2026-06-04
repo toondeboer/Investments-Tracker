@@ -1,16 +1,19 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
-import { Observable, of, take } from 'rxjs';
+import { Observable, of, take, throwError } from 'rxjs';
 import { Action } from '@ngrx/store';
+import { HttpErrorResponse } from '@angular/common/http';
 import { selectBaseCurrency, selectState } from '@aws/state';
 import { CaptainEffects } from './captain.effects';
 import { CaptainService } from '../captain.service';
 import { selectMessages } from './captain.selectors';
 import {
   loadInsights,
+  loadInsightsFailure,
   loadInsightsSuccess,
   sendMessage,
+  sendMessageFailure,
   sendMessageSuccess,
 } from './captain.actions';
 import { buildCaptainSummary } from '../captain-summary';
@@ -82,6 +85,32 @@ describe('CaptainEffects', () => {
       effects.sendMessage$.pipe(take(1)).subscribe((action) => {
         expect(action).toEqual(sendMessageSuccess({ reply: 'live chat reply' }));
         expect(service.chat).toHaveBeenCalledTimes(1);
+        done();
+      });
+    });
+
+    it('maps a 429 to a quota-exceeded failure', (done) => {
+      setup();
+      service.chat.mockReturnValue(
+        throwError(() => new HttpErrorResponse({ status: 429, statusText: 'Too Many Requests' }))
+      );
+      actions$ = of(sendMessage({ content: 'How did I do?' }));
+      effects.sendMessage$.pipe(take(1)).subscribe((action: any) => {
+        expect(action.type).toBe(sendMessageFailure.type);
+        expect(action.quota).toBe(true);
+        done();
+      });
+    });
+
+    it('does not flag a non-429 error as a quota issue', (done) => {
+      setup();
+      service.chat.mockReturnValue(
+        throwError(() => new HttpErrorResponse({ status: 500, statusText: 'Server Error' }))
+      );
+      actions$ = of(sendMessage({ content: 'How did I do?' }));
+      effects.sendMessage$.pipe(take(1)).subscribe((action: any) => {
+        expect(action.type).toBe(sendMessageFailure.type);
+        expect(action.quota).toBe(false);
         done();
       });
     });

@@ -20,8 +20,9 @@ libs/
 services/
   handler_dynamodb.py  DynamoDB Lambda — CRUD + Cognito JWT auth
   handler_yahoo.py     Yahoo Finance Lambda — fan-out price fetch
-  handler_captain.py   Captain Lambda — OpenAI chat/insights + Cognito JWT auth
-  shared/              Shared utilities (cors.py, auth.py, secrets.py)
+  handler_captain.py   Captain Lambda — OpenAI chat/insights + auth + usage quotas
+  handler_billing.py   Billing Lambda — Stripe Checkout + webhook (subscription)
+  shared/              Shared utilities (cors.py, auth.py, secrets.py, db.py)
   requirements.txt     Python dependencies for all Lambdas
   init_dynamodb.py     One-time local dev table setup
 ```
@@ -96,10 +97,20 @@ Three Python 3.13 Lambdas behind one API Gateway:
   that reflects the request `Origin`.
 - **yahoo** (`handler_yahoo.py`) — fans out to the Yahoo Finance API for the requested symbols
   (`ThreadPoolExecutor`, per-request timeout), returning per-symbol results.
-- **captain** (`handler_captain.py`) — verifies the Cognito ID token, then calls the OpenAI Chat
-  Completions API. The OpenAI key is read from an SSM Parameter Store SecureString (cached
-  module-level, like the JWKS cache), with an `OPENAI_API_KEY` env-var fallback for local dev.
-  See "Ask the Captain (GenAI)" below.
+- **captain** (`handler_captain.py`) — verifies the Cognito ID token, enforces usage quotas,
+  then calls the OpenAI Chat Completions API. The OpenAI key is read from an SSM Parameter
+  Store SecureString (cached module-level, like the JWKS cache), with an `OPENAI_API_KEY`
+  env-var fallback for local dev. See "Ask the Captain (GenAI)" below.
+- **billing** (`handler_billing.py`) — Stripe Checkout (`/billing/checkout`), webhook
+  (`/billing/webhook`) and portal (`/billing/portal`) behind one `{proxy+}` route. The webhook
+  verifies the Stripe signature and is the **only** writer of a user's `plan`; the client can
+  never grant itself paid access.
+
+`shared/db.py` centralises the DynamoDB table handle (dev-vs-prod endpoint selection) and the
+atomic monthly-counter primitives used for quotas — race-free via a DynamoDB
+`ConditionExpression`, with a TTL attribute so old counters self-delete (free). Usage counters
+live in the same `sailor` table under reserved `usage#...` partition keys, so no new table or
+schema change is needed.
 
 `sam build` packages each handler with `services/requirements.txt` (PyJWT + cryptography +
 openai); `boto3` is provided by the Lambda Python runtime and not bundled.
@@ -118,7 +129,11 @@ language — a chat panel plus an auto-generated, daily-cached "Captain's read" 
   persistent disclaimer reinforces this in the UI.
 - **Cost control.** Requests go through an authenticated Lambda (key server-side), use the cheapest
   small model with a tight `max_tokens`, and the dashboard insight is cached per day + portfolio in
-  `localStorage`, so a reload or same-day revisit triggers no new call.
+  `localStorage`, so a reload or same-day revisit triggers no new call. On top of that, two quota
+  layers bound spend: a **per-user monthly limit** (free vs paid, raised via a Stripe subscription)
+  and a **global monthly ceiling** that hard-stops all calls once reached — the real "never spend
+  more than I earn" guarantee. Cognito `admin`-group members bypass both. See "Captain limits &
+  subscription" in the README.
 - **Demo mode.** The public `/demo` page is unauthenticated, so it never calls the Lambda — the chat
   and insight render canned, offline responses from `captain.demo.ts` (the same advice-refusal
   behaviour, mirrored client-side).

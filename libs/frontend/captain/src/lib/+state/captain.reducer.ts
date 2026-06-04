@@ -16,6 +16,8 @@ export interface FeatureState {
   messages: ChatMessage[];
   chatLoading: boolean;
   chatError: string | null;
+  /** True when the last chat call was rejected for hitting the monthly quota. */
+  chatQuotaExceeded: boolean;
   insight: CaptainInsight | null;
   insightLoading: boolean;
   insightError: string | null;
@@ -25,6 +27,7 @@ export const initialState: FeatureState = {
   messages: [],
   chatLoading: false,
   chatError: null,
+  chatQuotaExceeded: false,
   insight: null,
   insightLoading: false,
   insightError: null,
@@ -38,18 +41,25 @@ export const reducer = createReducer(
     messages: [...state.messages, { role: 'user' as const, content }],
     chatLoading: true,
     chatError: null,
+    chatQuotaExceeded: false,
   })),
   on(sendMessageSuccess, (state, { reply }) => ({
     ...state,
     messages: [...state.messages, { role: 'assistant' as const, content: reply }],
     chatLoading: false,
   })),
-  on(sendMessageFailure, (state, { error }) => ({
+  on(sendMessageFailure, (state, { error, quota }) => ({
     ...state,
     chatLoading: false,
     chatError: error,
+    chatQuotaExceeded: !!quota,
   })),
-  on(clearChat, (state) => ({ ...state, messages: [], chatError: null })),
+  on(clearChat, (state) => ({
+    ...state,
+    messages: [],
+    chatError: null,
+    chatQuotaExceeded: false,
+  })),
 
   on(loadInsights, (state) => ({
     ...state,

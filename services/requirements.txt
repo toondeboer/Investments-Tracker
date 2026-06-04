@@ -1,3 +1,4 @@
 PyJWT[cryptography]>=2.8.0
 cryptography>=41.0.0
 openai>=1.0.0
+stripe>=8.0.0

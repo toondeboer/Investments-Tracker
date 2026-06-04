@@ -4,10 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { Store } from '@ngrx/store';
 import {
+  BillingService,
   CAPTAIN_PROMPTS,
   clearChat,
   selectChatError,
   selectChatLoading,
+  selectChatQuotaExceeded,
   selectMessages,
   sendMessage,
 } from '@aws/captain';
@@ -32,6 +34,7 @@ export type CaptainPanelData = {
 })
 export class CaptainPanelComponent {
   private store = inject(Store);
+  private billing = inject(BillingService);
   dialogRef = inject<DialogRef<CaptainPanelComponent>>(DIALOG_REF);
   data = inject<CaptainPanelData>(DIALOG_DATA);
 
@@ -39,6 +42,7 @@ export class CaptainPanelComponent {
   messages$ = this.store.select(selectMessages);
   loading$ = this.store.select(selectChatLoading);
   error$ = this.store.select(selectChatError);
+  quotaExceeded$ = this.store.select(selectChatQuotaExceeded);
 
   draft = '';
 
@@ -53,6 +57,14 @@ export class CaptainPanelComponent {
 
   clear(): void {
     this.store.dispatch(clearChat());
+  }
+
+  /** Start the Stripe Checkout upgrade flow (no-op in demo mode). */
+  upgrade(): void {
+    if (this.data?.demo) {
+      return;
+    }
+    this.billing.startUpgrade();
   }
 
   close(): void {

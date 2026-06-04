@@ -47,7 +47,12 @@ export class CaptainEffects {
         return this.service.chat(messages, summary).pipe(
           map((reply) => sendMessageSuccess({ reply })),
           catchError((error: HttpErrorResponse) =>
-            of(sendMessageFailure({ error: error.message }))
+            of(
+              sendMessageFailure({
+                error: error.message,
+                quota: error.status === 429,
+              })
+            )
           )
         );
       })
@@ -86,7 +91,12 @@ export class CaptainEffects {
             return loadInsightsSuccess({ insight });
           }),
           catchError((error: HttpErrorResponse) =>
-            of(loadInsightsFailure({ error: error.message }))
+            of(
+              loadInsightsFailure({
+                error: error.message,
+                quota: error.status === 429,
+              })
+            )
           )
         );
       })

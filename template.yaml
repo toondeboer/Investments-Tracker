@@ -38,6 +38,42 @@ Parameters:
     Type: String
     Default: gpt-5.4-mini
     Description: OpenAI chat model for the Captain. Verify live pricing before changing.
+  FreeMonthlyLimit:
+    Type: String
+    Default: '30'
+    Description: Captain calls per user per month on the free plan.
+  PaidMonthlyLimit:
+    Type: String
+    Default: '1000'
+    Description: Captain calls per user per month on the paid plan.
+  GlobalMonthlyLimit:
+    Type: String
+    Default: '0'
+    Description: >
+      Hard service-wide ceiling on Captain calls per month (the spend guarantee).
+      Once reached, ALL captain calls stop until the next month. 0 disables it.
+      Derive from live OpenAI pricing: floor(monthly_budget / cost_per_call).
+  StripeSecretParamName:
+    Type: String
+    Default: /sailor/stripe-secret-key
+    Description: >
+      SSM SecureString holding the Stripe secret key. Created out-of-band (see
+      README); intentionally NOT managed by this stack so the secret never lives
+      in the template or CI logs.
+  StripeWebhookParamName:
+    Type: String
+    Default: /sailor/stripe-webhook-secret
+    Description: SSM SecureString holding the Stripe webhook signing secret.
+  StripePriceId:
+    Type: String
+    Default: ''
+    Description: Stripe Price ID (test or live) for the Captain subscription.
+  BillingSuccessUrl:
+    Type: String
+    Default: https://sailor.toondeboer.com/?upgraded=1
+  BillingCancelUrl:
+    Type: String
+    Default: https://sailor.toondeboer.com/
 
 Globals:
   Function:
@@ -79,6 +115,7 @@ Resources:
       Environment:
         Variables:
           ENVIRONMENT: !Ref Stage
+          TABLE_NAME: !Ref TableName
           ALLOWED_ORIGINS: !Ref AllowedOrigins
           COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
           COGNITO_CLIENT_ID: !Ref CognitoClientId
@@ -99,11 +136,18 @@ Resources:
       Handler: handler_captain.handler
       Environment:
         Variables:
+          # Drives get_table()'s dev-vs-prod endpoint selection — MUST be the
+          # stage (not the 'dev' default) or prod would hit DynamoDB Local.
+          ENVIRONMENT: !Ref Stage
+          TABLE_NAME: !Ref TableName
           ALLOWED_ORIGINS: !Ref AllowedOrigins
           COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
           COGNITO_CLIENT_ID: !Ref CognitoClientId
           OPENAI_PARAM_NAME: !Ref OpenAIParamName
           OPENAI_MODEL: !Ref OpenAIModel
+          FREE_MONTHLY_LIMIT: !Ref FreeMonthlyLimit
+          PAID_MONTHLY_LIMIT: !Ref PaidMonthlyLimit
+          GLOBAL_MONTHLY_LIMIT: !Ref GlobalMonthlyLimit
           # Empty by default (prod reads the key from SSM). Declared so a local
           # `sam local --env-vars env.json` override can inject it — SAM only
           # overrides variables that already exist in the template. Empty string
@@ -117,6 +161,9 @@ Resources:
             - Effect: Allow
               Action: ssm:GetParameter
               Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${OpenAIParamName}'
+        # Read the user's plan and read/write the monthly usage counters.
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TableName
       Events:
         Captain:
           Type: Api
@@ -124,6 +171,48 @@ Resources:
             RestApiId: !Ref Api
             Path: /captain
             # ANY so the Lambda also answers the CORS preflight (OPTIONS).
+            Method: any
+
+  BillingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handler_billing.handler
+      Environment:
+        Variables:
+          ENVIRONMENT: !Ref Stage
+          TABLE_NAME: !Ref TableName
+          ALLOWED_ORIGINS: !Ref AllowedOrigins
+          COGNITO_USER_POOL_ID: !Ref CognitoUserPoolId
+          COGNITO_CLIENT_ID: !Ref CognitoClientId
+          STRIPE_SECRET_PARAM_NAME: !Ref StripeSecretParamName
+          STRIPE_WEBHOOK_PARAM_NAME: !Ref StripeWebhookParamName
+          STRIPE_PRICE_ID: !Ref StripePriceId
+          BILLING_SUCCESS_URL: !Ref BillingSuccessUrl
+          BILLING_CANCEL_URL: !Ref BillingCancelUrl
+          # Declared so a local `sam local --env-vars env.json` can inject test
+          # keys; empty is falsy, so prod falls through to SSM.
+          STRIPE_SECRET_KEY: ''
+          STRIPE_WEBHOOK_SECRET: ''
+      Policies:
+        # Read-only access to just the two Stripe parameters.
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action: ssm:GetParameter
+              Resource:
+                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${StripeSecretParamName}'
+                - !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter${StripeWebhookParamName}'
+        # Read the user's record (customer id) and write the resulting plan.
+        - DynamoDBCrudPolicy:
+            TableName: !Ref TableName
+      Events:
+        Billing:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            # {proxy+} routes /billing/checkout, /billing/webhook, /billing/portal
+            # to this one function; the handler dispatches on the sub-path.
+            Path: /billing/{proxy+}
             Method: any
 
 Outputs:
@@ -139,3 +228,9 @@ Outputs:
   CaptainEndpoint:
     Description: Copy into environment.prod.ts -> captainLambdaUrl
     Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/captain'
+  BillingEndpoint:
+    Description: Copy into environment.prod.ts -> billingLambdaUrl (no trailing slash)
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/billing'
+  StripeWebhookEndpoint:
+    Description: Configure this URL in the Stripe Dashboard as the webhook destination.
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/billing/webhook'
