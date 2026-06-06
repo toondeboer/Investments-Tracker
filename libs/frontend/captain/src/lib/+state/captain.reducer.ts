@@ -1,10 +1,11 @@
 import { createFeature, createReducer, on } from '@ngrx/store';
-import { ChatMessage, CaptainInsight } from '../captain.types';
+import { ChatMessage, CaptainInsight, CaptainStatus } from '../captain.types';
 import {
   clearChat,
   loadInsights,
   loadInsightsFailure,
   loadInsightsSuccess,
+  loadStatusSuccess,
   sendMessage,
   sendMessageFailure,
   sendMessageSuccess,
@@ -21,6 +22,8 @@ export interface FeatureState {
   insight: CaptainInsight | null;
   insightLoading: boolean;
   insightError: string | null;
+  /** The user's plan + monthly usage; null until first fetched. */
+  status: CaptainStatus | null;
 }
 
 export const initialState: FeatureState = {
@@ -31,6 +34,7 @@ export const initialState: FeatureState = {
   insight: null,
   insightLoading: false,
   insightError: null,
+  status: null,
 };
 
 export const reducer = createReducer(
@@ -43,10 +47,11 @@ export const reducer = createReducer(
     chatError: null,
     chatQuotaExceeded: false,
   })),
-  on(sendMessageSuccess, (state, { reply }) => ({
+  on(sendMessageSuccess, (state, { reply, usage }) => ({
     ...state,
     messages: [...state.messages, { role: 'assistant' as const, content: reply }],
     chatLoading: false,
+    status: usage ?? state.status,
   })),
   on(sendMessageFailure, (state, { error, quota }) => ({
     ...state,
@@ -66,16 +71,19 @@ export const reducer = createReducer(
     insightLoading: true,
     insightError: null,
   })),
-  on(loadInsightsSuccess, (state, { insight }) => ({
+  on(loadInsightsSuccess, (state, { insight, usage }) => ({
     ...state,
     insight,
     insightLoading: false,
+    status: usage ?? state.status,
   })),
   on(loadInsightsFailure, (state, { error }) => ({
     ...state,
     insightLoading: false,
     insightError: error,
-  }))
+  })),
+
+  on(loadStatusSuccess, (state, { status }) => ({ ...state, status }))
 );
 
 export const feature = createFeature({ name: featureKey, reducer });

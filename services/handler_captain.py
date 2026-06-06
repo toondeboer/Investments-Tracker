@@ -152,11 +152,38 @@ def _user_plan(table, sub: str) -> str:
         return 'free'
 
 
+def _read_used(table, sub: str, month: str) -> int:
+    """Return the user's call count for the month (0 on miss / read error)."""
+    try:
+        resp = table.get_item(Key={'userId': f'usage#{sub}#{month}'})
+        return int(resp.get('Item', {}).get('count', 0))
+    except Exception as exc:  # noqa: BLE001
+        print(f'usage read failed: {exc}')
+        return 0
+
+
+def _status(sub: str, is_admin: bool) -> dict:
+    """Read-only usage snapshot for the UI (plan, limit, used, remaining).
+
+    Admins are unlimited, so limit/remaining are null. Never increments and never
+    calls OpenAI.
+    """
+    table = get_table()
+    month = current_month()
+    used = _read_used(table, sub, month)
+    if is_admin:
+        return {'plan': 'admin', 'limit': None, 'used': used, 'remaining': None}
+    plan = _user_plan(table, sub)
+    limit = _PAID_MONTHLY_LIMIT if plan == 'paid' else _FREE_MONTHLY_LIMIT
+    return {'plan': plan, 'limit': limit, 'used': used,
+            'remaining': max(limit - used, 0)}
+
+
 def _enforce_quota(sub: str):
     """Reserve one call against the user + global monthly quotas.
 
-    Returns the user's remaining quota after this call (``None`` when the check
-    could not be applied), or raises ``QuotaExceeded``.
+    Returns a usage snapshot dict (plan, limit, used, remaining) after this call,
+    ``None`` when the check could not be applied, or raises ``QuotaExceeded``.
 
     Failure policy: the per-user check fails OPEN (a DynamoDB blip must not block
     a user mid-conversation), while the global ceiling fails CLOSED (if we can't
@@ -189,7 +216,8 @@ def _enforce_quota(sub: str):
             decrement(table, user_key)
             raise QuotaExceeded('global')
 
-    return max(user_limit - new_count, 0)
+    return {'plan': plan, 'limit': user_limit, 'used': new_count,
+            'remaining': max(user_limit - new_count, 0)}
 
 
 def handler(event, context):
@@ -216,8 +244,16 @@ def handler(event, context):
         return _error(400, 'Invalid JSON body', headers)
 
     mode = body.get('mode', 'chat')
+    # Read-only usage snapshot for the UI (plan badge, remaining-quota display).
+    # No summary required, no spend, no increment.
+    if mode == 'status':
+        return {
+            'statusCode': 200,
+            'body': json.dumps(_status(sub, is_admin)),
+            'headers': headers,
+        }
     if mode not in ('chat', 'insights'):
-        return _error(400, "Field 'mode' must be 'chat' or 'insights'", headers)
+        return _error(400, "Field 'mode' must be 'chat', 'insights' or 'status'", headers)
 
     summary = body.get('summary')
     if not isinstance(summary, dict):
@@ -234,10 +270,12 @@ def handler(event, context):
 
     # Quota — admins bypass; everyone else reserves one call against their
     # per-user and the global monthly ceiling before we spend on OpenAI.
-    remaining = None
-    if not is_admin:
+    usage = None
+    if is_admin:
+        usage = _status(sub, is_admin=True)
+    else:
         try:
-            remaining = _enforce_quota(sub)
+            usage = _enforce_quota(sub)
         except QuotaExceeded as exc:
             if exc.scope == 'global':
                 msg = ("The Captain is resting — the crew has reached this "
@@ -268,6 +306,6 @@ def handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': json.dumps({'reply': reply, 'remaining': remaining}),
+        'body': json.dumps({'reply': reply, 'usage': usage}),
         'headers': headers,
     }

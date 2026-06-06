@@ -12,6 +12,8 @@ import {
   loadInsights,
   loadInsightsFailure,
   loadInsightsSuccess,
+  loadStatus,
+  loadStatusSuccess,
   sendMessage,
   sendMessageFailure,
   sendMessageSuccess,
@@ -43,13 +45,16 @@ const state = {
 describe('CaptainEffects', () => {
   let actions$: Observable<Action>;
   let effects: CaptainEffects;
-  let service: { chat: jest.Mock; insights: jest.Mock };
+  let service: { chat: jest.Mock; insights: jest.Mock; status: jest.Mock };
+
+  const usage = { plan: 'free', limit: 30, used: 1, remaining: 29 };
 
   function setup() {
     localStorage.clear();
     service = {
-      chat: jest.fn().mockReturnValue(of('live chat reply')),
-      insights: jest.fn().mockReturnValue(of('live narrative')),
+      chat: jest.fn().mockReturnValue(of({ reply: 'live chat reply', usage })),
+      insights: jest.fn().mockReturnValue(of({ reply: 'live narrative', usage })),
+      status: jest.fn().mockReturnValue(of(usage)),
     };
     TestBed.configureTestingModule({
       providers: [
@@ -83,7 +88,9 @@ describe('CaptainEffects', () => {
       setup();
       actions$ = of(sendMessage({ content: 'How did I do?' }));
       effects.sendMessage$.pipe(take(1)).subscribe((action) => {
-        expect(action).toEqual(sendMessageSuccess({ reply: 'live chat reply' }));
+        expect(action).toEqual(
+          sendMessageSuccess({ reply: 'live chat reply', usage })
+        );
         expect(service.chat).toHaveBeenCalledTimes(1);
         done();
       });
@@ -147,6 +154,18 @@ describe('CaptainEffects', () => {
       effects.loadInsights$.pipe(take(1)).subscribe((action) => {
         expect(action).toEqual(loadInsightsSuccess({ insight: cached }));
         expect(service.insights).not.toHaveBeenCalled();
+        done();
+      });
+    });
+  });
+
+  describe('loadStatus$', () => {
+    it('fetches the status snapshot and emits loadStatusSuccess', (done) => {
+      setup();
+      actions$ = of(loadStatus());
+      effects.loadStatus$.pipe(take(1)).subscribe((action) => {
+        expect(action).toEqual(loadStatusSuccess({ status: usage }));
+        expect(service.status).toHaveBeenCalledTimes(1);
         done();
       });
     });

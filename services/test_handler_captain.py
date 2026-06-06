@@ -171,6 +171,7 @@ def test_admin_bypasses_quota(monkeypatch):
         lambda token: {'sub': 'admin-1', 'cognito:groups': ['admin']},
     )
     monkeypatch.setattr(handler_captain, '_call_openai', lambda m: 'Aye.')
+    monkeypatch.setattr(handler_captain, 'get_table', lambda: object())
 
     def fail_if_called(sub):
         raise AssertionError('quota must not be enforced for admins')
@@ -178,6 +179,7 @@ def test_admin_bypasses_quota(monkeypatch):
     monkeypatch.setattr(handler_captain, '_enforce_quota', fail_if_called)
     resp = handler_captain.handler(_event(body=_chat_body()), None)
     assert resp['statusCode'] == 200
+    assert json.loads(resp['body'])['usage']['plan'] == 'admin'
 
 
 def test_per_user_cap_returns_429(monkeypatch):
@@ -233,7 +235,7 @@ def test_paid_plan_uses_higher_limit(monkeypatch):
     assert captured[user_key] == handler_captain._PAID_MONTHLY_LIMIT
 
 
-def test_happy_path_reports_remaining(monkeypatch):
+def test_happy_path_reports_usage(monkeypatch):
     monkeypatch.setattr(handler_captain, 'verify_token', lambda token: {'sub': 'u1'})
     monkeypatch.setattr(handler_captain, '_call_openai', lambda m: 'Aye.')
     monkeypatch.setattr(handler_captain, 'get_table', lambda: object())
@@ -243,7 +245,11 @@ def test_happy_path_reports_remaining(monkeypatch):
 
     resp = handler_captain.handler(_event(body=_chat_body()), None)
     assert resp['statusCode'] == 200
-    assert json.loads(resp['body'])['remaining'] == handler_captain._FREE_MONTHLY_LIMIT - 1
+    usage = json.loads(resp['body'])['usage']
+    assert usage['plan'] == 'free'
+    assert usage['limit'] == handler_captain._FREE_MONTHLY_LIMIT
+    assert usage['used'] == 1
+    assert usage['remaining'] == handler_captain._FREE_MONTHLY_LIMIT - 1
 
 
 def test_per_user_check_fails_open_on_db_error(monkeypatch):
@@ -259,4 +265,61 @@ def test_per_user_check_fails_open_on_db_error(monkeypatch):
     monkeypatch.setattr(handler_captain, 'try_increment', boom)
     resp = handler_captain.handler(_event(body=_chat_body()), None)
     assert resp['statusCode'] == 200
-    assert json.loads(resp['body'])['remaining'] is None
+    assert json.loads(resp['body'])['usage'] is None
+
+
+class _UsageTable:
+    """Minimal table stub for _status: get_item returns plan + counter rows."""
+
+    def __init__(self, plan=None, used=0):
+        self._plan = plan
+        self._used = used
+
+    def get_item(self, Key):
+        key = Key['userId']
+        if key.startswith('usage#'):
+            return {'Item': {'count': self._used}} if self._used else {}
+        return {'Item': {'plan': self._plan}} if self._plan else {}
+
+
+def test_status_mode_free(monkeypatch):
+    monkeypatch.setattr(handler_captain, 'verify_token', lambda token: {'sub': 'u1'})
+    monkeypatch.setattr(handler_captain, 'get_table', lambda: _UsageTable(plan='free', used=4))
+    resp = handler_captain.handler(_event(body={'mode': 'status'}), None)
+    assert resp['statusCode'] == 200
+    usage = json.loads(resp['body'])
+    assert usage['plan'] == 'free'
+    assert usage['used'] == 4
+    assert usage['limit'] == handler_captain._FREE_MONTHLY_LIMIT
+    assert usage['remaining'] == handler_captain._FREE_MONTHLY_LIMIT - 4
+
+
+def test_status_mode_paid(monkeypatch):
+    monkeypatch.setattr(handler_captain, 'verify_token', lambda token: {'sub': 'u1'})
+    monkeypatch.setattr(handler_captain, 'get_table', lambda: _UsageTable(plan='paid', used=10))
+    resp = handler_captain.handler(_event(body={'mode': 'status'}), None)
+    usage = json.loads(resp['body'])
+    assert usage['plan'] == 'paid'
+    assert usage['limit'] == handler_captain._PAID_MONTHLY_LIMIT
+
+
+def test_status_mode_admin_is_unlimited(monkeypatch):
+    monkeypatch.setattr(
+        handler_captain, 'verify_token',
+        lambda token: {'sub': 'a1', 'cognito:groups': ['admin']},
+    )
+    monkeypatch.setattr(handler_captain, 'get_table', lambda: _UsageTable(used=3))
+    resp = handler_captain.handler(_event(body={'mode': 'status'}), None)
+    usage = json.loads(resp['body'])
+    assert usage['plan'] == 'admin'
+    assert usage['limit'] is None
+    assert usage['remaining'] is None
+    assert usage['used'] == 3
+
+
+def test_status_mode_needs_no_summary(monkeypatch):
+    """status must not require the summary/messages that chat does."""
+    monkeypatch.setattr(handler_captain, 'verify_token', lambda token: {'sub': 'u1'})
+    monkeypatch.setattr(handler_captain, 'get_table', lambda: _UsageTable(plan='free'))
+    resp = handler_captain.handler(_event(body={'mode': 'status'}), None)
+    assert resp['statusCode'] == 200

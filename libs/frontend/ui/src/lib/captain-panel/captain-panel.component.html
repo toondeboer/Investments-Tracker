@@ -9,7 +9,7 @@
       </div>
     </div>
     <div class="captain-header-actions">
-      @if (!data?.demo) {
+      @if (!data?.demo && (isPaidMember$ | async) === false) {
         <button class="upgrade-link" (click)="upgrade()" type="button">
           <lucide-icon name="Sparkles" [size]="14"></lucide-icon>
           Captain Plus
@@ -77,6 +77,17 @@
       <lucide-icon name="Send" [size]="18"></lucide-icon>
     </button>
   </div>
+
+  <!-- Monthly usage -->
+  @if (!data?.demo && (status$ | async); as status) {
+    <p class="captain-usage">
+      @if (status.limit === null) {
+        Unlimited questions this month
+      } @else {
+        {{ status.used }} / {{ status.limit }} questions used this month
+      }
+    </p>
+  }
 
   <!-- Disclaimer -->
   <p class="captain-disclaimer">

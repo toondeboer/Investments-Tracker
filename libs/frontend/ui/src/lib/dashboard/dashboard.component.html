@@ -10,11 +10,19 @@
     class="page"
     >
     <header class="page-header">
-      <h1 class="page-title">Portfolio</h1>
-      @if (vm.state?.summary?.startDate) {
-        <p class="page-subtitle">
-          Since {{ vm.state?.summary?.startDate | date : 'MMM yyyy' }}
-        </p>
+      <div class="page-heading">
+        <h1 class="page-title">Portfolio</h1>
+        @if (vm.state?.summary?.startDate) {
+          <p class="page-subtitle">
+            Since {{ vm.state?.summary?.startDate | date : 'MMM yyyy' }}
+          </p>
+        }
+      </div>
+      @if (isPaidMember$ | async) {
+        <span class="plan-badge" [class.admin]="(plan$ | async) === 'admin'">
+          <lucide-icon name="Sparkles" [size]="14"></lucide-icon>
+          {{ (plan$ | async) === 'admin' ? 'Admin' : 'Captain Plus' }}
+        </span>
       }
     </header>
     <!-- Portfolio filter chips (shown only when multiple portfolios exist) -->

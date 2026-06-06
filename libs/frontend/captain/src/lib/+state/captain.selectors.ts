@@ -37,3 +37,19 @@ export const selectInsightError = createSelector(
   selectFeature,
   (state) => state.insightError
 );
+
+export const selectStatus = createSelector(
+  selectFeature,
+  (state) => state.status
+);
+
+export const selectPlan = createSelector(
+  selectStatus,
+  (status) => status?.plan ?? null
+);
+
+/** Paid members and admins both have an elevated/unlimited plan. */
+export const selectIsPaidMember = createSelector(
+  selectPlan,
+  (plan) => plan === 'paid' || plan === 'admin'
+);
