@@ -25,4 +25,4 @@ capabilities = "CAPABILITY_IAM"
 resolve_s3 = true
 confirm_changeset = false
 fail_on_empty_changeset = false
-parameter_overrides = "Stage=\"prod\" AllowedOrigins=\"https://sailor.toondeboer.com\" CognitoUserPoolId=\"us-east-1_liCB4LgDE\" CognitoClientId=\"3o34bbl92faeo9ljo11eebtim2\" TableName=\"sailor\""
+parameter_overrides = "Stage=\"prod\" AllowedOrigins=\"https://sailor.toondeboer.com\" CognitoUserPoolId=\"us-east-1_liCB4LgDE\" CognitoClientId=\"3o34bbl92faeo9ljo11eebtim2\" TableName=\"sailor\" StripePriceId=\"price_1Teh4i6QCB4ocnGQUbiEpFbc\" GlobalMonthlyLimit=\"450\""
