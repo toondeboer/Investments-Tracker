@@ -6,7 +6,7 @@ export const environment = {
   captainLambdaUrl: 'http://localhost:4200/captain',
   billingLambdaUrl: 'http://localhost:4200/billing',
   cognito: {
-    userPoolId: 'us-east-1_liCB4LgDE',
-    clientId: '3o34bbl92faeo9ljo11eebtim2',
+    userPoolId: 'us-east-1_j0J6oG4Qj',
+    clientId: '305kqokc6u2e74n8qlfjed64av',
   },
 };

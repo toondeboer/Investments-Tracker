@@ -364,8 +364,10 @@ aws cognito-idp create-user-pool --pool-name sailor-dev \
   --query 'UserPool.Id' --output text
 aws cognito-idp create-user-pool-client --user-pool-id <DEV_POOL> \
   --client-name sailor-dev-web --no-generate-secret \
-  --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH \
+  --explicit-auth-flows ALLOW_USER_SRP_AUTH ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH \
   --query 'UserPoolClient.ClientId' --output text
+# The web app logs in via SRP, so ALLOW_USER_SRP_AUTH is required; if you already
+# created the client without it, run `update-user-pool-client` with these flags.
 ```
 
 Then point dev at it (leave `environment.prod.ts` untouched):
