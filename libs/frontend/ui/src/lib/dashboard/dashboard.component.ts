@@ -1,4 +1,7 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute, Router } from '@angular/router';
+import { take, timer } from 'rxjs';
 import {
   selectBaseCurrency,
   selectLoading,
@@ -30,6 +33,9 @@ import { InsightsBannerComponent } from '../insights-banner/insights-banner.comp
 })
 export class DashboardComponent implements OnInit {
   private store = inject(Store);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private destroyRef = inject(DestroyRef);
 
   state$ = this.store.select(selectState);
   portfolios$ = this.store.select(selectPortfoliosDbo);
@@ -43,6 +49,17 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     // Fetch plan + usage so the badge and the chat's quota display are accurate.
     this.store.dispatch(loadStatus());
+
+    // Returning from Stripe Checkout (success_url carries ?upgraded=1): the
+    // webhook that flips `plan` to paid can land a beat after the redirect, so
+    // re-poll a few times to surface the new badge/limit without a manual
+    // refresh, then drop the query param.
+    if (this.route.snapshot.queryParamMap.has('upgraded')) {
+      timer(2000, 2500)
+        .pipe(take(3), takeUntilDestroyed(this.destroyRef))
+        .subscribe(() => this.store.dispatch(loadStatus()));
+      this.router.navigate([], { queryParams: {}, replaceUrl: true });
+    }
   }
 
   readonly ranges: TimeRange[] = ['1M', '3M', '6M', 'YTD', '1Y', '5Y', 'ALL'];

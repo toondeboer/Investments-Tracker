@@ -353,9 +353,25 @@ Stripe **test mode** is shared safely across local and a future staging — you 
 separate "test Stripe". A full separate *deployed* staging stack is intentionally **out of scope**
 for this project's budget; local (`sam local` + DynamoDB Local + Stripe test) is the test
 environment. The one gap worth closing is Cognito: today dev and prod share a pool, so test
-accounts and the `admin` group sit next to real users. Creating a **dedicated dev user pool**
-(Cognito is free up to 50k MAUs) and pointing `environment.ts` + the local `COGNITO_*` env vars at
-it keeps testing fully isolated.
+accounts and the `admin` group sit next to real users.
+
+**Isolating dev with its own Cognito pool (recommended).** Cognito is free up to 50k MAUs, so a
+dedicated dev pool keeps test users and the `admin` group off prod. One-time:
+
+```bash
+# Create the pool + an app client (note the two IDs they print)
+aws cognito-idp create-user-pool --pool-name sailor-dev \
+  --query 'UserPool.Id' --output text
+aws cognito-idp create-user-pool-client --user-pool-id <DEV_POOL> \
+  --client-name sailor-dev-web --no-generate-secret \
+  --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH \
+  --query 'UserPoolClient.ClientId' --output text
+```
+
+Then point dev at it (leave `environment.prod.ts` untouched):
+- `environment.ts` → set `cognito.userPoolId` / `cognito.clientId` to the dev IDs (frontend login).
+- `env.json` → add `"COGNITO_USER_POOL_ID"` and `"COGNITO_CLIENT_ID"` so the local Lambdas verify
+  tokens against the same dev pool. Restart `./scripts/start-backend.sh`.
 
 **Test-user matrix** — create one account per role to exercise every path:
 
@@ -365,7 +381,14 @@ it keeps testing fully isolated.
 | `paid@test` | — | `paid` | `PAID_MONTHLY_LIMIT`; "Captain Plus" badge; no upgrade button |
 | `regular@test` | — | _(none)_ → free | `FREE_MONTHLY_LIMIT`; upgrade button + quota CTA at the cap |
 
-Setting each up (against the dev pool / DynamoDB Local):
+The quickest path is the seed script, which creates all three (permanent passwords), adds the
+admin to the group, and marks the paid user `plan=paid` in DynamoDB Local:
+
+```bash
+POOL_ID=us-east-1_yourDevPool ./scripts/seed-test-users.sh
+```
+
+Or set each up by hand (against the dev pool / DynamoDB Local):
 
 ```bash
 # Cognito user with a permanent password (no forced reset)

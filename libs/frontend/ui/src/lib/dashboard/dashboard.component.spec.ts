@@ -1,7 +1,8 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
-import { Store } from '@ngrx/store';
+import { ActivatedRoute, Router, convertToParamMap } from '@angular/router';
 import { setSelectedPortfolios, setTimeRange } from '@aws/state';
+import { loadStatus } from '@aws/captain';
 import { DashboardComponent } from './dashboard.component';
 
 describe('DashboardComponent', () => {
@@ -12,7 +13,14 @@ describe('DashboardComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DashboardComponent],
-      providers: [provideMockStore()],
+      providers: [
+        provideMockStore(),
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: convertToParamMap({}) } },
+        },
+        { provide: Router, useValue: { navigate: jest.fn() } },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(DashboardComponent);
@@ -23,6 +31,11 @@ describe('DashboardComponent', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('fetches plan + usage on init', () => {
+    component.ngOnInit();
+    expect(dispatch).toHaveBeenCalledWith(loadStatus());
   });
 
   describe('selectRange', () => {
