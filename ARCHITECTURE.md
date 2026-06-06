@@ -83,10 +83,72 @@ transactions using the tickers already in the store.
 
 ## Auth
 
-OIDC via Cognito (`angular-auth-oidc-client`). After login the **ID token** is attached to every
-HTTP request by `JwtInterceptor`. The DynamoDB Lambda **verifies the token's signature** against
-the Cognito JWKS (not just decodes it) and uses the `sub` claim as the DynamoDB partition key, so
-a user can only read/write their own data.
+Cognito User Pool auth (`amazon-cognito-identity-js`). After login the **ID token** is attached to
+every HTTP request by `JwtInterceptor`. Each Lambda **verifies the token's signature** against the
+Cognito JWKS (not just decodes it) and uses the `sub` claim as the DynamoDB partition key, so a
+user can only read/write their own data.
+
+### Authentication + "has the user paid?" flow
+
+The same token proves *who* the user is (`sub`), whether they're an **admin** (`cognito:groups`),
+and — combined with their DynamoDB record — whether they're on a **paid** plan. Identity lives in
+Cognito; entitlement (`plan`) lives in DynamoDB and is written **only** by the Stripe webhook.
+
+```
+            ┌─────────┐   sign in    ┌──────────────────┐
+            │ Browser │ ───────────▶ │ Cognito User Pool │
+            │ (Angular)│ ◀─────────── │  (issues JWTs)    │
+            └────┬─────┘   ID token   └──────────────────┘
+                 │  ID token in sessionStorage; JwtInterceptor adds
+                 │  "Authorization: <id-token>" to every request
+                 ▼
+          ┌──────────────┐
+          │ API Gateway  │
+          └──────┬───────┘
+                 ▼
+        ┌─────────────────────────────────────────────────────────┐
+        │ Lambda (captain / dynamodb / billing)                    │
+        │ 1. verify_token(): fetch JWKS (cached) → check signature, │
+        │    audience (client id), issuer, expiry, token_use=id     │
+        │    → extract  sub  and  cognito:groups                    │
+        │                                                           │
+        │ 2. entitlement (captain quota path):                      │
+        │      'admin' in cognito:groups ? ──▶ bypass (unlimited)   │
+        │      else GetItem userId=sub → read `plan`                │
+        │            plan == 'paid' ? PAID_LIMIT : FREE_LIMIT       │
+        │      atomic ADD on usage#<sub>#<month> guarded by         │
+        │            ConditionExpression count < limit              │
+        │            pass → call OpenAI · fail → 429                │
+        └─────────────────────────────────────────────────────────┘
+
+  How `plan` becomes 'paid' (the only writer is the webhook):
+
+    Browser ─Upgrade─▶ POST /billing/checkout (authed; client_reference_id=sub)
+            ◀─ Stripe Checkout URL ─ Lambda
+    Browser ─pay (test card)─▶ Stripe-hosted Checkout
+    Stripe  ─POST /billing/webhook (signed)─▶ Lambda
+            verify signature → SET plan='paid' on userId=sub
+```
+
+### Dev vs prod wiring
+
+Identity verification and the entitlement logic are **identical** in both; only the backing
+services differ:
+
+| Concern | Development (`sam local`) | Production (deployed) |
+|---|---|---|
+| Cognito pool | `COGNITO_USER_POOL_ID` (today: the prod pool — see note) | prod pool |
+| JWKS verification | same (live fetch from Cognito) | same |
+| DynamoDB (`plan`, counters) | DynamoDB Local (Docker) | `sailor` table |
+| Stripe secret/webhook | from `env.json` | from SSM SecureStrings |
+| Stripe mode | **test** | test (until live keys are set) |
+| Webhook delivery | `stripe listen` relay → `localhost:3000` | Stripe Dashboard endpoint → API Gateway |
+| `GLOBAL_MONTHLY_LIMIT` | `0` (disabled) | derived from budget (e.g. 450) |
+
+> **Note — shared Cognito pool.** Dev and prod currently use the *same* user pool, so test users
+> and the `admin` group live alongside real users. DynamoDB and Stripe are already isolated
+> (local table; test mode). The recommended hardening is a **separate dev user pool** so test
+> accounts and admin membership never touch prod; see the README's testing section.
 
 ## Backend
 

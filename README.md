@@ -339,6 +339,53 @@ stripe listen --forward-to http://localhost:3000/billing/webhook
 Restart `./scripts/start-backend.sh` after editing `env.json` (it's read at startup). Leave
 `GLOBAL_MONTHLY_LIMIT` at `0` locally to disable the global ceiling.
 
+### Environments & test users
+
+Recommended split (cheapest setup that's still robust):
+
+| Layer | Dev / test | Prod |
+|---|---|---|
+| Data (DynamoDB) | DynamoDB Local — already isolated | `sailor` table |
+| Stripe | **test** keys in `env.json` | **test** keys in SSM (switch to live only when charging) |
+| Cognito | **separate dev user pool** (recommended) | prod user pool |
+
+Stripe **test mode** is shared safely across local and a future staging — you don't need a
+separate "test Stripe". A full separate *deployed* staging stack is intentionally **out of scope**
+for this project's budget; local (`sam local` + DynamoDB Local + Stripe test) is the test
+environment. The one gap worth closing is Cognito: today dev and prod share a pool, so test
+accounts and the `admin` group sit next to real users. Creating a **dedicated dev user pool**
+(Cognito is free up to 50k MAUs) and pointing `environment.ts` + the local `COGNITO_*` env vars at
+it keeps testing fully isolated.
+
+**Test-user matrix** — create one account per role to exercise every path:
+
+| User | Cognito group | `plan` (DynamoDB) | Expected behaviour |
+|---|---|---|---|
+| `admin@test` | `admin` | — | unlimited; "Admin" badge; no upgrade button |
+| `paid@test` | — | `paid` | `PAID_MONTHLY_LIMIT`; "Captain Plus" badge; no upgrade button |
+| `regular@test` | — | _(none)_ → free | `FREE_MONTHLY_LIMIT`; upgrade button + quota CTA at the cap |
+
+Setting each up (against the dev pool / DynamoDB Local):
+
+```bash
+# Cognito user with a permanent password (no forced reset)
+aws cognito-idp admin-create-user --user-pool-id <DEV_POOL> --username paid@test --message-action SUPPRESS
+aws cognito-idp admin-set-user-password --user-pool-id <DEV_POOL> --username paid@test --password 'Passw0rd!' --permanent
+
+# admin → add to the admin group
+aws cognito-idp admin-add-user-to-group --user-pool-id <DEV_POOL> --group-name admin --username admin@test
+
+# paid → set plan (locally; <SUB> is the user's Cognito sub)
+AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local \
+aws dynamodb update-item --endpoint-url http://localhost:8000 --region us-east-1 \
+  --table-name sailor --key '{"userId":{"S":"<SUB>"}}' \
+  --update-expression "SET #p = :p" --expression-attribute-names '{"#p":"plan"}' \
+  --expression-attribute-values '{":p":{"S":"paid"}}'
+```
+
+New roles later (e.g. a higher tier or a `beta` group) slot in the same way: a Cognito group for
+capability flags, or a `plan` value for billing tiers.
+
 ## 🏗 Architecture
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for the complete project layout, data flow, and
