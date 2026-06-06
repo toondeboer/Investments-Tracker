@@ -35,6 +35,9 @@ def test_try_increment_returns_new_count_when_under_cap():
     assert db.try_increment(table, 'usage#u1#2026-06', 30) == 7
     # The cap is enforced via a ConditionExpression, not a read-modify-write.
     assert 'ConditionExpression' in table.calls[0]
+    # SET must precede ADD or DynamoDB Local rejects the expression.
+    expr = table.calls[0]['UpdateExpression']
+    assert expr.index('SET') < expr.index('ADD')
 
 
 def test_try_increment_returns_none_when_cap_reached():

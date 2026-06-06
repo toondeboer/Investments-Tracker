@@ -63,8 +63,11 @@ def try_increment(table, key: str, limit: int):
     try:
         resp = table.update_item(
             Key={'userId': key},
+            # SET must precede ADD: real DynamoDB tolerates any clause order, but
+            # DynamoDB Local enforces the documented SET/REMOVE/ADD/DELETE order
+            # and rejects ADD-first with a ValidationException.
             UpdateExpression=(
-                'ADD #c :one SET expiresAt = if_not_exists(expiresAt, :ttl)'
+                'SET expiresAt = if_not_exists(expiresAt, :ttl) ADD #c :one'
             ),
             ConditionExpression='attribute_not_exists(#c) OR #c < :limit',
             ExpressionAttributeNames={'#c': 'count'},
