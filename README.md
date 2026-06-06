@@ -277,18 +277,11 @@ TTL):
 - **Per-user monthly quota** — fairness. Free users get `FREE_MONTHLY_LIMIT` calls/month;
   paid users get `PAID_MONTHLY_LIMIT`. Hitting it returns `429` and the chat panel shows an
   **Upgrade** call-to-action.
-- **Global monthly ceiling** — the hard spend guarantee. Once the whole user base has made
-  `GLOBAL_MONTHLY_LIMIT` calls in a month, **all** captain calls stop until the next month.
-  Set it from live OpenAI pricing: `floor(monthly_budget / cost_per_call)` (0 disables it).
-
-  *Worked example (GPT-5.4 mini, $0.75/1M input · $4.50/1M output, verified 2026-06):* a
-  worst-case call is the input caps (summary ≈2k + system ≈0.5k + 20 messages ≈10k ≈ **12.5k
-  input tokens**) plus the hard 250-token output cap →
-  `12,500 × 0.75/1M + 250 × 4.50/1M ≈ $0.0105/call`. For a $5/mo budget that's
-  `floor(5 / 0.0105) ≈ 476`, so **`GLOBAL_MONTHLY_LIMIT=450`** keeps worst-case spend ≈ $4.73.
-  Real calls are far smaller than the caps, so headroom is generous; raise the ceiling as paid
-  revenue grows. Re-verify pricing before changing models.
-- **Admin bypass** — members of the Cognito `admin` group skip all quotas (free, unlimited).
+- **Global monthly ceiling** — the hard spend cap: once the whole user base makes
+  `GLOBAL_MONTHLY_LIMIT` calls in a month, all captain calls stop until the next month
+  (`0` disables it). Derive it from live pricing — `floor(monthly_budget / cost_per_call)`. At
+  GPT-5.4-mini rates a worst-case call is ≈ $0.0105, so `450` keeps a $5/mo budget safe (~$4.73).
+- **Admin bypass** — members of the Cognito `admin` group are unlimited.
 
 Upgrades go through **Stripe Checkout** (run in *test mode* until you're ready for real
 charges). The `billing` Lambda's webhook is the **only** writer of a user's `plan` — the
@@ -339,77 +332,36 @@ stripe listen --forward-to http://localhost:3000/billing/webhook
 Restart `./scripts/start-backend.sh` after editing `env.json` (it's read at startup). Leave
 `GLOBAL_MONTHLY_LIMIT` at `0` locally to disable the global ceiling.
 
-### Environments & test users
+### Test users
 
-Recommended split (cheapest setup that's still robust):
-
-| Layer | Dev / test | Prod |
-|---|---|---|
-| Data (DynamoDB) | DynamoDB Local — already isolated | `sailor` table |
-| Stripe | **test** keys in `env.json` | **test** keys in SSM (switch to live only when charging) |
-| Cognito | **separate dev user pool** (recommended) | prod user pool |
-
-Stripe **test mode** is shared safely across local and a future staging — you don't need a
-separate "test Stripe". A full separate *deployed* staging stack is intentionally **out of scope**
-for this project's budget; local (`sam local` + DynamoDB Local + Stripe test) is the test
-environment. The one gap worth closing is Cognito: today dev and prod share a pool, so test
-accounts and the `admin` group sit next to real users.
-
-**Isolating dev with its own Cognito pool (recommended).** Cognito is free up to 50k MAUs, so a
-dedicated dev pool keeps test users and the `admin` group off prod. One-time:
+Dev uses its **own Cognito pool** (free; keeps test accounts and the `admin` group off prod),
+configured in `environment.ts` (frontend) and `env.json` (`COGNITO_USER_POOL_ID` /
+`COGNITO_CLIENT_ID`, for the local Lambdas). One-time pool creation — the web app logs in via
+**SRP**, so `ALLOW_USER_SRP_AUTH` is required:
 
 ```bash
-# Create the pool + an app client (note the two IDs they print)
-aws cognito-idp create-user-pool --pool-name sailor-dev \
-  --query 'UserPool.Id' --output text
-aws cognito-idp create-user-pool-client --user-pool-id <DEV_POOL> \
-  --client-name sailor-dev-web --no-generate-secret \
+aws cognito-idp create-user-pool --pool-name sailor-dev --query 'UserPool.Id' --output text
+aws cognito-idp create-user-pool-client --user-pool-id <DEV_POOL> --client-name sailor-dev-web \
+  --no-generate-secret \
   --explicit-auth-flows ALLOW_USER_SRP_AUTH ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH \
   --query 'UserPoolClient.ClientId' --output text
-# The web app logs in via SRP, so ALLOW_USER_SRP_AUTH is required; if you already
-# created the client without it, run `update-user-pool-client` with these flags.
 ```
 
-Then point dev at it (leave `environment.prod.ts` untouched):
-- `environment.ts` → set `cognito.userPoolId` / `cognito.clientId` to the dev IDs (frontend login).
-- `env.json` → add `"COGNITO_USER_POOL_ID"` and `"COGNITO_CLIENT_ID"` so the local Lambdas verify
-  tokens against the same dev pool. Restart `./scripts/start-backend.sh`.
-
-**Test-user matrix** — create one account per role to exercise every path:
-
-| User | Cognito group | `plan` (DynamoDB) | Expected behaviour |
-|---|---|---|---|
-| `admin@test` | `admin` | — | unlimited; "Admin" badge; no upgrade button |
-| `paid@test` | — | `paid` | `PAID_MONTHLY_LIMIT`; "Captain Plus" badge; no upgrade button |
-| `regular@test` | — | _(none)_ → free | `FREE_MONTHLY_LIMIT`; upgrade button + quota CTA at the cap |
-
-The quickest path is the seed script, which creates all three (permanent passwords), adds the
-admin to the group, and marks the paid user `plan=paid` in DynamoDB Local:
+Seed all three roles (creates the users with permanent passwords, adds the admin to the group,
+and flags the paid user in DynamoDB Local):
 
 ```bash
-POOL_ID=us-east-1_yourDevPool ./scripts/seed-test-users.sh
+POOL_ID=<DEV_POOL> ./scripts/seed-test-users.sh
 ```
 
-Or set each up by hand (against the dev pool / DynamoDB Local):
+| Username | Password | What it tests |
+|---|---|---|
+| `admin@test` | `Passw0rd!` | Admin — unlimited; "Admin" badge; no upgrade button |
+| `paid@test` | `Passw0rd!` | Paid — `PAID_MONTHLY_LIMIT`; "Captain Plus" badge; no upgrade button |
+| `regular@test` | `Passw0rd!` | Free — `FREE_MONTHLY_LIMIT`; upgrade CTA when the cap is hit |
 
-```bash
-# Cognito user with a permanent password (no forced reset)
-aws cognito-idp admin-create-user --user-pool-id <DEV_POOL> --username paid@test --message-action SUPPRESS
-aws cognito-idp admin-set-user-password --user-pool-id <DEV_POOL> --username paid@test --password 'Passw0rd!' --permanent
-
-# admin → add to the admin group
-aws cognito-idp admin-add-user-to-group --user-pool-id <DEV_POOL> --group-name admin --username admin@test
-
-# paid → set plan (locally; <SUB> is the user's Cognito sub)
-AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local \
-aws dynamodb update-item --endpoint-url http://localhost:8000 --region us-east-1 \
-  --table-name sailor --key '{"userId":{"S":"<SUB>"}}' \
-  --update-expression "SET #p = :p" --expression-attribute-names '{"#p":"plan"}' \
-  --expression-attribute-values '{":p":{"S":"paid"}}'
-```
-
-New roles later (e.g. a higher tier or a `beta` group) slot in the same way: a Cognito group for
-capability flags, or a `plan` value for billing tiers.
+> Override the password with `PASSWORD=… POOL_ID=… ./scripts/seed-test-users.sh`. Re-run after
+> resetting the local table — the paid flag lives in DynamoDB Local.
 
 ## 🏗 Architecture
 
