@@ -321,14 +321,23 @@ the `BillingEndpoint` output into `environment.prod.ts → billingLambdaUrl` and
 
 ### Local dev
 
-Add Stripe **test** keys to `env.json` (gitignored) alongside the OpenAI key, and forward
-webhooks with the Stripe CLI:
+The `samconfig.toml` price/secrets only apply to the **deployed** stack — `sam local` reads
+billing config from `env.json` instead (see `env.json.example`). Add your **test-mode** values:
+`STRIPE_SECRET_KEY` (`sk_test_…`), `STRIPE_PRICE_ID` (a **test-mode** price — IDs are
+mode-specific), and `BILLING_SUCCESS_URL`/`BILLING_CANCEL_URL` pointed at `http://localhost:4200`
+so checkout returns to your local app. Without `STRIPE_PRICE_ID` the checkout endpoint returns
+`{"message":"Billing is not configured"}`.
+
+To let a completed checkout flip the user's plan locally, forward webhooks with the Stripe CLI
+and paste **its** signing secret into `env.json` as `STRIPE_WEBHOOK_SECRET` (it differs from the
+Dashboard endpoint's secret):
 
 ```bash
 stripe listen --forward-to http://localhost:3000/billing/webhook
 ```
 
-Leave `GLOBAL_MONTHLY_LIMIT` at `0` locally to disable the global ceiling.
+Restart `./scripts/start-backend.sh` after editing `env.json` (it's read at startup). Leave
+`GLOBAL_MONTHLY_LIMIT` at `0` locally to disable the global ceiling.
 
 ## 🏗 Architecture
 
