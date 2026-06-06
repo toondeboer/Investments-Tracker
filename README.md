@@ -63,25 +63,30 @@ python services/init_dynamodb.py
 
 ### 3 — Backend APIs (AWS SAM)
 
+First copy the secrets template (one-time): `cp env.json.example env.json` and paste your keys
+(at least `OPENAI_API_KEY`). `env.json` is gitignored.
+
 ```bash
-sam build
-AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local sam local start-api
+./scripts/start-backend.sh
 ```
 
-Serves Lambda functions on `http://localhost:3000`. Re-run `sam build` after any Lambda change.
+This runs `sam build` then `sam local start-api` with dummy AWS credentials and `--env-vars
+env.json`, serving the Lambdas on `http://localhost:3000`. Re-run it after any Lambda change
+(it rebuilds each time).
 
-> **Ask the Captain (OpenAI):** the `captain` Lambda needs an OpenAI API key. It is read from the
-> `OPENAI_API_KEY` env var first, falling back to SSM — so:
+> **Why the script (and the dummy creds + env.json):** the dummy credentials let the Lambdas talk
+> to DynamoDB Local without an AWS session, and `--env-vars env.json` injects `OPENAI_API_KEY` so
+> the `captain` Lambda reads the key directly. Without it the key resolver falls through to SSM,
+> which the dummy credentials reject (`UnrecognizedClientException`) → a 502 from `/captain`.
 >
-> - **Local dev** — copy `env.json.example` to `env.json` (gitignored), paste your key, and pass it
->   to SAM: `sam local start-api --env-vars env.json`. (Or just `export OPENAI_API_KEY=sk-...` in the
->   shell instead.)
-> - **Production** — the key lives in an SSM Parameter Store SecureString (free; no idle cost), created
->   once: `aws ssm put-parameter --name /sailor/openai-api-key --type SecureString --value sk-...`
+> - **Secret resolution:** `OPENAI_API_KEY` (env var) first, then the SSM SecureString. The same
+>   applies to the Stripe keys (`STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`) — add them to
+>   `env.json` to exercise billing locally.
+> - **Production** — keys live in SSM SecureStrings (free; no idle cost), created once, e.g.
+>   `aws ssm put-parameter --name /sailor/openai-api-key --type SecureString --value sk-...`
 
-> **Tip:** The dummy credentials prevent `sam local` from failing on an expired AWS SSO session.
-> The Lambda talks to local DynamoDB with fake creds and never calls real AWS. Alternatively
-> run `aws sso login` to use real credentials.
+> **Tip:** prefer real credentials instead? Run `aws sso login` and `sam local start-api
+> --env-vars env.json` directly — then the SSM fallback works too.
 
 ### 4 — Frontend
 
