@@ -8,9 +8,17 @@
         <p class="captain-subtitle">A plain-language read of your charts.</p>
       </div>
     </div>
-    <button class="icon-btn" (click)="close()" aria-label="Close">
-      <lucide-icon name="X" [size]="20"></lucide-icon>
-    </button>
+    <div class="captain-header-actions">
+      @if (!data?.demo) {
+        <button class="upgrade-link" (click)="upgrade()" type="button">
+          <lucide-icon name="Sparkles" [size]="14"></lucide-icon>
+          Captain Plus
+        </button>
+      }
+      <button class="icon-btn" (click)="close()" aria-label="Close">
+        <lucide-icon name="X" [size]="20"></lucide-icon>
+      </button>
+    </div>
   </header>
 
   <!-- Conversation -->
