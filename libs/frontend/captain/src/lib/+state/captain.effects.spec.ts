@@ -1,16 +1,21 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockActions } from '@ngrx/effects/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
-import { Observable, of, take } from 'rxjs';
+import { Observable, of, take, throwError } from 'rxjs';
 import { Action } from '@ngrx/store';
+import { HttpErrorResponse } from '@angular/common/http';
 import { selectBaseCurrency, selectState } from '@aws/state';
 import { CaptainEffects } from './captain.effects';
 import { CaptainService } from '../captain.service';
 import { selectMessages } from './captain.selectors';
 import {
   loadInsights,
+  loadInsightsFailure,
   loadInsightsSuccess,
+  loadStatus,
+  loadStatusSuccess,
   sendMessage,
+  sendMessageFailure,
   sendMessageSuccess,
 } from './captain.actions';
 import { buildCaptainSummary } from '../captain-summary';
@@ -40,13 +45,16 @@ const state = {
 describe('CaptainEffects', () => {
   let actions$: Observable<Action>;
   let effects: CaptainEffects;
-  let service: { chat: jest.Mock; insights: jest.Mock };
+  let service: { chat: jest.Mock; insights: jest.Mock; status: jest.Mock };
+
+  const usage = { plan: 'free', limit: 30, used: 1, remaining: 29 };
 
   function setup() {
     localStorage.clear();
     service = {
-      chat: jest.fn().mockReturnValue(of('live chat reply')),
-      insights: jest.fn().mockReturnValue(of('live narrative')),
+      chat: jest.fn().mockReturnValue(of({ reply: 'live chat reply', usage })),
+      insights: jest.fn().mockReturnValue(of({ reply: 'live narrative', usage })),
+      status: jest.fn().mockReturnValue(of(usage)),
     };
     TestBed.configureTestingModule({
       providers: [
@@ -80,8 +88,36 @@ describe('CaptainEffects', () => {
       setup();
       actions$ = of(sendMessage({ content: 'How did I do?' }));
       effects.sendMessage$.pipe(take(1)).subscribe((action) => {
-        expect(action).toEqual(sendMessageSuccess({ reply: 'live chat reply' }));
+        expect(action).toEqual(
+          sendMessageSuccess({ reply: 'live chat reply', usage })
+        );
         expect(service.chat).toHaveBeenCalledTimes(1);
+        done();
+      });
+    });
+
+    it('maps a 429 to a quota-exceeded failure', (done) => {
+      setup();
+      service.chat.mockReturnValue(
+        throwError(() => new HttpErrorResponse({ status: 429, statusText: 'Too Many Requests' }))
+      );
+      actions$ = of(sendMessage({ content: 'How did I do?' }));
+      effects.sendMessage$.pipe(take(1)).subscribe((action: any) => {
+        expect(action.type).toBe(sendMessageFailure.type);
+        expect(action.quota).toBe(true);
+        done();
+      });
+    });
+
+    it('does not flag a non-429 error as a quota issue', (done) => {
+      setup();
+      service.chat.mockReturnValue(
+        throwError(() => new HttpErrorResponse({ status: 500, statusText: 'Server Error' }))
+      );
+      actions$ = of(sendMessage({ content: 'How did I do?' }));
+      effects.sendMessage$.pipe(take(1)).subscribe((action: any) => {
+        expect(action.type).toBe(sendMessageFailure.type);
+        expect(action.quota).toBe(false);
         done();
       });
     });
@@ -118,6 +154,18 @@ describe('CaptainEffects', () => {
       effects.loadInsights$.pipe(take(1)).subscribe((action) => {
         expect(action).toEqual(loadInsightsSuccess({ insight: cached }));
         expect(service.insights).not.toHaveBeenCalled();
+        done();
+      });
+    });
+  });
+
+  describe('loadStatus$', () => {
+    it('fetches the status snapshot and emits loadStatusSuccess', (done) => {
+      setup();
+      actions$ = of(loadStatus());
+      effects.loadStatus$.pipe(take(1)).subscribe((action) => {
+        expect(action).toEqual(loadStatusSuccess({ status: usage }));
+        expect(service.status).toHaveBeenCalledTimes(1);
         done();
       });
     });

@@ -63,25 +63,30 @@ python services/init_dynamodb.py
 
 ### 3 — Backend APIs (AWS SAM)
 
+First copy the secrets template (one-time): `cp env.json.example env.json` and paste your keys
+(at least `OPENAI_API_KEY`). `env.json` is gitignored.
+
 ```bash
-sam build
-AWS_ACCESS_KEY_ID=local AWS_SECRET_ACCESS_KEY=local sam local start-api
+./scripts/start-backend.sh
 ```
 
-Serves Lambda functions on `http://localhost:3000`. Re-run `sam build` after any Lambda change.
+This runs `sam build` then `sam local start-api` with dummy AWS credentials and `--env-vars
+env.json`, serving the Lambdas on `http://localhost:3000`. Re-run it after any Lambda change
+(it rebuilds each time).
 
-> **Ask the Captain (OpenAI):** the `captain` Lambda needs an OpenAI API key. It is read from the
-> `OPENAI_API_KEY` env var first, falling back to SSM — so:
+> **Why the script (and the dummy creds + env.json):** the dummy credentials let the Lambdas talk
+> to DynamoDB Local without an AWS session, and `--env-vars env.json` injects `OPENAI_API_KEY` so
+> the `captain` Lambda reads the key directly. Without it the key resolver falls through to SSM,
+> which the dummy credentials reject (`UnrecognizedClientException`) → a 502 from `/captain`.
 >
-> - **Local dev** — copy `env.json.example` to `env.json` (gitignored), paste your key, and pass it
->   to SAM: `sam local start-api --env-vars env.json`. (Or just `export OPENAI_API_KEY=sk-...` in the
->   shell instead.)
-> - **Production** — the key lives in an SSM Parameter Store SecureString (free; no idle cost), created
->   once: `aws ssm put-parameter --name /sailor/openai-api-key --type SecureString --value sk-...`
+> - **Secret resolution:** `OPENAI_API_KEY` (env var) first, then the SSM SecureString. The same
+>   applies to the Stripe keys (`STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET`) — add them to
+>   `env.json` to exercise billing locally.
+> - **Production** — keys live in SSM SecureStrings (free; no idle cost), created once, e.g.
+>   `aws ssm put-parameter --name /sailor/openai-api-key --type SecureString --value sk-...`
 
-> **Tip:** The dummy credentials prevent `sam local` from failing on an expired AWS SSO session.
-> The Lambda talks to local DynamoDB with fake creds and never calls real AWS. Alternatively
-> run `aws sso login` to use real credentials.
+> **Tip:** prefer real credentials instead? Run `aws sso login` and `sam local start-api
+> --env-vars env.json` directly — then the SSM fallback works too.
 
 ### 4 — Frontend
 
@@ -262,6 +267,107 @@ a leading `NaN` that could not be back-filled and caused the portfolio to show z
 day.
 
 ---
+
+## 💳 Captain limits & subscription
+
+Every "Ask the Captain" call costs OpenAI tokens, so the `captain` Lambda enforces two
+layers of quota before it spends (atomic, race-free DynamoDB counters that self-expire via
+TTL):
+
+- **Per-user monthly quota** — fairness. Free users get `FREE_MONTHLY_LIMIT` calls/month;
+  paid users get `PAID_MONTHLY_LIMIT`. Hitting it returns `429` and the chat panel shows an
+  **Upgrade** call-to-action.
+- **Global monthly ceiling** — the hard spend cap: once the whole user base makes
+  `GLOBAL_MONTHLY_LIMIT` calls in a month, all captain calls stop until the next month
+  (`0` disables it). Derive it from live pricing — `floor(monthly_budget / cost_per_call)`. At
+  GPT-5.4-mini rates a worst-case call is ≈ $0.0105, so `450` keeps a $5/mo budget safe (~$4.73).
+- **Admin bypass** — members of the Cognito `admin` group are unlimited.
+
+Upgrades go through **Stripe Checkout** (run in *test mode* until you're ready for real
+charges). The `billing` Lambda's webhook is the **only** writer of a user's `plan` — the
+client is never trusted to grant itself paid access.
+
+### One-time prod setup (out-of-band — not managed by the stack)
+
+```bash
+# 1. Counters self-clean via TTL on the 'expiresAt' attribute (free).
+aws dynamodb update-time-to-live --table-name sailor \
+  --time-to-live-specification "Enabled=true, AttributeName=expiresAt"
+
+# 2. Admin (free, unlimited) access — create the group, add yourself.
+aws cognito-idp create-group --user-pool-id us-east-1_liCB4LgDE --group-name admin
+aws cognito-idp admin-add-user-to-group --user-pool-id us-east-1_liCB4LgDE \
+  --group-name admin --username <your-email>
+
+# 3. Stripe secrets in SSM SecureStrings (free; no idle cost).
+aws ssm put-parameter --name /sailor/stripe-secret-key     --type SecureString --value sk_test_...
+aws ssm put-parameter --name /sailor/stripe-webhook-secret --type SecureString --value whsec_...
+
+# 4. Backstop the OpenAI spend itself. AWS Budgets only sees AWS costs, NOT the
+#    OpenAI bill (a separate vendor invoice), so the real out-of-band cap behind
+#    the in-app global ceiling is OpenAI's own hard usage limit:
+#    OpenAI Dashboard → Settings → Limits → set a monthly hard cap (e.g. $5) + alert.
+
+# 5. (Optional) Catch AWS-side surprises — Lambda/API Gateway/DynamoDB — with an
+#    AWS Budget (Cost → Budgets) at a low $/mo with an email alert. This does not
+#    cover OpenAI; see step 4 for that.
+```
+
+Deploy with the price ID and ceiling, e.g.
+`sam deploy --parameter-overrides StripePriceId=price_... GlobalMonthlyLimit=450`, then copy
+the `BillingEndpoint` output into `environment.prod.ts → billingLambdaUrl` and configure the
+`StripeWebhookEndpoint` output as the webhook destination in the Stripe Dashboard.
+
+### Local dev
+
+The `samconfig.toml` price/secrets only apply to the **deployed** stack — `sam local` reads
+billing config from `env.json` instead (see `env.json.example`). Add your **test-mode** values:
+`STRIPE_SECRET_KEY` (`sk_test_…`), `STRIPE_PRICE_ID` (a **test-mode** price — IDs are
+mode-specific), and `BILLING_SUCCESS_URL`/`BILLING_CANCEL_URL` pointed at `http://localhost:4200`
+so checkout returns to your local app. Without `STRIPE_PRICE_ID` the checkout endpoint returns
+`{"message":"Billing is not configured"}`.
+
+To let a completed checkout flip the user's plan locally, forward webhooks with the Stripe CLI
+and paste **its** signing secret into `env.json` as `STRIPE_WEBHOOK_SECRET` (it differs from the
+Dashboard endpoint's secret):
+
+```bash
+stripe listen --forward-to http://localhost:3000/billing/webhook
+```
+
+Restart `./scripts/start-backend.sh` after editing `env.json` (it's read at startup). Leave
+`GLOBAL_MONTHLY_LIMIT` at `0` locally to disable the global ceiling.
+
+### Test users
+
+Dev uses its **own Cognito pool** (free; keeps test accounts and the `admin` group off prod),
+configured in `environment.ts` (frontend) and `env.json` (`COGNITO_USER_POOL_ID` /
+`COGNITO_CLIENT_ID`, for the local Lambdas). One-time pool creation — the web app logs in via
+**SRP**, so `ALLOW_USER_SRP_AUTH` is required:
+
+```bash
+aws cognito-idp create-user-pool --pool-name sailor-dev --query 'UserPool.Id' --output text
+aws cognito-idp create-user-pool-client --user-pool-id <DEV_POOL> --client-name sailor-dev-web \
+  --no-generate-secret \
+  --explicit-auth-flows ALLOW_USER_SRP_AUTH ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH \
+  --query 'UserPoolClient.ClientId' --output text
+```
+
+Seed all three roles (creates the users with permanent passwords, adds the admin to the group,
+and flags the paid user in DynamoDB Local):
+
+```bash
+POOL_ID=<DEV_POOL> ./scripts/seed-test-users.sh
+```
+
+| Username | Password | What it tests |
+|---|---|---|
+| `admin@test` | `Passw0rd!` | Admin — unlimited; "Admin" badge; no upgrade button |
+| `paid@test` | `Passw0rd!` | Paid — `PAID_MONTHLY_LIMIT`; "Captain Plus" badge; no upgrade button |
+| `regular@test` | `Passw0rd!` | Free — `FREE_MONTHLY_LIMIT`; upgrade CTA when the cap is hit |
+
+> Override the password with `PASSWORD=… POOL_ID=… ./scripts/seed-test-users.sh`. Re-run after
+> resetting the local table — the paid flag lives in DynamoDB Local.
 
 ## 🏗 Architecture
 

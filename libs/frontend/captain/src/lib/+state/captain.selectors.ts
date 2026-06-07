@@ -18,6 +18,11 @@ export const selectChatError = createSelector(
   (state) => state.chatError
 );
 
+export const selectChatQuotaExceeded = createSelector(
+  selectFeature,
+  (state) => state.chatQuotaExceeded
+);
+
 export const selectInsight = createSelector(
   selectFeature,
   (state) => state.insight
@@ -31,4 +36,20 @@ export const selectInsightLoading = createSelector(
 export const selectInsightError = createSelector(
   selectFeature,
   (state) => state.insightError
+);
+
+export const selectStatus = createSelector(
+  selectFeature,
+  (state) => state.status
+);
+
+export const selectPlan = createSelector(
+  selectStatus,
+  (status) => status?.plan ?? null
+);
+
+/** Paid members and admins both have an elevated/unlimited plan. */
+export const selectIsPaidMember = createSelector(
+  selectPlan,
+  (plan) => plan === 'paid' || plan === 'admin'
 );

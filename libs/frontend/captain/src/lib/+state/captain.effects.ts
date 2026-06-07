@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Store } from '@ngrx/store';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, map, of, switchMap, withLatestFrom } from 'rxjs';
+import { EMPTY, catchError, map, of, switchMap, withLatestFrom } from 'rxjs';
 import { selectBaseCurrency, selectState } from '@aws/state';
 import { CaptainService } from '../captain.service';
 import { buildCaptainSummary } from '../captain-summary';
@@ -16,6 +16,8 @@ import {
   loadInsights,
   loadInsightsFailure,
   loadInsightsSuccess,
+  loadStatus,
+  loadStatusSuccess,
   sendMessage,
   sendMessageFailure,
   sendMessageSuccess,
@@ -45,9 +47,14 @@ export class CaptainEffects {
         }
         const summary = buildCaptainSummary(state, currency);
         return this.service.chat(messages, summary).pipe(
-          map((reply) => sendMessageSuccess({ reply })),
+          map(({ reply, usage }) => sendMessageSuccess({ reply, usage })),
           catchError((error: HttpErrorResponse) =>
-            of(sendMessageFailure({ error: error.message }))
+            of(
+              sendMessageFailure({
+                error: error.message,
+                quota: error.status === 429,
+              })
+            )
           )
         );
       })
@@ -76,20 +83,35 @@ export class CaptainEffects {
         }
 
         return this.service.insights(summary).pipe(
-          map((narrative) => {
+          map(({ reply: narrative, usage }) => {
             const insight = {
               narrative,
               generatedAt: new Date().toISOString(),
               fingerprint,
             };
             writeCachedInsight(insight);
-            return loadInsightsSuccess({ insight });
+            return loadInsightsSuccess({ insight, usage });
           }),
           catchError((error: HttpErrorResponse) =>
             of(loadInsightsFailure({ error: error.message }))
           )
         );
       })
+    )
+  );
+
+  // Fetch the plan + monthly usage snapshot (no spend). Used for the dashboard
+  // badge and the chat's quota display; silently ignored on error so a status
+  // hiccup never disrupts the page.
+  public readonly loadStatus$ = createEffect(() =>
+    this.actions$.pipe(
+      ofType(loadStatus),
+      switchMap(() =>
+        this.service.status().pipe(
+          map((status) => loadStatusSuccess({ status })),
+          catchError(() => EMPTY)
+        )
+      )
     )
   );
 }

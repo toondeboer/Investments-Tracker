@@ -7,6 +7,8 @@ export const environment = {
     'https://03y9xjgaaj.execute-api.us-east-1.amazonaws.com/prod/microservice',
   captainLambdaUrl:
     'https://03y9xjgaaj.execute-api.us-east-1.amazonaws.com/prod/captain',
+  billingLambdaUrl:
+    'https://03y9xjgaaj.execute-api.us-east-1.amazonaws.com/prod/billing',
   cognito: {
     userPoolId: 'us-east-1_liCB4LgDE',
     clientId: '3o34bbl92faeo9ljo11eebtim2',

@@ -2,8 +2,8 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { map, Observable, timeout } from 'rxjs';
 import { retryWithBackoff } from '@aws/util';
-import { ChatMessage, CaptainSummary } from './captain.types';
-import { parseCaptainReply } from './captain.schemas';
+import { ChatMessage, CaptainStatus, CaptainSummary } from './captain.types';
+import { CaptainReply, parseCaptainReply, parseCaptainStatus } from './captain.schemas';
 
 // The Captain Lambda calls OpenAI, which can be slower than the DynamoDB CRUD
 // path; give it the same headroom as the Yahoo fan-out.
@@ -20,18 +20,29 @@ export class CaptainService {
   public chat(
     messages: ChatMessage[],
     summary: CaptainSummary
-  ): Observable<string> {
+  ): Observable<CaptainReply> {
     const body = { mode: 'chat', messages, summary };
     return this.post(body);
   }
 
   /** Ask for the dashboard "Captain's read" narrative. */
-  public insights(summary: CaptainSummary): Observable<string> {
+  public insights(summary: CaptainSummary): Observable<CaptainReply> {
     const body = { mode: 'insights', summary };
     return this.post(body);
   }
 
-  private post(body: unknown): Observable<string> {
+  /** Read-only plan + monthly usage snapshot (no spend, no quota increment). */
+  public status(): Observable<CaptainStatus> {
+    return this.http
+      .post<unknown>(this.environment.captainLambdaUrl, { mode: 'status' })
+      .pipe(
+        timeout(CAPTAIN_TIMEOUT_MS),
+        retryWithBackoff(),
+        map((response) => parseCaptainStatus(response))
+      );
+  }
+
+  private post(body: unknown): Observable<CaptainReply> {
     return this.http
       .post<unknown>(this.environment.captainLambdaUrl, body)
       .pipe(

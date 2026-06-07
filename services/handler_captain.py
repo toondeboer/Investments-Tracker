@@ -3,6 +3,7 @@ import os
 
 from shared.auth import verify_token
 from shared.cors import build_headers
+from shared.db import current_month, decrement, get_table, try_increment
 from shared.secrets import get_openai_api_key
 
 # Cheapest small chat model by default; overridable without a code change.
@@ -20,6 +21,41 @@ _MAX_CONTENT_CHARS = 2000
 _MAX_SUMMARY_CHARS = 8000
 
 _ALLOWED_ROLES = {'user', 'assistant'}
+
+# --- Usage quotas ---------------------------------------------------------
+# Two layers protect spend (see README "Cost control"):
+#   * Per-user monthly quota — fairness; differs by plan (free vs paid).
+#   * Global monthly ceiling — the hard money guarantee: once the whole crew
+#     has made this many calls in a month, ALL captain calls stop until the
+#     next month. Derive it from live OpenAI pricing (budget / cost-per-call);
+#     0 disables it (local dev / tests).
+_FREE_MONTHLY_LIMIT = int(os.environ.get('FREE_MONTHLY_LIMIT', '30'))
+_PAID_MONTHLY_LIMIT = int(os.environ.get('PAID_MONTHLY_LIMIT', '1000'))
+_GLOBAL_MONTHLY_LIMIT = int(os.environ.get('GLOBAL_MONTHLY_LIMIT', '0'))
+
+# Cognito group whose members bypass all quotas (free, unlimited).
+_ADMIN_GROUP = 'admin'
+
+
+class QuotaExceeded(Exception):
+    """Raised when a per-user or global monthly quota is exhausted.
+
+    ``scope`` is 'user' (the caller hit their own limit — offer an upgrade) or
+    'global' (the service-wide ceiling is reached — nobody is served).
+    """
+
+    def __init__(self, scope: str):
+        self.scope = scope
+        super().__init__(scope)
+
+
+class QuotaUnavailable(Exception):
+    """Raised when the quota counter store itself can't be reached.
+
+    Distinct from ``QuotaExceeded`` (a limit was hit). Here we couldn't even
+    record the call, so we can't prove we're under budget — the handler fails
+    CLOSED (refuse, never call OpenAI) rather than risk unbounded spend.
+    """
 
 # The Captain's persona + the hard no-advice guardrail. The model explains the
 # user's own numbers in plain language with light nautical flavour, and refuses
@@ -110,6 +146,92 @@ def _call_openai(messages: list) -> str:
     return (completion.choices[0].message.content or '').strip()
 
 
+def _user_plan(table, sub: str) -> str:
+    """Return the user's plan ('paid' or 'free'), defaulting to 'free'.
+
+    The plan is written solely by the Stripe webhook (handler_billing). Fails
+    open to 'free' on any read error so a transient DynamoDB blip applies the
+    stricter limit rather than crashing the request.
+    """
+    try:
+        resp = table.get_item(Key={'userId': sub})
+        return resp.get('Item', {}).get('plan', 'free')
+    except Exception as exc:  # noqa: BLE001
+        print(f'plan lookup failed, defaulting to free: {exc}')
+        return 'free'
+
+
+def _read_used(table, sub: str, month: str) -> int:
+    """Return the user's call count for the month (0 on miss / read error)."""
+    try:
+        resp = table.get_item(Key={'userId': f'usage#{sub}#{month}'})
+        return int(resp.get('Item', {}).get('count', 0))
+    except Exception as exc:  # noqa: BLE001
+        print(f'usage read failed: {exc}')
+        return 0
+
+
+def _status(sub: str, is_admin: bool) -> dict:
+    """Read-only usage snapshot for the UI (plan, limit, used, remaining).
+
+    Admins are unlimited, so limit/remaining are null. Never increments and never
+    calls OpenAI.
+    """
+    table = get_table()
+    month = current_month()
+    used = _read_used(table, sub, month)
+    if is_admin:
+        return {'plan': 'admin', 'limit': None, 'used': used, 'remaining': None}
+    plan = _user_plan(table, sub)
+    limit = _PAID_MONTHLY_LIMIT if plan == 'paid' else _FREE_MONTHLY_LIMIT
+    return {'plan': plan, 'limit': limit, 'used': used,
+            'remaining': max(limit - used, 0)}
+
+
+def _enforce_quota(sub: str):
+    """Reserve one call against the user + global monthly quotas.
+
+    Returns a usage snapshot dict (plan, limit, used, remaining) after this call,
+    or raises ``QuotaExceeded`` (a limit was hit → 429) / ``QuotaUnavailable``
+    (the counter store errored → 503).
+
+    Failure policy: both counter writes fail CLOSED. The atomic increment is the
+    spend gate — OpenAI is only ever reached after one succeeds — so if DynamoDB
+    is unreachable we refuse rather than risk overspend. (The plan *read* below
+    fails open to the stricter free tier: it's not spend-critical, and a
+    successful increment still proves we're under budget.)
+    """
+    table = get_table()
+    month = current_month()
+
+    plan = _user_plan(table, sub)
+    user_limit = _PAID_MONTHLY_LIMIT if plan == 'paid' else _FREE_MONTHLY_LIMIT
+
+    user_key = f'usage#{sub}#{month}'
+    try:
+        new_count = try_increment(table, user_key, user_limit)
+    except Exception as exc:  # noqa: BLE001 - fail CLOSED to protect spend
+        print(f'per-user quota check failed closed: {exc}')
+        raise QuotaUnavailable() from exc
+    if new_count is None:
+        raise QuotaExceeded('user')
+
+    if _GLOBAL_MONTHLY_LIMIT > 0:
+        global_key = f'usage#global#{month}'
+        try:
+            under_cap = try_increment(table, global_key, _GLOBAL_MONTHLY_LIMIT)
+        except Exception as exc:  # noqa: BLE001 - fail CLOSED to protect spend
+            print(f'global quota check failed closed: {exc}')
+            decrement(table, user_key)  # refund the call we just reserved
+            raise QuotaUnavailable() from exc
+        if under_cap is None:
+            decrement(table, user_key)
+            raise QuotaExceeded('global')
+
+    return {'plan': plan, 'limit': user_limit, 'used': new_count,
+            'remaining': max(user_limit - new_count, 0)}
+
+
 def handler(event, context):
     headers = build_headers(event)
 
@@ -122,9 +244,11 @@ def handler(event, context):
     if not token:
         return _error(401, 'Unauthorized: Missing token', headers)
     try:
-        verify_token(token)
+        decoded = verify_token(token)
     except Exception as exc:
         return _error(401, f'Unauthorized: {exc}', headers)
+    sub = decoded.get('sub')
+    is_admin = _ADMIN_GROUP in (decoded.get('cognito:groups') or [])
 
     try:
         body = json.loads(event.get('body') or '{}')
@@ -132,8 +256,16 @@ def handler(event, context):
         return _error(400, 'Invalid JSON body', headers)
 
     mode = body.get('mode', 'chat')
+    # Read-only usage snapshot for the UI (plan badge, remaining-quota display).
+    # No summary required, no spend, no increment.
+    if mode == 'status':
+        return {
+            'statusCode': 200,
+            'body': json.dumps(_status(sub, is_admin)),
+            'headers': headers,
+        }
     if mode not in ('chat', 'insights'):
-        return _error(400, "Field 'mode' must be 'chat' or 'insights'", headers)
+        return _error(400, "Field 'mode' must be 'chat', 'insights' or 'status'", headers)
 
     summary = body.get('summary')
     if not isinstance(summary, dict):
@@ -147,6 +279,33 @@ def handler(event, context):
         return _error(400, "Field 'messages' is malformed", headers)
     if mode == 'chat' and not user_messages:
         return _error(400, "Chat mode requires at least one message", headers)
+
+    # Quota — admins bypass; everyone else reserves one call against their
+    # per-user and the global monthly ceiling before we spend on OpenAI.
+    usage = None
+    if is_admin:
+        usage = _status(sub, is_admin=True)
+    else:
+        try:
+            usage = _enforce_quota(sub)
+        except QuotaExceeded as exc:
+            if exc.scope == 'global':
+                msg = ("The Captain is resting — the crew has reached this "
+                       "month's limit. Fair winds again next month.")
+            else:
+                msg = ("You've used all your Captain questions this month. "
+                       "Upgrade for more, or check back next month.")
+            return {
+                'statusCode': 429,
+                'body': json.dumps({'message': msg, 'scope': exc.scope}),
+                'headers': headers,
+            }
+        except QuotaUnavailable:
+            # Can't reach the counter store, so we can't prove we're under
+            # budget — refuse rather than spend (fail closed). No OpenAI call.
+            return _error(
+                503, 'The Captain is checking the ledger — try again shortly.', headers
+            )
 
     chat_messages = [
         {'role': 'system', 'content': _SYSTEM_PROMPT},
@@ -165,6 +324,6 @@ def handler(event, context):
 
     return {
         'statusCode': 200,
-        'body': json.dumps({'reply': reply}),
+        'body': json.dumps({'reply': reply, 'usage': usage}),
         'headers': headers,
     }

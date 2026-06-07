@@ -6,6 +6,20 @@ export interface ChatMessage {
   content: string;
 }
 
+/** Which subscription tier the user is on. `admin` is free + unlimited. */
+export type CaptainPlan = 'free' | 'paid' | 'admin';
+
+/** The user's plan + monthly usage, surfaced to the UI (badge, quota display). */
+export interface CaptainStatus {
+  plan: CaptainPlan;
+  /** Monthly call limit; `null` means unlimited (admin). */
+  limit: number | null;
+  /** Calls made this month. */
+  used: number;
+  /** Calls left this month; `null` when unlimited. */
+  remaining: number | null;
+}
+
 /** One holding, flattened to just the figures the Captain narrates. */
 export interface CaptainHolding {
   ticker: string;

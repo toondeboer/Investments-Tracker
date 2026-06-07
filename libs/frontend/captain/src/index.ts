@@ -1,4 +1,5 @@
 export * from './lib/captain.module';
+export * from './lib/billing.service';
 export * from './lib/captain.types';
 export * from './lib/captain.demo';
 export * from './lib/captain-summary';

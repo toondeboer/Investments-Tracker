@@ -1,13 +1,11 @@
 import json
-import os
 
-import boto3
 from boto3.dynamodb.conditions import Key
 
 from shared.auth import verify_token
 from shared.cors import build_headers
+from shared.db import get_table
 
-_TABLE_NAME = 'sailor'
 _CURRENT_SCHEMA_VERSION = 2
 
 _EMPTY_V2 = {
@@ -32,21 +30,6 @@ def _migrate_v1_to_v2(item):
             {'id': 'default', 'name': 'Default', 'transactions': legacy_transactions}
         ],
     }
-
-
-def _get_table():
-    env = os.environ.get('ENVIRONMENT', 'dev')
-    if env == 'dev':
-        dynamodb = boto3.resource(
-            'dynamodb',
-            endpoint_url='http://host.docker.internal:8000',
-            region_name='us-east-1',
-            aws_access_key_id='fake',
-            aws_secret_access_key='fake',
-        )
-    else:
-        dynamodb = boto3.resource('dynamodb')
-    return dynamodb.Table(_TABLE_NAME)
 
 
 def handler(event, context):
@@ -75,7 +58,7 @@ def handler(event, context):
             'headers': headers,
         }
 
-    table = _get_table()
+    table = get_table()
     method = event.get('httpMethod')
 
     try:
