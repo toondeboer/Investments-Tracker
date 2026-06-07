@@ -48,6 +48,15 @@ class QuotaExceeded(Exception):
         self.scope = scope
         super().__init__(scope)
 
+
+class QuotaUnavailable(Exception):
+    """Raised when the quota counter store itself can't be reached.
+
+    Distinct from ``QuotaExceeded`` (a limit was hit). Here we couldn't even
+    record the call, so we can't prove we're under budget — the handler fails
+    CLOSED (refuse, never call OpenAI) rather than risk unbounded spend.
+    """
+
 # The Captain's persona + the hard no-advice guardrail. The model explains the
 # user's own numbers in plain language with light nautical flavour, and refuses
 # anything that strays into advice, opinion or prediction with a short, varied,
@@ -183,11 +192,14 @@ def _enforce_quota(sub: str):
     """Reserve one call against the user + global monthly quotas.
 
     Returns a usage snapshot dict (plan, limit, used, remaining) after this call,
-    ``None`` when the check could not be applied, or raises ``QuotaExceeded``.
+    or raises ``QuotaExceeded`` (a limit was hit → 429) / ``QuotaUnavailable``
+    (the counter store errored → 503).
 
-    Failure policy: the per-user check fails OPEN (a DynamoDB blip must not block
-    a user mid-conversation), while the global ceiling fails CLOSED (if we can't
-    prove we're under budget, refuse rather than risk overspend).
+    Failure policy: both counter writes fail CLOSED. The atomic increment is the
+    spend gate — OpenAI is only ever reached after one succeeds — so if DynamoDB
+    is unreachable we refuse rather than risk overspend. (The plan *read* below
+    fails open to the stricter free tier: it's not spend-critical, and a
+    successful increment still proves we're under budget.)
     """
     table = get_table()
     month = current_month()
@@ -198,9 +210,9 @@ def _enforce_quota(sub: str):
     user_key = f'usage#{sub}#{month}'
     try:
         new_count = try_increment(table, user_key, user_limit)
-    except Exception as exc:  # noqa: BLE001 - fail open to protect UX
-        print(f'per-user quota check failed open: {exc}')
-        return None
+    except Exception as exc:  # noqa: BLE001 - fail CLOSED to protect spend
+        print(f'per-user quota check failed closed: {exc}')
+        raise QuotaUnavailable() from exc
     if new_count is None:
         raise QuotaExceeded('user')
 
@@ -208,10 +220,10 @@ def _enforce_quota(sub: str):
         global_key = f'usage#global#{month}'
         try:
             under_cap = try_increment(table, global_key, _GLOBAL_MONTHLY_LIMIT)
-        except Exception as exc:  # noqa: BLE001 - fail closed to protect spend
+        except Exception as exc:  # noqa: BLE001 - fail CLOSED to protect spend
             print(f'global quota check failed closed: {exc}')
             decrement(table, user_key)  # refund the call we just reserved
-            raise QuotaExceeded('global')
+            raise QuotaUnavailable() from exc
         if under_cap is None:
             decrement(table, user_key)
             raise QuotaExceeded('global')
@@ -288,6 +300,12 @@ def handler(event, context):
                 'body': json.dumps({'message': msg, 'scope': exc.scope}),
                 'headers': headers,
             }
+        except QuotaUnavailable:
+            # Can't reach the counter store, so we can't prove we're under
+            # budget — refuse rather than spend (fail closed). No OpenAI call.
+            return _error(
+                503, 'The Captain is checking the ledger — try again shortly.', headers
+            )
 
     chat_messages = [
         {'role': 'system', 'content': _SYSTEM_PROMPT},

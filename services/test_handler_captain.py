@@ -252,20 +252,49 @@ def test_happy_path_reports_usage(monkeypatch):
     assert usage['remaining'] == handler_captain._FREE_MONTHLY_LIMIT - 1
 
 
-def test_per_user_check_fails_open_on_db_error(monkeypatch):
-    """A DynamoDB blip on the per-user counter must not block the user."""
+def _no_openai(monkeypatch):
+    """Assert OpenAI is never called when the quota store is unreachable."""
+    def boom(messages):
+        raise AssertionError('OpenAI must not be called when the quota store is down')
+
+    monkeypatch.setattr(handler_captain, '_call_openai', boom)
+
+
+def test_per_user_check_fails_closed_on_db_error(monkeypatch):
+    """A DynamoDB error on the per-user counter fails CLOSED (503, no spend)."""
     monkeypatch.setattr(handler_captain, 'verify_token', lambda token: {'sub': 'u1'})
-    monkeypatch.setattr(handler_captain, '_call_openai', lambda m: 'Aye.')
     monkeypatch.setattr(handler_captain, 'get_table', lambda: object())
     monkeypatch.setattr(handler_captain, '_user_plan', lambda table, sub: 'free')
+    _no_openai(monkeypatch)
 
     def boom(table, key, limit):
         raise RuntimeError('dynamo unreachable')
 
     monkeypatch.setattr(handler_captain, 'try_increment', boom)
     resp = handler_captain.handler(_event(body=_chat_body()), None)
-    assert resp['statusCode'] == 200
-    assert json.loads(resp['body'])['usage'] is None
+    assert resp['statusCode'] == 503
+
+
+def test_global_check_fails_closed_on_db_error(monkeypatch):
+    """A DynamoDB error on the global counter fails CLOSED and refunds the user."""
+    monkeypatch.setattr(handler_captain, 'verify_token', lambda token: {'sub': 'u1'})
+    monkeypatch.setattr(handler_captain, 'get_table', lambda: object())
+    monkeypatch.setattr(handler_captain, '_user_plan', lambda table, sub: 'free')
+    monkeypatch.setattr(handler_captain, '_GLOBAL_MONTHLY_LIMIT', 100)
+    _no_openai(monkeypatch)
+
+    def fake_inc(table, key, limit):
+        if key.startswith('usage#global'):
+            raise RuntimeError('dynamo unreachable')
+        return 1
+
+    refunded = []
+    monkeypatch.setattr(handler_captain, 'try_increment', fake_inc)
+    monkeypatch.setattr(handler_captain, 'decrement', lambda table, key: refunded.append(key))
+    resp = handler_captain.handler(_event(body=_chat_body()), None)
+    assert resp['statusCode'] == 503
+    # The reserved per-user call is refunded so the rejected request isn't charged.
+    assert refunded == ['usage#u1#' + handler_captain.current_month()]
 
 
 class _UsageTable:
