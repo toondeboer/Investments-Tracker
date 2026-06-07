@@ -93,12 +93,7 @@ export class CaptainEffects {
             return loadInsightsSuccess({ insight, usage });
           }),
           catchError((error: HttpErrorResponse) =>
-            of(
-              loadInsightsFailure({
-                error: error.message,
-                quota: error.status === 429,
-              })
-            )
+            of(loadInsightsFailure({ error: error.message }))
           )
         );
       })

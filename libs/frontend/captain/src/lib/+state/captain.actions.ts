@@ -29,7 +29,7 @@ export const loadInsightsSuccess = createAction(
 );
 export const loadInsightsFailure = createAction(
   '[Captain] Load Insights Failure',
-  props<{ error: string; quota?: boolean }>()
+  props<{ error: string }>()
 );
 
 // --- Plan + usage status --------------------------------------------------

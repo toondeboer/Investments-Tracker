@@ -137,7 +137,7 @@ services differ:
 
 | Concern | Development (`sam local`) | Production (deployed) |
 |---|---|---|
-| Cognito pool | `COGNITO_USER_POOL_ID` (today: the prod pool — see note) | prod pool |
+| Cognito pool | dedicated `sailor-dev` pool (isolates test users + `admin` group) | prod pool |
 | JWKS verification | same (live fetch from Cognito) | same |
 | DynamoDB (`plan`, counters) | DynamoDB Local (Docker) | `sailor` table |
 | Stripe secret/webhook | from `env.json` | from SSM SecureStrings |
@@ -145,10 +145,10 @@ services differ:
 | Webhook delivery | `stripe listen` relay → `localhost:3000` | Stripe Dashboard endpoint → API Gateway |
 | `GLOBAL_MONTHLY_LIMIT` | `0` (disabled) | derived from budget (e.g. 450) |
 
-> **Note — shared Cognito pool.** Dev and prod currently use the *same* user pool, so test users
-> and the `admin` group live alongside real users. DynamoDB and Stripe are already isolated
-> (local table; test mode). The recommended hardening is a **separate dev user pool** so test
-> accounts and admin membership never touch prod; see the README's testing section.
+> **Note — isolated dev pool.** Dev uses its own `sailor-dev` Cognito pool, so test users and the
+> `admin` group never touch prod. `environment.ts` (frontend) and the local Lambdas' `env.json`
+> both point at it; `environment.prod.ts` keeps the prod pool. DynamoDB and Stripe are isolated too
+> (local table; test mode). See the README's "Test users" section for the pool/seed setup.
 
 ## Backend
 
