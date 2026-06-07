@@ -303,8 +303,14 @@ aws cognito-idp admin-add-user-to-group --user-pool-id us-east-1_liCB4LgDE \
 aws ssm put-parameter --name /sailor/stripe-secret-key     --type SecureString --value sk_test_...
 aws ssm put-parameter --name /sailor/stripe-webhook-secret --type SecureString --value whsec_...
 
-# 4. Defense in depth — a hard $5 budget alarm behind the real-time global ceiling.
-#    Create an AWS Budget (Cost → Budgets) at $5/mo with an email alert.
+# 4. Backstop the OpenAI spend itself. AWS Budgets only sees AWS costs, NOT the
+#    OpenAI bill (a separate vendor invoice), so the real out-of-band cap behind
+#    the in-app global ceiling is OpenAI's own hard usage limit:
+#    OpenAI Dashboard → Settings → Limits → set a monthly hard cap (e.g. $5) + alert.
+
+# 5. (Optional) Catch AWS-side surprises — Lambda/API Gateway/DynamoDB — with an
+#    AWS Budget (Cost → Budgets) at a low $/mo with an email alert. This does not
+#    cover OpenAI; see step 4 for that.
 ```
 
 Deploy with the price ID and ceiling, e.g.
