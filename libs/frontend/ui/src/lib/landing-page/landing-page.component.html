@@ -7,6 +7,7 @@
         <span class="wordmark">s<span class="ai">ai</span>lor</span>
       </a>
       <ul class="nav-links">
+        <li><a href="#captain" (click)="scrollTo('captain', $event)">Meet the captain</a></li>
         <li><a href="#features" (click)="scrollTo('features', $event)">Features</a></li>
         <li><a href="#how-it-works" (click)="scrollTo('how-it-works', $event)">How It Works</a></li>
         <li><a routerLink="/demo" class="nav-demo-link">Live demo</a></li>
@@ -26,6 +27,7 @@
     <!-- Mobile Navigation -->
     <div class="mobile-nav" [class.active]="mobileMenuOpen">
       <ul class="mobile-nav-links">
+        <li><a href="#captain" (click)="scrollTo('captain', $event); closeMobileMenu()">Meet the captain</a></li>
         <li><a href="#features" (click)="scrollTo('features', $event); closeMobileMenu()">Features</a></li>
         <li><a href="#how-it-works" (click)="scrollTo('how-it-works', $event); closeMobileMenu()">How It Works</a></li>
         <li><a routerLink="/demo" (click)="closeMobileMenu()">Live demo</a></li>
@@ -45,7 +47,13 @@
     <lucide-icon name="Compass" [size]="64" class="hero-compass"></lucide-icon>
     <div class="container">
       <h1 class="hero-title">
-        <span class="hero-word" [class.faded]="!heroWordVisible">{{ heroWord }}</span>
+        <span class="hero-word" [class.faded]="!heroWordVisible">
+          @if (heroWord === 'captain') {
+            capt<span class="ai">ai</span>n
+          } @else {
+            {{ heroWord }}
+          }
+        </span>
         Your Investments<br />with <em>AI</em>-Powered Precision
       </h1>
       <p class="hero-subtitle">
@@ -78,6 +86,50 @@
           <div class="stat-card">
             <div class="stat-value">€{{ portfolioValue | number:'1.0-0' }}</div>
             <div class="stat-label">Portfolio Value</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- wave divider into the captain spotlight -->
+    <div class="wave-divider wave-into-navy">
+      <svg viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
+        <path class="wave-back" d="M0,64 C240,112 480,16 720,56 C960,96 1200,24 1440,72 L1440,120 L0,120 Z" />
+        <path class="wave-front" d="M0,80 C240,40 480,120 720,80 C960,40 1200,112 1440,72 L1440,120 L0,120 Z" />
+      </svg>
+    </div>
+  </section>
+
+  <!-- Captain Spotlight Section — our unique selling point -->
+  <section id="captain" class="captain-spotlight">
+    <div class="container captain-spotlight-inner" awsRevealOnScroll>
+      <div class="captain-spotlight-copy">
+        <span class="captain-spotlight-eyebrow">
+          <lucide-icon name="Sparkles" [size]="14"></lucide-icon>
+          What makes sailor different
+        </span>
+        <h2>Meet the capt<span class="ai">ai</span>n</h2>
+        <p>
+          Your personal AI first mate reads your charts and explains what's
+          happening in plain language — daily insights and on-demand answers,
+          no jargon required. It's the one thing no spreadsheet can do for you.
+        </p>
+        <a routerLink="/demo" class="btn btn-primary btn-large captain-spotlight-cta">
+          <span>Ask the capt<span class="ai">ai</span>n</span>
+          <lucide-icon name="ArrowRight" [size]="18"></lucide-icon>
+        </a>
+      </div>
+      <div class="captain-spotlight-preview">
+        <div class="captain-preview-card">
+          <div class="captain-preview-header">
+            <lucide-icon name="Ship" [size]="18"></lucide-icon>
+            <span>Ask the capt<span class="ai">ai</span>n</span>
+          </div>
+          <div class="captain-preview-bubble user">How's my portfolio doing this month?</div>
+          <div class="captain-preview-bubble reply">
+            You're up 4.2% this month, mostly driven by your tech holdings.
+            Dividends from three positions also landed — nice timing just before
+            the dip on the 18th.
           </div>
         </div>
       </div>

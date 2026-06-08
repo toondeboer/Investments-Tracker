@@ -4,7 +4,7 @@
     <div class="captain-title">
       <lucide-icon name="Ship" [size]="22"></lucide-icon>
       <div>
-        <h2>Ask the Captain</h2>
+        <h2>Ask the capt<span class="ai">ai</span>n</h2>
         <p class="captain-subtitle">A plain-language read of your charts.</p>
       </div>
     </div>
@@ -12,7 +12,7 @@
       @if (!data?.demo && (isPaidMember$ | async) === false) {
         <button class="upgrade-link" (click)="upgrade()" type="button">
           <lucide-icon name="Sparkles" [size]="14"></lucide-icon>
-          Captain Plus
+          <span>capt<span class="ai">ai</span>n Plus</span>
         </button>
       }
       <button class="icon-btn" (click)="close()" aria-label="Close">
@@ -45,7 +45,7 @@
     @if (quotaExceeded$ | async) {
       <div class="captain-quota">
         <lucide-icon name="Anchor" [size]="22"></lucide-icon>
-        <p>You've used all your Captain questions this month.</p>
+        <p>You've used all your capt<span class="ai">ai</span>n questions this month.</p>
         @if (!data?.demo) {
           <button class="upgrade-btn" (click)="upgrade()" type="button">
             Upgrade for more
@@ -53,7 +53,7 @@
         }
       </div>
     } @else if (error$ | async) {
-      <div class="captain-error">The Captain couldn't reply just now. Try again shortly.</div>
+      <div class="captain-error">The capt<span class="ai">ai</span>n couldn't reply just now. Try again shortly.</div>
     }
   </div>
 
@@ -71,7 +71,7 @@
       [(ngModel)]="draft"
       (keyup.enter)="send(draft)"
       placeholder="Ask about your portfolio…"
-      aria-label="Message the Captain"
+      aria-label="Message the captain"
     />
     <button class="send-btn" (click)="send(draft)" [disabled]="!draft.trim()" aria-label="Send">
       <lucide-icon name="Send" [size]="18"></lucide-icon>
@@ -91,6 +91,6 @@
 
   <!-- Disclaimer -->
   <p class="captain-disclaimer">
-    The Captain shares facts about your portfolio, not financial advice.
+    The capt<span class="ai">ai</span>n shares facts about your portfolio, not financial advice.
   </p>
 </div>

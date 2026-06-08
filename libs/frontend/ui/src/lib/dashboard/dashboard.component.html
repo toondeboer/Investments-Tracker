@@ -21,7 +21,11 @@
       @if (isPaidMember$ | async) {
         <span class="plan-badge" [class.admin]="(plan$ | async) === 'admin'">
           <lucide-icon name="Sparkles" [size]="14"></lucide-icon>
-          {{ (plan$ | async) === 'admin' ? 'Admin' : 'Captain Plus' }}
+          @if ((plan$ | async) === 'admin') {
+            <span>Admin</span>
+          } @else {
+            <span>capt<span class="ai">ai</span>n Plus</span>
+          }
         </span>
       }
     </header>
@@ -62,22 +66,35 @@
     @if (vm.loading) {
       <div class="computing-bar"></div>
     }
-    <!-- Captain's read (auto, daily-cached) — only when there are holdings -->
     @if ((vm.state?.stocks | keyvalue)?.length) {
+      <!-- Captain's read (auto, daily-cached) — only when there are holdings -->
       <section class="page-section">
         <aws-insights-banner></aws-insights-banner>
       </section>
-    }
-    <section class="page-section">
-      <aws-summary [summary]="vm.state?.summary" [currency]="vm.currency ?? 'EUR'"></aws-summary>
-    </section>
-    @if ((vm.state?.stocks | keyvalue)?.length) {
+      <section class="page-section">
+        <aws-summary [summary]="vm.state?.summary" [currency]="vm.currency ?? 'EUR'"></aws-summary>
+      </section>
       <section class="page-section">
         <aws-active-tickers
           [dates]="vm.state?.dates ?? []"
           [stocks]="vm.state?.stocks ?? {}"
           [currencySymbol]="currencySymbol(vm.currency)"
         ></aws-active-tickers>
+      </section>
+    } @else {
+      <section class="page-section">
+        <div class="empty-dashboard">
+          <lucide-icon name="Compass" [size]="40" class="empty-dashboard-icon"></lucide-icon>
+          <h2 class="empty-dashboard-title">Start tracking your investments</h2>
+          <p class="empty-dashboard-text">
+            Create your first portfolio to see your performance, holdings and captain's
+            insights here.
+          </p>
+          <a routerLink="/portfolios" class="btn btn-primary empty-dashboard-cta">
+            Create your first portfolio
+            <lucide-icon name="ArrowRight" [size]="16"></lucide-icon>
+          </a>
+        </div>
       </section>
     }
   </div>

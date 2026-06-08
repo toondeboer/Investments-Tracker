@@ -20,9 +20,9 @@ const transactionDboSchema = z
   .passthrough();
 
 const transactionsDboSchema = z.object({
-  stock: z.array(transactionDboSchema),
-  dividend: z.array(transactionDboSchema),
-  commission: z.array(transactionDboSchema),
+  stock: z.array(transactionDboSchema).default([]),
+  dividend: z.array(transactionDboSchema).default([]),
+  commission: z.array(transactionDboSchema).default([]),
 });
 
 const userSettingsDboSchema = z.object({

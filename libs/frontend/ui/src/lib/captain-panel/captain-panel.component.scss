@@ -68,6 +68,12 @@
   white-space: nowrap;
   transition: $transition-base;
 
+  // Both the resting text and the hover background are gold — the default
+  // gold "ai" emphasis would blend in either way, so use cream for contrast.
+  .ai {
+    color: $color-cream;
+  }
+
   &:hover {
     background: $color-gold;
     color: $color-bg-base;

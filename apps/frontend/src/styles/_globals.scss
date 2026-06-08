@@ -59,6 +59,11 @@
   }
 }
 
+// ─── "ai" emphasis (gold highlight for the letters "ai" in product names) ────
+.ai {
+  color: $color-gold;
+}
+
 // ─── Wordmark ("sailor" with gold AI emphasis) ───────────────────────────────
 .wordmark {
   font-family: $font-serif;
@@ -67,7 +72,6 @@
   font-style: italic;
 
   .ai {
-    color: $color-gold;
     font-style: italic;
     font-weight: 700;
   }

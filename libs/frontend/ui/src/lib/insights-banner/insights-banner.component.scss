@@ -33,6 +33,12 @@
   @include serif-heading;
   font-size: 0.95rem;
   color: $color-gold;
+
+  // The label itself is already gold — swap the "ai" emphasis to cream so it
+  // still reads as a highlight instead of disappearing into the label colour.
+  .ai {
+    color: $color-cream;
+  }
 }
 
 .insight-text {
