@@ -48,7 +48,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
   currentYear = new Date().getFullYear();
 
   // Rotating hero verb (nautical flavour, cross-faded via CSS).
-  heroWords = ['Navigate', 'Chart', 'Captain', 'Steer'];
+  heroWords = ['Navigate', 'Chart', 'captain', 'Steer'];
   heroWordIndex = 0;
   heroWordVisible = true;
   private wordTimer?: ReturnType<typeof setInterval>;

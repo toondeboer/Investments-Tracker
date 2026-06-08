@@ -2,7 +2,7 @@
   <!-- Step 1: Register -->
   @if (step === 'register') {
     <div class="card" (keydown.enter)="register()">
-      <div class="wordmark">s<span class="ai">AI</span>lor</div>
+      <div class="wordmark">s<span class="ai">ai</span>lor</div>
       <h1 class="heading">Create an account</h1>
       <p class="subheading">Start tracking your portfolio</p>
       @if (error) {
@@ -66,7 +66,7 @@
   <!-- Step 2: Confirm email -->
   @if (step === 'confirm') {
     <div class="card" (keydown.enter)="confirm()">
-      <div class="wordmark">s<span class="ai">AI</span>lor</div>
+      <div class="wordmark">s<span class="ai">ai</span>lor</div>
       <div class="check-icon">✉</div>
       <h1 class="heading">Check your email</h1>
       <p class="subheading">We sent a 6-digit code to <strong>{{ email }}</strong></p>

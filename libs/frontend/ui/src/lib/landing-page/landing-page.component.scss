@@ -28,14 +28,19 @@
 // ─── Header ──────────────────────────────────────────────────────────────────
 header {
   @include glass-panel($glass-bg, 20px);
+  border: none;
+  border-bottom: 1px solid rgba($color-cream, 0.08);
   position: fixed;
   width: 100%;
   top: 0;
+  padding: 0.5rem 0;
   z-index: 1000;
   transition: $transition-base;
 
   &.scrolled {
     @include glass-panel($glass-bg-strong, 20px);
+    border: none;
+    border-bottom: 1px solid rgba($color-cream, 0.08);
 
     .logo .wordmark { color: $color-cream; }
     .nav-links a { color: $color-cream; }
@@ -47,7 +52,7 @@ nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
+  padding: 1.5rem 0;
   position: relative;
 }
 
@@ -86,6 +91,10 @@ nav {
     &:hover {
       color: $color-gold;
       transform: translateY(-2px);
+
+      // On hover the link itself turns gold — without this, the "ai"
+      // emphasis in "Meet the captain" would blend into the hover colour.
+      .ai { color: $color-cream; }
     }
   }
 
@@ -207,6 +216,10 @@ nav {
         &:hover {
           color: $color-gold;
           transform: translateX(10px);
+
+          // On hover the link itself turns gold — without this, the "ai"
+          // emphasis in "Meet the captain" would blend into the hover colour.
+          .ai { color: $color-cream; }
         }
       }
     }
@@ -261,6 +274,16 @@ nav {
   @include gradient-text($accent-gradient);
   display: inline-block;
   transition: opacity 0.3s ease, transform 0.3s ease;
+
+  // The word itself is gradient-clipped text (transparent fill + gold
+  // background). `-webkit-text-fill-color: transparent` is inherited and
+  // wins over a plain `color`, so it must be reset explicitly here —
+  // otherwise the "ai" emphasis silently renders as the same gold gradient
+  // as the rest of the word instead of standing out.
+  .ai {
+    color: $color-cream;
+    -webkit-text-fill-color: $color-cream;
+  }
 
   &.faded {
     opacity: 0;
@@ -376,6 +399,131 @@ nav {
 .wave-into-navy {
   .wave-front { fill: $color-navy; }
   .wave-back  { fill: $color-navy; }
+}
+
+// ─── Captain Spotlight (unique selling point) ────────────────────────────────
+.captain-spotlight {
+  position: relative;
+  padding: 6rem 0;
+  // Solid colour (rather than $brand-gradient) so it matches the solid
+  // wave-fill colours exactly — a gradient here left a visible seam beneath
+  // the wave divider where the fill colour stopped matching the background.
+  background: $color-navy;
+  color: $color-cream;
+  overflow: hidden;
+}
+
+.captain-spotlight-inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.captain-spotlight-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: $color-gold;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.captain-spotlight-copy {
+  h2 {
+    @include serif-heading;
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: $color-sand;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    margin-bottom: 2rem;
+    max-width: 46ch;
+  }
+}
+
+.captain-spotlight-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  // This is a primary (gold-gradient) button — the default gold "ai"
+  // emphasis would disappear into the background, so use cream for contrast.
+  .ai { color: $color-cream; }
+
+  lucide-icon { transition: transform 0.3s ease; }
+
+  &:hover lucide-icon { transform: translateX(4px); }
+}
+
+.captain-preview-card {
+  @include glass-panel($glass-bg, 16px);
+  border-radius: $radius-lg;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 420px;
+  margin: 0 auto;
+  box-shadow: $shadow-card;
+}
+
+.captain-preview-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: $color-gold;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid $color-border;
+
+  .ai { color: $color-cream; }
+}
+
+.captain-preview-bubble {
+  border-radius: $radius-md;
+  padding: 0.75rem 1rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  max-width: 90%;
+
+  &.user {
+    align-self: flex-end;
+    background: $accent-gradient;
+    color: $color-bg-base;
+    font-weight: 500;
+  }
+
+  &.reply {
+    align-self: flex-start;
+    background: rgba($color-cream, 0.06);
+    border: 1px solid $glass-border;
+    color: $color-cream;
+  }
+}
+
+@include respond-to($bp-md) {
+  .captain-spotlight-inner {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+
+  .captain-spotlight-copy p {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .captain-spotlight-eyebrow {
+    justify-content: center;
+  }
 }
 
 // ─── Features ────────────────────────────────────────────────────────────────
@@ -499,10 +647,12 @@ nav {
 // ─── CTA Section ─────────────────────────────────────────────────────────────
 .cta-section {
   padding: 5rem 0;
-  background: $brand-gradient;
+  // Solid colour (rather than $brand-gradient), and no border-top — both
+  // produced a straight-line seam beneath the wave-into-navy divider above
+  // this section. The wave alone now carries the transition.
+  background: $color-navy;
   color: $color-cream;
   text-align: center;
-  border-top: 1px solid $color-border;
 
   h2 {
     @include serif-heading;

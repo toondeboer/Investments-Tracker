@@ -1,6 +1,6 @@
 import { Component, DestroyRef, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { take, timer } from 'rxjs';
 import {
   selectBaseCurrency,
@@ -29,7 +29,7 @@ import { InsightsBannerComponent } from '../insights-banner/insights-banner.comp
   selector: 'aws-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  imports: [SummaryComponent, AsyncPipe, CommonModule, DatePipe, ActiveTickersComponent, InsightsBannerComponent, LucideAngularModule],
+  imports: [SummaryComponent, AsyncPipe, CommonModule, DatePipe, ActiveTickersComponent, InsightsBannerComponent, LucideAngularModule, RouterLink],
 })
 export class DashboardComponent implements OnInit {
   private store = inject(Store);
