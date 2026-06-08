@@ -8,6 +8,18 @@
     ".",
     "libs/**"
   ],
+  "resolutions": {
+    "qs": "^6.15.2",
+    "serialize-javascript": "^7.0.5",
+    "uuid": "^11.1.1",
+    "postcss": "^8.5.15",
+    "webpack-dev-server": "^5.2.4",
+    "**/eslint/js-yaml": "^4.1.1",
+    "**/cosmiconfig/js-yaml": "^4.1.1",
+    "**/anymatch/picomatch": "^2.3.2",
+    "**/readdirp/picomatch": "^2.3.2",
+    "**/micromatch/picomatch": "^2.3.2"
+  },
   "dependencies": {
     "@angular/animations": "21.2.9",
     "@angular/cdk": "21.2.9",
