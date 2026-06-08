@@ -70,6 +70,13 @@ aws-scrolling-text {
   white-space: nowrap;
   transition: $transition-base;
 
+  // The button label itself is already gold — the default gold "ai"
+  // emphasis would be indistinguishable from the rest of the label, so use
+  // cream for contrast.
+  .ai {
+    color: $color-cream;
+  }
+
   &:hover {
     background: rgba($color-gold, 0.18);
     color: $color-gold-light;

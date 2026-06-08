@@ -267,6 +267,16 @@ nav {
   display: inline-block;
   transition: opacity 0.3s ease, transform 0.3s ease;
 
+  // The word itself is gradient-clipped text (transparent fill + gold
+  // background). `-webkit-text-fill-color: transparent` is inherited and
+  // wins over a plain `color`, so it must be reset explicitly here —
+  // otherwise the "ai" emphasis silently renders as the same gold gradient
+  // as the rest of the word instead of standing out.
+  .ai {
+    color: $color-cream;
+    -webkit-text-fill-color: $color-cream;
+  }
+
   &.faded {
     opacity: 0;
     transform: translateY(-8px);
@@ -435,6 +445,10 @@ nav {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+
+  // This is a primary (gold-gradient) button — the default gold "ai"
+  // emphasis would disappear into the background, so use cream for contrast.
+  .ai { color: $color-cream; }
 
   lucide-icon { transition: transform 0.3s ease; }
 
