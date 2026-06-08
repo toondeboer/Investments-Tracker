@@ -625,10 +625,12 @@ nav {
 // ─── CTA Section ─────────────────────────────────────────────────────────────
 .cta-section {
   padding: 5rem 0;
-  background: $brand-gradient;
+  // Solid colour (rather than $brand-gradient), and no border-top — both
+  // produced a straight-line seam beneath the wave-into-navy divider above
+  // this section. The wave alone now carries the transition.
+  background: $color-navy;
   color: $color-cream;
   text-align: center;
-  border-top: 1px solid $color-border;
 
   h2 {
     @include serif-heading;
