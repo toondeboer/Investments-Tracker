@@ -91,6 +91,10 @@ nav {
     &:hover {
       color: $color-gold;
       transform: translateY(-2px);
+
+      // On hover the link itself turns gold — without this, the "ai"
+      // emphasis in "Meet the captain" would blend into the hover colour.
+      .ai { color: $color-cream; }
     }
   }
 
@@ -212,6 +216,10 @@ nav {
         &:hover {
           color: $color-gold;
           transform: translateX(10px);
+
+          // On hover the link itself turns gold — without this, the "ai"
+          // emphasis in "Meet the captain" would blend into the hover colour.
+          .ai { color: $color-cream; }
         }
       }
     }
