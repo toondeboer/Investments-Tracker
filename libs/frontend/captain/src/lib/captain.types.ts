@@ -52,7 +52,11 @@ export interface CaptainSummary {
   };
   holdings: CaptainHolding[];
   /** Deterministically ranked biggest movers, to seed the insight. */
-  notableMovers: { ticker: string; weeklyReturnPct: number; notable: boolean }[];
+  notableMovers: {
+    ticker: string;
+    weeklyReturnPct: number;
+    notable: boolean;
+  }[];
 }
 
 /** The dashboard's daily "Captain's read", cached in localStorage. */

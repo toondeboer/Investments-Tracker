@@ -46,12 +46,22 @@ export class AuthService {
 
   signIn(email: string, password: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const user = new CognitoUser({ Username: email, Pool: POOL, Storage: window.sessionStorage });
-      const details = new AuthenticationDetails({ Username: email, Password: password });
+      const user = new CognitoUser({
+        Username: email,
+        Pool: POOL,
+        Storage: window.sessionStorage,
+      });
+      const details = new AuthenticationDetails({
+        Username: email,
+        Password: password,
+      });
       user.authenticateUser(details, {
         onSuccess: () => resolve(),
         onFailure: reject,
-        newPasswordRequired: () => reject(new Error('A new password is required. Please contact support.')),
+        newPasswordRequired: () =>
+          reject(
+            new Error('A new password is required. Please contact support.'),
+          ),
       });
     });
   }
@@ -60,7 +70,10 @@ export class AuthService {
     return new Promise((resolve, reject) => {
       const attrs = [new CognitoUserAttribute({ Name: 'email', Value: email })];
       POOL.signUp(email, password, attrs, [], (err) => {
-        if (err) { reject(err); return; }
+        if (err) {
+          reject(err);
+          return;
+        }
         resolve();
       });
     });
@@ -68,9 +81,16 @@ export class AuthService {
 
   confirmSignUp(email: string, code: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const user = new CognitoUser({ Username: email, Pool: POOL, Storage: window.sessionStorage });
+      const user = new CognitoUser({
+        Username: email,
+        Pool: POOL,
+        Storage: window.sessionStorage,
+      });
       user.confirmRegistration(code, true, (err) => {
-        if (err) { reject(err); return; }
+        if (err) {
+          reject(err);
+          return;
+        }
         resolve();
       });
     });
@@ -78,9 +98,16 @@ export class AuthService {
 
   resendCode(email: string): Promise<void> {
     return new Promise((resolve, reject) => {
-      const user = new CognitoUser({ Username: email, Pool: POOL, Storage: window.sessionStorage });
+      const user = new CognitoUser({
+        Username: email,
+        Pool: POOL,
+        Storage: window.sessionStorage,
+      });
       user.resendConfirmationCode((err) => {
-        if (err) { reject(err); return; }
+        if (err) {
+          reject(err);
+          return;
+        }
         resolve();
       });
     });

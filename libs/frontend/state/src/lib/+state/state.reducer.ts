@@ -106,7 +106,7 @@ export const reducer = createReducer(
       ...state,
       portfoliosDbo: data.portfolios,
       settings: data.settings,
-    })
+    }),
   ),
   on(setChartData, (state, { tickers }) => ({ ...state, tickers })),
   on(setSelectedPortfolios, (state, { ids }) => ({
@@ -134,7 +134,7 @@ export const reducer = createReducer(
     importYahooCsv,
     handleFileInput,
     updateSettings,
-    (state) => ({ ...state, loading: true, error: null })
+    (state) => ({ ...state, loading: true, error: null }),
   ),
   on(
     getDataSuccess,
@@ -152,7 +152,7 @@ export const reducer = createReducer(
     importYahooCsvSuccess,
     handleFileInputSuccess,
     updateSettingsSuccess,
-    (state) => ({ ...state, loading: false, lastFetched: Date.now() })
+    (state) => ({ ...state, loading: false, lastFetched: Date.now() }),
   ),
   on(getDataCached, (state) => ({ ...state, loading: false })),
   on(
@@ -171,8 +171,8 @@ export const reducer = createReducer(
     importYahooCsvFailure,
     handleFileInputFailure,
     updateSettingsFailure,
-    (state, { error }) => ({ ...state, loading: false, error })
-  )
+    (state, { error }) => ({ ...state, loading: false, error }),
+  ),
 );
 
 export const feature = createFeature({ name: featureKey, reducer });

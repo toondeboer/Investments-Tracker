@@ -20,7 +20,10 @@ export type CsvUploadResult = {
   imports: [FormsModule],
 })
 export class CsvUploadDialogComponent {
-  dialogRef = inject<DialogRef<CsvUploadDialogComponent, CsvUploadResult | undefined>>(DIALOG_REF);
+  dialogRef =
+    inject<DialogRef<CsvUploadDialogComponent, CsvUploadResult | undefined>>(
+      DIALOG_REF,
+    );
   data = inject<CsvUploadDialogData>(DIALOG_DATA);
   private papa = inject(Papa);
   private cdr = inject(ChangeDetectorRef);

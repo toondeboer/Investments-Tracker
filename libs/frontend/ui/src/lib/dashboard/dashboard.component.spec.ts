@@ -48,17 +48,23 @@ describe('DashboardComponent', () => {
   describe('togglePortfolio', () => {
     it('deselects one of "all" -> array of the rest', () => {
       component.togglePortfolio('p2', 'all', ['p1', 'p2', 'p3']);
-      expect(dispatch).toHaveBeenCalledWith(setSelectedPortfolios({ ids: ['p1', 'p3'] }));
+      expect(dispatch).toHaveBeenCalledWith(
+        setSelectedPortfolios({ ids: ['p1', 'p3'] }),
+      );
     });
 
     it('re-adding the last missing one collapses back to "all"', () => {
       component.togglePortfolio('p3', ['p1', 'p2'], ['p1', 'p2', 'p3']);
-      expect(dispatch).toHaveBeenCalledWith(setSelectedPortfolios({ ids: 'all' }));
+      expect(dispatch).toHaveBeenCalledWith(
+        setSelectedPortfolios({ ids: 'all' }),
+      );
     });
 
     it('adds a portfolio to an existing partial selection', () => {
       component.togglePortfolio('p2', ['p1'], ['p1', 'p2', 'p3']);
-      expect(dispatch).toHaveBeenCalledWith(setSelectedPortfolios({ ids: ['p1', 'p2'] }));
+      expect(dispatch).toHaveBeenCalledWith(
+        setSelectedPortfolios({ ids: ['p1', 'p2'] }),
+      );
     });
   });
 

@@ -60,8 +60,11 @@ export class DemoComponent {
   readonly cumulativeDividend: number[] = this.series.cumulativeDividend;
   readonly cumulativeCommission: number[] = this.series.cumulativeCommission;
 
-  readonly annualReturns: { years: string[]; yields: number[]; profit: number[] } =
-    buildDemoAnnualReturns();
+  readonly annualReturns: {
+    years: string[];
+    yields: number[];
+    profit: number[];
+  } = buildDemoAnnualReturns();
   readonly quarterlyDividends: { year: string; data: number[] }[] =
     buildDemoQuarterlyDividends();
   readonly ttmDividends: { yearQuarters: YearQuarter[]; dividends: number[] } =

@@ -18,9 +18,7 @@ import {
   selector: 'aws-bar-chart',
   templateUrl: './bar-chart.component.html',
   styleUrls: ['./bar-chart.component.scss'],
-  imports: [
-    NgxEchartsDirective
-]
+  imports: [NgxEchartsDirective],
 })
 export class BarChartComponent implements OnChanges {
   @Input() series: { years: string[]; yields: number[]; profit: number[] } = {
@@ -51,7 +49,8 @@ export class BarChartComponent implements OnChanges {
           }
           const rows = list
             .map((p) => {
-              const unit = p.seriesName === 'Profit' ? ` ${this.currencySymbol}` : ' %';
+              const unit =
+                p.seriesName === 'Profit' ? ` ${this.currencySymbol}` : ' %';
               return `${p.marker ?? ''} ${p.seriesName}: ${round2(p.value as number)}${unit}`;
             })
             .join('<br/>');
@@ -76,7 +75,10 @@ export class BarChartComponent implements OnChanges {
         {
           type: 'value',
           position: 'right',
-          axisLabel: { formatter: `{value} ${this.currencySymbol}`, color: NAUTICAL_MUTED },
+          axisLabel: {
+            formatter: `{value} ${this.currencySymbol}`,
+            color: NAUTICAL_MUTED,
+          },
           axisLine: axisStyle.axisLine,
           splitLine: { show: false },
         },

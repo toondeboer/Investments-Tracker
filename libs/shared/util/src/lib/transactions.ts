@@ -77,7 +77,7 @@ function initDefaultStock(ticker: string): Stock {
 }
 
 export function transactionsDboToTransactions(
-  transactions: TransactionsDbo
+  transactions: TransactionsDbo,
 ): Transactions {
   const stock: Transaction[] = [];
   const dividend: Transaction[] = [];
@@ -135,23 +135,31 @@ function getCurrency(currency: string): { value: string } {
  */
 export function getFxTickerForConversion(
   stockCurrency: string,
-  displayCurrency: string
+  displayCurrency: string,
 ): { yahooTicker?: string; fxMultiplier?: number } {
   if (stockCurrency === displayCurrency) return {};
   switch (displayCurrency) {
     case 'EUR':
       switch (stockCurrency) {
-        case 'USD': return { yahooTicker: 'EUR=X' };
-        case 'GBP': return { yahooTicker: 'GBPEUR=X' };
-        case 'GBp': return { yahooTicker: 'GBPEUR=X', fxMultiplier: 0.01 };
-        default:    return {};
+        case 'USD':
+          return { yahooTicker: 'EUR=X' };
+        case 'GBP':
+          return { yahooTicker: 'GBPEUR=X' };
+        case 'GBp':
+          return { yahooTicker: 'GBPEUR=X', fxMultiplier: 0.01 };
+        default:
+          return {};
       }
     case 'USD':
       switch (stockCurrency) {
-        case 'EUR': return { yahooTicker: 'EURUSD=X' };
-        case 'GBP': return { yahooTicker: 'GBPUSD=X' };
-        case 'GBp': return { yahooTicker: 'GBPUSD=X', fxMultiplier: 0.01 };
-        default:    return {};
+        case 'EUR':
+          return { yahooTicker: 'EURUSD=X' };
+        case 'GBP':
+          return { yahooTicker: 'GBPUSD=X' };
+        case 'GBp':
+          return { yahooTicker: 'GBPUSD=X', fxMultiplier: 0.01 };
+        default:
+          return {};
       }
     default:
       return {};
@@ -175,7 +183,7 @@ export function transactionsDboToStocks(transactions: TransactionsDbo): {
     }
     stocks[transaction.ticker].transactions.stock.push(newTransaction);
     stocks[transaction.ticker].transactions.stock = sortTransactions(
-      stocks[transaction.ticker].transactions.stock
+      stocks[transaction.ticker].transactions.stock,
     );
   });
 
@@ -191,7 +199,7 @@ export function transactionsDboToStocks(transactions: TransactionsDbo): {
     }
     stocks[transaction.ticker].transactions.dividend.push(newTransaction);
     stocks[transaction.ticker].transactions.dividend = sortTransactions(
-      stocks[transaction.ticker].transactions.dividend
+      stocks[transaction.ticker].transactions.dividend,
     );
   });
 
@@ -207,7 +215,7 @@ export function transactionsDboToStocks(transactions: TransactionsDbo): {
     }
     stocks[transaction.ticker].transactions.commission.push(newTransaction);
     stocks[transaction.ticker].transactions.commission = sortTransactions(
-      stocks[transaction.ticker].transactions.commission
+      stocks[transaction.ticker].transactions.commission,
     );
   });
 
@@ -228,7 +236,7 @@ export function getTransactionAmountsAndValues(
   dates: Date[],
   transactions: Transaction[],
   initialAmount = 0,
-  initialValue = 0
+  initialValue = 0,
 ): {
   transactionAmounts: number[];
   transactionValues: number[];
@@ -253,7 +261,10 @@ export function getTransactionAmountsAndValues(
   // Skip pre-range transactions (those before the first date in the window).
   let index = 0;
   if (dates.length > 0) {
-    while (index < transactions.length && isBeforeDay(transactions[index].date, dates[0])) {
+    while (
+      index < transactions.length &&
+      isBeforeDay(transactions[index].date, dates[0])
+    ) {
       index++;
     }
   }
@@ -261,7 +272,10 @@ export function getTransactionAmountsAndValues(
   let currentTransaction: Transaction = transactions[index];
 
   for (const date of dates) {
-    if (index >= transactions.length || !isSameDay(date, currentTransaction.date)) {
+    if (
+      index >= transactions.length ||
+      !isSameDay(date, currentTransaction.date)
+    ) {
       if (aggregatedAmounts.length === 0) {
         amounts.push(NaN);
         values.push(NaN);
@@ -276,7 +290,10 @@ export function getTransactionAmountsAndValues(
     } else {
       let newAmount = 0;
       let newValue = 0;
-      while (index < transactions.length && isSameDay(date, currentTransaction.date)) {
+      while (
+        index < transactions.length &&
+        isSameDay(date, currentTransaction.date)
+      ) {
         newAmount += currentTransaction.amount;
         newValue += currentTransaction.value;
         index += 1;
@@ -286,8 +303,14 @@ export function getTransactionAmountsAndValues(
       }
       amounts.push(newAmount);
       values.push(newValue);
-      const prevAmount = aggregatedAmounts.length === 0 ? initialAmount : aggregatedAmounts[aggregatedAmounts.length - 1];
-      const prevValue = aggregatedValues.length === 0 ? initialValue : aggregatedValues[aggregatedValues.length - 1];
+      const prevAmount =
+        aggregatedAmounts.length === 0
+          ? initialAmount
+          : aggregatedAmounts[aggregatedAmounts.length - 1];
+      const prevValue =
+        aggregatedValues.length === 0
+          ? initialValue
+          : aggregatedValues[aggregatedValues.length - 1];
       aggregatedAmounts.push(prevAmount + newAmount);
       aggregatedValues.push(prevValue + newValue);
     }
@@ -310,7 +333,7 @@ export function getTransactionAmountsAndValues(
 export function getTransactionAmountsAndValuesByPeriod(
   periodDates: Date[],
   transactions: Transaction[],
-  rangeStart: Date
+  rangeStart: Date,
 ): {
   transactionAmounts: number[];
   transactionValues: number[];
@@ -323,14 +346,22 @@ export function getTransactionAmountsAndValuesByPeriod(
   const aggregatedValues: number[] = [];
 
   if (periodDates.length === 0) {
-    return { transactionAmounts, transactionValues, aggregatedAmounts, aggregatedValues };
+    return {
+      transactionAmounts,
+      transactionValues,
+      aggregatedAmounts,
+      aggregatedValues,
+    };
   }
 
   // Accumulate all pre-range transactions into the running snapshot.
   let runningAmount = 0;
   let runningValue = 0;
   let txIdx = 0;
-  while (txIdx < transactions.length && isBeforeDay(transactions[txIdx].date, rangeStart)) {
+  while (
+    txIdx < transactions.length &&
+    isBeforeDay(transactions[txIdx].date, rangeStart)
+  ) {
     runningAmount += transactions[txIdx].amount;
     runningValue += transactions[txIdx].value;
     txIdx++;
@@ -340,7 +371,10 @@ export function getTransactionAmountsAndValuesByPeriod(
   let prevRunningValue = runningValue;
 
   for (const periodDate of periodDates) {
-    while (txIdx < transactions.length && isOnOrBeforeDay(transactions[txIdx].date, periodDate)) {
+    while (
+      txIdx < transactions.length &&
+      isOnOrBeforeDay(transactions[txIdx].date, periodDate)
+    ) {
       runningAmount += transactions[txIdx].amount;
       runningValue += transactions[txIdx].value;
       txIdx++;
@@ -358,15 +392,21 @@ export function getTransactionAmountsAndValuesByPeriod(
     prevRunningValue = runningValue;
   }
 
-  return { transactionAmounts, transactionValues, aggregatedAmounts, aggregatedValues };
+  return {
+    transactionAmounts,
+    transactionValues,
+    aggregatedAmounts,
+    aggregatedValues,
+  };
 }
 
 /** Sums transaction amounts/values for all transactions strictly before asOf. */
 export function computePreRangeSnapshot(
   transactions: Transaction[],
-  asOf: Date
+  asOf: Date,
 ): { amount: number; value: number } {
-  let amount = 0, value = 0;
+  let amount = 0,
+    value = 0;
   for (const tx of transactions) {
     if (isBeforeDay(tx.date, asOf)) {
       amount += tx.amount;
@@ -399,7 +439,10 @@ export function getCurrencies(stocks: { [ticker: string]: Stock }): string[] {
   const set = new Set<string>();
   for (const stock of Object.values(stocks)) {
     for (const dc of ['EUR', 'USD']) {
-      const { yahooTicker } = getFxTickerForConversion(stock.currency.value, dc);
+      const { yahooTicker } = getFxTickerForConversion(
+        stock.currency.value,
+        dc,
+      );
       if (yahooTicker) set.add(yahooTicker);
     }
   }
@@ -430,7 +473,9 @@ function txDboKey(tx: TransactionDbo): string {
   return `${tx.ticker}|${tx.date}|${tx.time ?? ''}|${tx.value}`;
 }
 
-export function deduplicateTransactions(txs: TransactionDbo[]): TransactionDbo[] {
+export function deduplicateTransactions(
+  txs: TransactionDbo[],
+): TransactionDbo[] {
   const seen = new Set<string>();
   return txs.filter((tx) => {
     const key = txDboKey(tx);
@@ -458,12 +503,15 @@ export function mergeTransactionsDbo(all: TransactionsDbo[]): TransactionsDbo {
 
 export function mergeTransactions(
   existing: TransactionsDbo,
-  incoming: TransactionsDbo
+  incoming: TransactionsDbo,
 ): TransactionsDbo {
   return mergeTransactionsDbo([existing, incoming]);
 }
 
-export function matchesTransactionKey(tx: TransactionDbo, key: TransactionKey): boolean {
+export function matchesTransactionKey(
+  tx: TransactionDbo,
+  key: TransactionKey,
+): boolean {
   return (
     tx.type === key.type &&
     tx.ticker === key.ticker &&
@@ -481,9 +529,13 @@ export function matchesTransactionKey(tx: TransactionDbo, key: TransactionKey): 
  */
 export function getHoldingCurrency(
   transactions: TransactionsDbo,
-  ticker: string
+  ticker: string,
 ): string | undefined {
-  for (const list of [transactions.stock, transactions.dividend, transactions.commission]) {
+  for (const list of [
+    transactions.stock,
+    transactions.dividend,
+    transactions.commission,
+  ]) {
     const match = list.find((tx) => tx.ticker === ticker);
     if (match) return match.currency;
   }
@@ -498,7 +550,7 @@ export function getHoldingCurrency(
 export function applyTransactionEdit(
   transactions: TransactionsDbo,
   originalKey: TransactionKey,
-  updated: TransactionDbo
+  updated: TransactionDbo,
 ): TransactionsDbo {
   const removeMatch = (txs: TransactionDbo[]) =>
     txs.filter((tx) => !matchesTransactionKey(tx, originalKey));
@@ -516,10 +568,12 @@ export function applyTransactionEdit(
 export function renameHoldingTicker(
   transactions: TransactionsDbo,
   oldTicker: string,
-  newTicker: string
+  newTicker: string,
 ): TransactionsDbo {
   const rename = (txs: TransactionDbo[]) =>
-    txs.map((tx) => (tx.ticker === oldTicker ? { ...tx, ticker: newTicker } : tx));
+    txs.map((tx) =>
+      tx.ticker === oldTicker ? { ...tx, ticker: newTicker } : tx,
+    );
   return {
     stock: rename(transactions.stock),
     dividend: rename(transactions.dividend),
@@ -530,9 +584,10 @@ export function renameHoldingTicker(
 /** Removes every transaction whose ticker equals `ticker` across all type lists. */
 export function deleteHoldingTicker(
   transactions: TransactionsDbo,
-  ticker: string
+  ticker: string,
 ): TransactionsDbo {
-  const remove = (txs: TransactionDbo[]) => txs.filter((tx) => tx.ticker !== ticker);
+  const remove = (txs: TransactionDbo[]) =>
+    txs.filter((tx) => tx.ticker !== ticker);
   return {
     stock: remove(transactions.stock),
     dividend: remove(transactions.dividend),
@@ -544,7 +599,7 @@ export function deleteHoldingTicker(
 export function setHoldingCurrency(
   transactions: TransactionsDbo,
   ticker: string,
-  currency: string
+  currency: string,
 ): TransactionsDbo {
   const setCurrency = (txs: TransactionDbo[]) =>
     txs.map((tx) => (tx.ticker === ticker ? { ...tx, currency } : tx));

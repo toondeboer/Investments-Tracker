@@ -23,7 +23,6 @@ export class YahooEffects {
   private readonly service = inject(YahooService);
   private readonly toastService = inject(ToastService);
 
-
   // Intercept the parsed Yahoo CSV to fetch each symbol's currency from Yahoo
   // before handing off to state.effects for the DB save.
   public readonly importYahooCsvResolveCurrencies$ = createEffect(() =>
@@ -58,23 +57,27 @@ export class YahooEffects {
               stock: incoming.stock.map((tx) =>
                 tx.currency === 'UNKNOWN' && currencyMap[tx.ticker]
                   ? { ...tx, currency: currencyMap[tx.ticker] }
-                  : tx
+                  : tx,
               ),
               dividend: incoming.dividend,
               commission: incoming.commission.map((tx) =>
                 tx.currency === 'UNKNOWN' && currencyMap[tx.ticker]
                   ? { ...tx, currency: currencyMap[tx.ticker] }
-                  : tx
+                  : tx,
               ),
             };
-            return importYahooCsvReady({ portfolioId, mode, incoming: resolved });
+            return importYahooCsvReady({
+              portfolioId,
+              mode,
+              incoming: resolved,
+            });
           }),
           catchError((error: HttpErrorResponse) =>
-            of(importYahooCsvFailure({ error: error.message }))
-          )
+            of(importYahooCsvFailure({ error: error.message })),
+          ),
         );
-      })
-    )
+      }),
+    ),
   );
 
   // On a fresh data load, fetch the latest prices for the held tickers and feed
@@ -101,16 +104,19 @@ export class YahooEffects {
                 this.toastService.open(
                   `Couldn't load prices for: ${missing.join(', ')}`,
                   'Dismiss',
-                  { duration: 6000 }
+                  { duration: 6000 },
                 );
               }
-              return [getTickersSuccess({ tickers }), setChartData({ tickers })];
+              return [
+                getTickersSuccess({ tickers }),
+                setChartData({ tickers }),
+              ];
             }),
             catchError((error: HttpErrorResponse) =>
-              of(getTickerFailure({ error: error.message }))
-            )
+              of(getTickerFailure({ error: error.message })),
+            ),
           );
-      })
-    )
+      }),
+    ),
   );
 }

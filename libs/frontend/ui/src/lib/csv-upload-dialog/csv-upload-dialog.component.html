@@ -1,14 +1,23 @@
 <h2 class="dialog-title">Import CSV</h2>
 
 <div class="dialog-content">
-
   <div class="field-group">
     <div class="field-label">Format</div>
     <div class="toggle-group">
-      <button class="toggle-option" [class.active]="format === 'degiro'" (click)="format = 'degiro'" type="button">
+      <button
+        class="toggle-option"
+        [class.active]="format === 'degiro'"
+        (click)="format = 'degiro'"
+        type="button"
+      >
         DeGiro CSV
       </button>
-      <button class="toggle-option" [class.active]="format === 'yahoo'" (click)="format = 'yahoo'" type="button">
+      <button
+        class="toggle-option"
+        [class.active]="format === 'yahoo'"
+        (click)="format = 'yahoo'"
+        type="button"
+      >
         Yahoo Finance CSV
       </button>
     </div>
@@ -17,10 +26,20 @@
   <div class="field-group">
     <div class="field-label">Import mode</div>
     <div class="toggle-group">
-      <button class="toggle-option" [class.active]="mode === 'replace'" (click)="mode = 'replace'" type="button">
+      <button
+        class="toggle-option"
+        [class.active]="mode === 'replace'"
+        (click)="mode = 'replace'"
+        type="button"
+      >
         Replace existing
       </button>
-      <button class="toggle-option" [class.active]="mode === 'merge'" (click)="mode = 'merge'" type="button">
+      <button
+        class="toggle-option"
+        [class.active]="mode === 'merge'"
+        (click)="mode = 'merge'"
+        type="button"
+      >
         Add &amp; deduplicate
       </button>
     </div>
@@ -35,27 +54,37 @@
       (dragover)="onDragOver($event)"
       (dragleave)="onDragLeave($event)"
       (drop)="onDrop($event)"
-      >
+    >
       <div class="drop-zone-inner">
         <span class="drop-icon">⛵</span>
         @if (!fileName) {
           <span class="drop-primary">Drop your CSV here</span>
-          <span class="drop-secondary">or <span class="drop-link">browse files</span></span>
+          <span class="drop-secondary"
+            >or <span class="drop-link">browse files</span></span
+          >
         }
         @if (fileName) {
           <span class="file-name">{{ fileName }}</span>
           <span class="file-rows">{{ rows.length }} rows ready to import</span>
         }
       </div>
-      <input type="file" accept=".csv" (change)="onFileSelected($event)" class="hidden-input" />
+      <input
+        type="file"
+        accept=".csv"
+        (change)="onFileSelected($event)"
+        class="hidden-input"
+      />
     </label>
   </div>
-
 </div>
 
 <div class="dialog-actions">
   <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
-  <button class="btn btn-primary" (click)="confirm()" [disabled]="rows.length === 0">
+  <button
+    class="btn btn-primary"
+    (click)="confirm()"
+    [disabled]="rows.length === 0"
+  >
     Import
   </button>
 </div>

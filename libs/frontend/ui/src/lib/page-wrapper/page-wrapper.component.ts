@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { MediaMatcher } from '@angular/cdk/layout';
 import { Router, RouterOutlet } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -30,9 +36,9 @@ export class PageWrapperComponent implements OnInit, OnDestroy {
   sidenavOpen: boolean;
 
   navigationOptions = [
-    { path: 'dashboard',  text: 'Dashboard',  icon: 'LayoutDashboard' },
+    { path: 'dashboard', text: 'Dashboard', icon: 'LayoutDashboard' },
     { path: 'portfolios', text: 'Portfolios', icon: 'FolderOpen' },
-    { path: 'settings',   text: 'Settings',   icon: 'Settings' },
+    { path: 'settings', text: 'Settings', icon: 'Settings' },
   ];
 
   private _mobileQueryListener: () => void;
@@ -65,7 +71,10 @@ export class PageWrapperComponent implements OnInit, OnDestroy {
   }
 
   isActive(path: string): boolean {
-    return this.router.url === '/' + path || this.router.url.startsWith('/' + path + '/');
+    return (
+      this.router.url === '/' + path ||
+      this.router.url.startsWith('/' + path + '/')
+    );
   }
 
   routeTo(route: string): void {

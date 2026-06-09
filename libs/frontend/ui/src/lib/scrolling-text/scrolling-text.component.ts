@@ -9,12 +9,7 @@ import { Summary, getCurrencySymbol } from '@aws/util';
   selector: 'aws-scrolling-text',
   templateUrl: './scrolling-text.component.html',
   styleUrls: ['./scrolling-text.component.scss'],
-  imports: [
-    NgClass,
-    DecimalPipe,
-    AsyncPipe,
-    CommonModule
-  ]
+  imports: [NgClass, DecimalPipe, AsyncPipe, CommonModule],
 })
 export class ScrollingTextComponent implements OnInit {
   private store = inject(Store);
@@ -36,6 +31,8 @@ export class ScrollingTextComponent implements OnInit {
     this.symbol$ =
       this.currencySymbol !== undefined
         ? of(this.currencySymbol)
-        : this.store.select(selectBaseCurrency).pipe(map((c) => getCurrencySymbol(c)));
+        : this.store
+            .select(selectBaseCurrency)
+            .pipe(map((c) => getCurrencySymbol(c)));
   }
 }

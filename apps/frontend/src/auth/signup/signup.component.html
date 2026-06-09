@@ -17,7 +17,7 @@
           placeholder="you@example.com"
           [(ngModel)]="email"
           [disabled]="loading"
-          />
+        />
       </div>
       <div class="field">
         <label for="password">Password</label>
@@ -28,7 +28,7 @@
           placeholder="Min. 8 characters"
           [(ngModel)]="password"
           [disabled]="loading"
-          />
+        />
       </div>
       <div class="field">
         <label for="confirm">Confirm password</label>
@@ -40,7 +40,7 @@
           [(ngModel)]="confirmPassword"
           [disabled]="loading"
           [class.mismatch]="passwordMismatch"
-          />
+        />
         @if (passwordMismatch) {
           <span class="hint mismatch-hint">Passwords do not match</span>
         }
@@ -48,8 +48,10 @@
       <button
         class="btn-primary"
         (click)="register()"
-        [disabled]="loading || !email || !password || !confirmPassword || passwordMismatch"
-        >
+        [disabled]="
+          loading || !email || !password || !confirmPassword || passwordMismatch
+        "
+      >
         @if (!loading) {
           <span>Create account</span>
         }
@@ -69,7 +71,9 @@
       <div class="wordmark">s<span class="ai">ai</span>lor</div>
       <div class="check-icon">✉</div>
       <h1 class="heading">Check your email</h1>
-      <p class="subheading">We sent a 6-digit code to <strong>{{ email }}</strong></p>
+      <p class="subheading">
+        We sent a 6-digit code to <strong>{{ email }}</strong>
+      </p>
       @if (error) {
         <div class="error-banner" role="alert">{{ error }}</div>
       }
@@ -88,9 +92,13 @@
           [(ngModel)]="code"
           [disabled]="loading"
           class="code-input"
-          />
+        />
       </div>
-      <button class="btn-primary" (click)="confirm()" [disabled]="loading || code.length < 6">
+      <button
+        class="btn-primary"
+        (click)="confirm()"
+        [disabled]="loading || code.length < 6"
+      >
         @if (!loading) {
           <span>Verify email</span>
         }
@@ -99,7 +107,10 @@
         }
       </button>
       <p class="footer-link">
-        Didn't receive it? <button class="link-btn" (click)="resend()" [disabled]="loading">Resend code</button>
+        Didn't receive it?
+        <button class="link-btn" (click)="resend()" [disabled]="loading">
+          Resend code
+        </button>
       </p>
     </div>
   }

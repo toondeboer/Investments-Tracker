@@ -1,14 +1,23 @@
 <div class="app-shell" [class.is-mobile]="mobileQuery.matches">
-
   <!-- ── Toolbar ──────────────────────────────────────────────────────────── -->
   <header class="app-toolbar">
-    <button class="menu-btn" (click)="sidenavOpen = !sidenavOpen" aria-label="Toggle navigation">
+    <button
+      class="menu-btn"
+      (click)="sidenavOpen = !sidenavOpen"
+      aria-label="Toggle navigation"
+    >
       <lucide-icon name="Menu" [size]="20"></lucide-icon>
     </button>
     <aws-scrolling-text></aws-scrolling-text>
-    <button class="captain-btn" (click)="openCaptain()" aria-label="Ask the captain">
+    <button
+      class="captain-btn"
+      (click)="openCaptain()"
+      aria-label="Ask the captain"
+    >
       <lucide-icon name="Ship" [size]="18"></lucide-icon>
-      <span class="captain-btn-label">Ask the capt<span class="ai">ai</span>n</span>
+      <span class="captain-btn-label"
+        >Ask the capt<span class="ai">ai</span>n</span
+      >
     </button>
   </header>
 
@@ -21,13 +30,9 @@
 
   <!-- ── Body ─────────────────────────────────────────────────────────────── -->
   <div class="app-body" [style.marginTop.px]="mobileQuery.matches ? 56 : 0">
-
     <!-- Mobile overlay -->
     @if (mobileQuery.matches && sidenavOpen) {
-      <div
-        class="sidenav-overlay"
-        (click)="sidenavOpen = false"
-      ></div>
+      <div class="sidenav-overlay" (click)="sidenavOpen = false"></div>
     }
 
     <!-- ── Sidenav ─────────────────────────────────────────────────────────── -->
@@ -36,9 +41,8 @@
       [class.sidenav-open]="sidenavOpen"
       [class.sidenav-mobile]="mobileQuery.matches"
       [class.sidenav-desktop-closed]="!mobileQuery.matches && !sidenavOpen"
-      >
+    >
       <div class="sidenav-inner">
-
         <div class="sidenav-header">
           <img src="assets/logo.png" alt="sailor" class="sidenav-logo" />
           <span class="wordmark">s<span class="ai">ai</span>lor</span>
@@ -51,8 +55,12 @@
                 class="nav-item"
                 [class.active]="isActive(nav.path)"
                 (click)="routeTo(nav.path)"
-                >
-                <lucide-icon [name]="nav.icon" [size]="20" class="nav-icon"></lucide-icon>
+              >
+                <lucide-icon
+                  [name]="nav.icon"
+                  [size]="20"
+                  class="nav-icon"
+                ></lucide-icon>
                 <span>{{ nav.text }}</span>
               </button>
             </li>
@@ -65,7 +73,6 @@
             Log out
           </button>
         </div>
-
       </div>
     </nav>
 
@@ -73,6 +80,5 @@
     <main class="app-content">
       <router-outlet></router-outlet>
     </main>
-
   </div>
 </div>

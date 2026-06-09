@@ -1,45 +1,60 @@
 <div class="grid">
   <div class="box">
-    <div>Portfolio value <span class="currency-badge">{{ currency }}</span></div>
+    <div>
+      Portfolio value <span class="currency-badge">{{ currency }}</span>
+    </div>
     <div class="number-text bold">
-      {{ safeSummary.portfolioValue | number : '1.2-2' }}
+      {{ safeSummary.portfolioValue | number: '1.2-2' }}
     </div>
   </div>
   <div class="box">
-    <div>Total Invested <span class="currency-badge">{{ currency }}</span></div>
-    <div class="bold">{{ safeSummary.totalInvested | number : '1.2-2' }}</div>
+    <div>
+      Total Invested <span class="currency-badge">{{ currency }}</span>
+    </div>
+    <div class="bold">{{ safeSummary.totalInvested | number: '1.2-2' }}</div>
   </div>
   <div class="box">
-    <div>Profit (excl. commission) <span class="currency-badge">{{ currency }}</span></div>
+    <div>
+      Profit (excl. commission)
+      <span class="currency-badge">{{ currency }}</span>
+    </div>
     <div
       [ngClass]="{
-        negative: safeSummary.portfolioValue - safeSummary.totalInvested < 0
+        negative: safeSummary.portfolioValue - safeSummary.totalInvested < 0,
       }"
       class="number-text bold"
     >
-      {{ safeSummary.portfolioValue - safeSummary.totalInvested | number : '1.2-2' }}
+      {{
+        safeSummary.portfolioValue - safeSummary.totalInvested | number: '1.2-2'
+      }}
     </div>
   </div>
   <div class="box">
-    <div>Total Return <span class="currency-badge">{{ currency }}</span></div>
+    <div>
+      Total Return <span class="currency-badge">{{ currency }}</span>
+    </div>
     <div
       [ngClass]="{ negative: safeSummary.totalReturn.absolute < 0 }"
       class="number-text bold"
     >
-      {{ safeSummary.totalReturn.absolute | number : '1.2-2' }}
-      ({{ safeSummary.totalReturn.percentage | number : '1.2-2' }}%)
+      {{ safeSummary.totalReturn.absolute | number: '1.2-2' }}
+      ({{ safeSummary.totalReturn.percentage | number: '1.2-2' }}%)
     </div>
   </div>
   <div class="box">
-    <div>Total Dividend <span class="currency-badge">{{ currency }}</span></div>
+    <div>
+      Total Dividend <span class="currency-badge">{{ currency }}</span>
+    </div>
     <div class="number-text bold">
-      {{ safeSummary.totalDividend | number : '1.2-2' }}
+      {{ safeSummary.totalDividend | number: '1.2-2' }}
     </div>
   </div>
   <div class="box">
-    <div>Total Commission <span class="currency-badge">{{ currency }}</span></div>
+    <div>
+      Total Commission <span class="currency-badge">{{ currency }}</span>
+    </div>
     <div class="negative bold">
-      {{ safeSummary.totalCommission | number : '1.2-2' }}
+      {{ safeSummary.totalCommission | number: '1.2-2' }}
     </div>
   </div>
 </div>

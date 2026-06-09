@@ -29,7 +29,9 @@ export class SignUpComponent {
   private readonly router = inject(Router);
 
   get passwordMismatch(): boolean {
-    return this.confirmPassword.length > 0 && this.password !== this.confirmPassword;
+    return (
+      this.confirmPassword.length > 0 && this.password !== this.confirmPassword
+    );
   }
 
   async register(): Promise<void> {
@@ -69,7 +71,8 @@ export class SignUpComponent {
       await this.auth.resendCode(this.email);
       this.info = 'A new code has been sent to your email.';
     } catch (err: unknown) {
-      this.error = err instanceof Error ? err.message : 'Could not resend code.';
+      this.error =
+        err instanceof Error ? err.message : 'Could not resend code.';
     }
   }
 }

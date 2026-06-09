@@ -3,11 +3,17 @@
     <div class="detail-header">
       <h2 class="detail-title">{{ portfolio.name }}</h2>
       <div class="detail-actions">
-        <button class="btn btn-primary add-holding-btn" (click)="onAddHolding()">
+        <button
+          class="btn btn-primary add-holding-btn"
+          (click)="onAddHolding()"
+        >
           <lucide-icon name="Plus" [size]="16"></lucide-icon>
           Add holding
         </button>
-        <button class="btn btn-secondary import-btn" (click)="importCsv.emit(portfolio.id)">
+        <button
+          class="btn btn-secondary import-btn"
+          (click)="importCsv.emit(portfolio.id)"
+        >
           &#8593; Import CSV
         </button>
       </div>
@@ -24,4 +30,3 @@
     <p>Select a portfolio to view transactions</p>
   </div>
 }
-

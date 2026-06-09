@@ -3,7 +3,11 @@ import { Injectable, inject } from '@angular/core';
 import { map, Observable, timeout } from 'rxjs';
 import { retryWithBackoff } from '@aws/util';
 import { ChatMessage, CaptainStatus, CaptainSummary } from './captain.types';
-import { CaptainReply, parseCaptainReply, parseCaptainStatus } from './captain.schemas';
+import {
+  CaptainReply,
+  parseCaptainReply,
+  parseCaptainStatus,
+} from './captain.schemas';
 
 // The Captain Lambda calls OpenAI, which can be slower than the DynamoDB CRUD
 // path; give it the same headroom as the Yahoo fan-out.
@@ -19,7 +23,7 @@ export class CaptainService {
   /** Send the chat thread + portfolio summary, resolve to the Captain's reply. */
   public chat(
     messages: ChatMessage[],
-    summary: CaptainSummary
+    summary: CaptainSummary,
   ): Observable<CaptainReply> {
     const body = { mode: 'chat', messages, summary };
     return this.post(body);
@@ -38,7 +42,7 @@ export class CaptainService {
       .pipe(
         timeout(CAPTAIN_TIMEOUT_MS),
         retryWithBackoff(),
-        map((response) => parseCaptainStatus(response))
+        map((response) => parseCaptainStatus(response)),
       );
   }
 
@@ -48,7 +52,7 @@ export class CaptainService {
       .pipe(
         timeout(CAPTAIN_TIMEOUT_MS),
         retryWithBackoff(),
-        map((response) => parseCaptainReply(response))
+        map((response) => parseCaptainReply(response)),
       );
   }
 }

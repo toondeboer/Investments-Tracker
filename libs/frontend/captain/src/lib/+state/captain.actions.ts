@@ -5,15 +5,15 @@ import { CaptainInsight, CaptainStatus } from '../captain.types';
 
 export const sendMessage = createAction(
   '[Captain] Send Message',
-  props<{ content: string; demo?: boolean }>()
+  props<{ content: string; demo?: boolean }>(),
 );
 export const sendMessageSuccess = createAction(
   '[Captain] Send Message Success',
-  props<{ reply: string; usage?: CaptainStatus | null }>()
+  props<{ reply: string; usage?: CaptainStatus | null }>(),
 );
 export const sendMessageFailure = createAction(
   '[Captain] Send Message Failure',
-  props<{ error: string; quota?: boolean }>()
+  props<{ error: string; quota?: boolean }>(),
 );
 export const clearChat = createAction('[Captain] Clear Chat');
 
@@ -21,15 +21,15 @@ export const clearChat = createAction('[Captain] Clear Chat');
 
 export const loadInsights = createAction(
   '[Captain] Load Insights',
-  props<{ demo?: boolean }>()
+  props<{ demo?: boolean }>(),
 );
 export const loadInsightsSuccess = createAction(
   '[Captain] Load Insights Success',
-  props<{ insight: CaptainInsight; usage?: CaptainStatus | null }>()
+  props<{ insight: CaptainInsight; usage?: CaptainStatus | null }>(),
 );
 export const loadInsightsFailure = createAction(
   '[Captain] Load Insights Failure',
-  props<{ error: string }>()
+  props<{ error: string }>(),
 );
 
 // --- Plan + usage status --------------------------------------------------
@@ -37,5 +37,5 @@ export const loadInsightsFailure = createAction(
 export const loadStatus = createAction('[Captain] Load Status');
 export const loadStatusSuccess = createAction(
   '[Captain] Load Status Success',
-  props<{ status: CaptainStatus }>()
+  props<{ status: CaptainStatus }>(),
 );

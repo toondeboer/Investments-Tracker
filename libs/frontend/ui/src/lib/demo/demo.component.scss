@@ -36,7 +36,9 @@
   font-weight: 500;
   transition: $transition-base;
 
-  &:hover { color: $color-gold; }
+  &:hover {
+    color: $color-gold;
+  }
 }
 
 .demo-badge {
@@ -140,13 +142,21 @@
     margin-bottom: 2rem;
   }
 
-  .demo-cta lucide-icon { transition: transform 0.3s ease; }
-  .demo-cta:hover lucide-icon { transform: translateX(4px); }
+  .demo-cta lucide-icon {
+    transition: transform 0.3s ease;
+  }
+  .demo-cta:hover lucide-icon {
+    transform: translateX(4px);
+  }
 }
 
 @media (max-width: 768px) {
-  .demo-badge { display: none; }
-  .demo-intro h1 { font-size: 2rem; }
+  .demo-badge {
+    display: none;
+  }
+  .demo-intro h1 {
+    font-size: 2rem;
+  }
 }
 
 .demo-captain {

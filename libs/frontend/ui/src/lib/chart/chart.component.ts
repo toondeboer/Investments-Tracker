@@ -47,7 +47,14 @@ export class ChartComponent implements OnChanges {
 
     return {
       backgroundColor: 'transparent',
-      color: [NAUTICAL_GOLD, '#1E6091', '#2ECC71', '#E8D5B7', NAUTICAL_MUTED, '#E74C3C'],
+      color: [
+        NAUTICAL_GOLD,
+        '#1E6091',
+        '#2ECC71',
+        '#E8D5B7',
+        NAUTICAL_MUTED,
+        '#E74C3C',
+      ],
       textStyle: { color: NAUTICAL_TEXT },
       title: baseTitle(this.label),
       grid: baseGrid(56),
@@ -95,7 +102,10 @@ export class ChartComponent implements OnChanges {
           areaStyle: {
             color: {
               type: 'linear',
-              x: 0, y: 0, x2: 0, y2: 1,
+              x: 0,
+              y: 0,
+              x2: 0,
+              y2: 1,
               colorStops: [
                 { offset: 0, color: 'rgba(201,168,76,0.3)' },
                 { offset: 1, color: 'rgba(201,168,76,0.02)' },

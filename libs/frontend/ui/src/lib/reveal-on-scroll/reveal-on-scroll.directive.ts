@@ -33,14 +33,21 @@ export class RevealOnScrollDirective implements OnInit, OnDestroy {
     const node = this.el.nativeElement;
 
     // No animation: leave the element fully visible.
-    if (this.prefersReducedMotion() || typeof IntersectionObserver === 'undefined') {
+    if (
+      this.prefersReducedMotion() ||
+      typeof IntersectionObserver === 'undefined'
+    ) {
       return;
     }
 
     const delay = typeof this.revealDelay === 'number' ? this.revealDelay : 0;
     this.renderer.setStyle(node, 'opacity', '0');
     this.renderer.setStyle(node, 'transform', 'translateY(24px)');
-    this.renderer.setStyle(node, 'transition', 'opacity 0.6s ease, transform 0.6s ease');
+    this.renderer.setStyle(
+      node,
+      'transition',
+      'opacity 0.6s ease, transform 0.6s ease',
+    );
     this.renderer.setStyle(node, 'transition-delay', `${delay}ms`);
     this.renderer.setStyle(node, 'will-change', 'opacity, transform');
 
@@ -54,7 +61,7 @@ export class RevealOnScrollDirective implements OnInit, OnDestroy {
           }
         }
       },
-      { threshold: 0.15 }
+      { threshold: 0.15 },
     );
     this.observer.observe(node);
   }

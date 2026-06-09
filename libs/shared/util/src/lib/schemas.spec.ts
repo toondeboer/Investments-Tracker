@@ -26,7 +26,9 @@ describe('parseDatabaseDto', () => {
     const validV2 = {
       schemaVersion: 2,
       settings: { baseCurrency: 'EUR' },
-      portfolios: [{ id: 'p1', name: 'My Portfolio', transactions: validTransactionsDbo }],
+      portfolios: [
+        { id: 'p1', name: 'My Portfolio', transactions: validTransactionsDbo },
+      ],
     };
 
     it('accepts a well-formed v2 response', () => {
@@ -40,11 +42,17 @@ describe('parseDatabaseDto', () => {
     it('transaction time field is optional', () => {
       const withTime = {
         ...validV2,
-        portfolios: [{ id: 'p1', name: 'My Portfolio', transactions: {
-          stock: [{ ...validTransaction, time: '14:32' }],
-          dividend: [],
-          commission: [],
-        }}],
+        portfolios: [
+          {
+            id: 'p1',
+            name: 'My Portfolio',
+            transactions: {
+              stock: [{ ...validTransaction, time: '14:32' }],
+              dividend: [],
+              commission: [],
+            },
+          },
+        ],
       };
       const result = parseDatabaseDto(withTime);
       expect(result.portfolios[0].transactions.stock[0].time).toBe('14:32');
@@ -54,12 +62,18 @@ describe('parseDatabaseDto', () => {
       expect(() =>
         parseDatabaseDto({
           ...validV2,
-          portfolios: [{ id: 'p1', name: 'My Portfolio', transactions: {
-            stock: [{ ...validTransaction, value: 'not-a-number' }],
-            dividend: [],
-            commission: [],
-          }}],
-        })
+          portfolios: [
+            {
+              id: 'p1',
+              name: 'My Portfolio',
+              transactions: {
+                stock: [{ ...validTransaction, value: 'not-a-number' }],
+                dividend: [],
+                commission: [],
+              },
+            },
+          ],
+        }),
       ).toThrow();
     });
   });
@@ -78,7 +92,11 @@ describe('parseDatabaseDto', () => {
     });
 
     it('migrates v1 with extra fields without error', () => {
-      const result = parseDatabaseDto({ ...validV1, startDate: '2023-01-01', extraneous: 'ignored' });
+      const result = parseDatabaseDto({
+        ...validV1,
+        startDate: '2023-01-01',
+        extraneous: 'ignored',
+      });
       expect(result.schemaVersion).toBe(2);
     });
   });

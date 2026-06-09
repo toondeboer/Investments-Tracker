@@ -16,7 +16,6 @@ export class YahooService {
   private environment = inject<any>('ENVIRONMENT' as any);
   private http = inject(HttpClient);
 
-
   public getTicker(name: string, startDate: Date): Observable<YahooObject> {
     const start = Math.floor(startDate.getTime() / 1000);
     const end = Math.ceil(new Date().getTime() / 1000);
@@ -31,7 +30,7 @@ export class YahooService {
   public getTickers(
     names: string[],
     startDate: Date,
-    currencies: string[]
+    currencies: string[],
   ): Observable<YahooObject[]> {
     const start = Math.floor(startDate.getTime() / 1000);
     const end = Math.ceil(new Date().getTime() / 1000);
@@ -43,7 +42,7 @@ export class YahooService {
     return this.http.post<unknown>(this.environment.yahooLambdaUrl, body).pipe(
       timeout(YAHOO_TIMEOUT_MS),
       retryWithBackoff(),
-      map((response) => parseYahooObjects(response))
+      map((response) => parseYahooObjects(response)),
     );
   }
 }

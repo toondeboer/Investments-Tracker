@@ -51,7 +51,9 @@ const databaseDtoV1Schema = z
 
 const EMPTY_TRANSACTIONS = { stock: [], dividend: [], commission: [] };
 const EMPTY_V2: DatabaseDto = {
-  portfolios: [{ id: 'default', name: 'Default', transactions: EMPTY_TRANSACTIONS }],
+  portfolios: [
+    { id: 'default', name: 'Default', transactions: EMPTY_TRANSACTIONS },
+  ],
   settings: { baseCurrency: 'EUR' },
   schemaVersion: 2,
 };
@@ -62,7 +64,11 @@ const EMPTY_V2: DatabaseDto = {
  * Throws a ZodError on a malformed shape.
  */
 export function parseDatabaseDto(raw: unknown): DatabaseDto {
-  if (raw === null || raw === undefined || (typeof raw === 'object' && Object.keys(raw as object).length === 0)) {
+  if (
+    raw === null ||
+    raw === undefined ||
+    (typeof raw === 'object' && Object.keys(raw as object).length === 0)
+  ) {
     return EMPTY_V2;
   }
 
@@ -75,7 +81,9 @@ export function parseDatabaseDto(raw: unknown): DatabaseDto {
   // Migrate v1: wrap existing transactions in a "Default" portfolio.
   const v1 = databaseDtoV1Schema.parse(raw);
   return {
-    portfolios: [{ id: 'default', name: 'Default', transactions: v1.transactions }],
+    portfolios: [
+      { id: 'default', name: 'Default', transactions: v1.transactions },
+    ],
     settings: { baseCurrency: 'EUR' },
     schemaVersion: 2,
   };
@@ -95,7 +103,8 @@ const yahooObjectSchema = z.object({
             events: z
               .object({
                 dividends: z.record(
-                  z.object({ amount: z.number(), date: z.number() })
+                  z.string(),
+                  z.object({ amount: z.number(), date: z.number() }),
                 ),
               })
               .optional(),
@@ -104,7 +113,7 @@ const yahooObjectSchema = z.object({
                 .array(z.object({ close: z.array(z.number().nullable()) }))
                 .min(1),
             }),
-          })
+          }),
         )
         .min(1),
     }),

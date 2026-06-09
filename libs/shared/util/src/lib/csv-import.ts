@@ -1,12 +1,7 @@
-import {
-  CsvInput,
-  CsvInputEnglish,
-  Transaction,
-  Transactions,
-} from './types';
+import { CsvInput, CsvInputEnglish, Transaction, Transactions } from './types';
 
 function isCsvInputEnglish(
-  input: CsvInput | CsvInputEnglish
+  input: CsvInput | CsvInputEnglish,
 ): input is CsvInputEnglish {
   return (
     typeof input[0] == 'object' &&
@@ -55,7 +50,7 @@ export function parseCsvInput(csv: CsvInput): Transactions {
     const parsedDate = new Date(
       parseInt(row.Datum.split('-')[2]),
       parseInt(row.Datum.split('-')[1]) - 1,
-      parseInt(row.Datum.split('-')[0])
+      parseInt(row.Datum.split('-')[0]),
     );
     const time = row.Tijd?.trim() || undefined;
 
@@ -66,7 +61,7 @@ export function parseCsvInput(csv: CsvInput): Transactions {
         date: parsedDate,
         time,
         amount: parseFloat(
-          row.Omschrijving.replace('Koop ', '').split(' @')[0]
+          row.Omschrijving.replace('Koop ', '').split(' @')[0],
         ),
         value: Math.abs(parseFloat(row[''])),
         currency: 'EUR',

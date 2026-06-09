@@ -34,7 +34,7 @@ describe('retryWithBackoff', () => {
     });
 
     await expect(
-      lastValueFrom(source.pipe(retryWithBackoff(3, 1)))
+      lastValueFrom(source.pipe(retryWithBackoff(3, 1))),
     ).rejects.toEqual({ status: 401 });
     expect(attempts).toBe(1);
   });
@@ -47,7 +47,7 @@ describe('retryWithBackoff', () => {
     });
 
     await expect(
-      lastValueFrom(source.pipe(retryWithBackoff(2, 1)))
+      lastValueFrom(source.pipe(retryWithBackoff(2, 1))),
     ).rejects.toEqual({ status: 500 });
     expect(attempts).toBe(3); // initial + 2 retries
   });

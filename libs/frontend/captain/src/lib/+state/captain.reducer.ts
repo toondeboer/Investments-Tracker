@@ -49,7 +49,10 @@ export const reducer = createReducer(
   })),
   on(sendMessageSuccess, (state, { reply, usage }) => ({
     ...state,
-    messages: [...state.messages, { role: 'assistant' as const, content: reply }],
+    messages: [
+      ...state.messages,
+      { role: 'assistant' as const, content: reply },
+    ],
     chatLoading: false,
     status: usage ?? state.status,
   })),
@@ -83,7 +86,7 @@ export const reducer = createReducer(
     insightError: error,
   })),
 
-  on(loadStatusSuccess, (state, { status }) => ({ ...state, status }))
+  on(loadStatusSuccess, (state, { status }) => ({ ...state, status })),
 );
 
 export const feature = createFeature({ name: featureKey, reducer });

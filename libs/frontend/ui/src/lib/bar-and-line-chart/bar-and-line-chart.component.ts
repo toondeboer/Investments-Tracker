@@ -25,9 +25,7 @@ const HOURS_PER_YEAR = DAYS_PER_YEAR * 24;
   selector: 'aws-bar-and-line-chart',
   templateUrl: './bar-and-line-chart.component.html',
   styleUrls: ['./bar-and-line-chart.component.scss'],
-  imports: [
-    NgxEchartsDirective
-]
+  imports: [NgxEchartsDirective],
 })
 export class BarAndLineChartComponent implements OnChanges {
   @Input() series: { yearQuarters: YearQuarter[]; dividends: number[] } = {
@@ -49,7 +47,8 @@ export class BarAndLineChartComponent implements OnChanges {
       title: baseTitle('TTM Dividend'),
       grid: baseGrid(72),
       tooltip: baseTooltip('axis', {
-        valueFormatter: (value) => formatMoney(value as number, this.currencySymbol),
+        valueFormatter: (value) =>
+          formatMoney(value as number, this.currencySymbol),
       }),
       legend: scrollLegend(40),
       xAxis: {
@@ -66,7 +65,10 @@ export class BarAndLineChartComponent implements OnChanges {
       },
       yAxis: {
         type: 'value',
-        axisLabel: { formatter: `{value} ${this.currencySymbol}`, color: NAUTICAL_MUTED },
+        axisLabel: {
+          formatter: `{value} ${this.currencySymbol}`,
+          color: NAUTICAL_MUTED,
+        },
         axisLine: axisStyle.axisLine,
         splitLine: axisStyle.splitLine,
       },
@@ -79,7 +81,9 @@ export class BarAndLineChartComponent implements OnChanges {
         },
         {
           name: 'Monthly',
-          data: this.series.dividends.map((dividend) => round2(dividend / MONTHS_PER_YEAR)),
+          data: this.series.dividends.map((dividend) =>
+            round2(dividend / MONTHS_PER_YEAR),
+          ),
           type: 'line',
           connectNulls: true,
           smooth: true,
@@ -88,7 +92,9 @@ export class BarAndLineChartComponent implements OnChanges {
         },
         {
           name: 'Daily',
-          data: this.series.dividends.map((dividend) => round2(dividend / DAYS_PER_YEAR)),
+          data: this.series.dividends.map((dividend) =>
+            round2(dividend / DAYS_PER_YEAR),
+          ),
           type: 'line',
           connectNulls: true,
           smooth: true,
@@ -97,7 +103,9 @@ export class BarAndLineChartComponent implements OnChanges {
         },
         {
           name: 'Hourly',
-          data: this.series.dividends.map((dividend) => round2(dividend / HOURS_PER_YEAR)),
+          data: this.series.dividends.map((dividend) =>
+            round2(dividend / HOURS_PER_YEAR),
+          ),
           type: 'line',
           connectNulls: true,
           smooth: true,

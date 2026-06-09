@@ -38,11 +38,15 @@ describe('BarAndLineChartComponent', () => {
     });
 
     it('divides the annual figure by 365 for "Daily"', () => {
-      expect(seriesData('Daily')).toEqual([Math.round((120 / 365) * 100) / 100]);
+      expect(seriesData('Daily')).toEqual([
+        Math.round((120 / 365) * 100) / 100,
+      ]);
     });
 
     it('divides the annual figure by hours-per-year for "Hourly"', () => {
-      expect(seriesData('Hourly')).toEqual([Math.round((120 / (365 * 24)) * 100) / 100]);
+      expect(seriesData('Hourly')).toEqual([
+        Math.round((120 / (365 * 24)) * 100) / 100,
+      ]);
     });
   });
 });

@@ -121,13 +121,13 @@ export class LandingPageComponent implements OnInit, OnDestroy {
       'portfolioReturn',
       0,
       Math.round(this.demoSummary.totalReturn.percentage * 10) / 10,
-      2000
+      2000,
     );
     this.animateValue(
       'portfolioValue',
       Math.round(this.demoSummary.totalInvested),
       Math.round(this.demoSummary.portfolioValue),
-      2500
+      2500,
     );
 
     // Cross-fade the rotating hero verb.
@@ -200,7 +200,7 @@ export class LandingPageComponent implements OnInit, OnDestroy {
     property: string,
     start: number,
     end: number,
-    duration: number
+    duration: number,
   ) {
     const startTime = performance.now();
     const animate = (currentTime: number) => {

@@ -1,4 +1,10 @@
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  OnDestroy,
+  OnInit,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MediaMatcher } from '@angular/cdk/layout';
 import { Store } from '@ngrx/store';
@@ -36,7 +42,12 @@ import { LucideAngularModule } from 'lucide-angular';
   selector: 'aws-portfolios',
   templateUrl: './portfolios.component.html',
   styleUrls: ['./portfolios.component.scss'],
-  imports: [CommonModule, PortfolioListComponent, PortfolioDetailComponent, LucideAngularModule],
+  imports: [
+    CommonModule,
+    PortfolioListComponent,
+    PortfolioDetailComponent,
+    LucideAngularModule,
+  ],
 })
 export class PortfoliosComponent implements OnInit, OnDestroy {
   private store = inject(Store);
@@ -82,7 +93,7 @@ export class PortfoliosComponent implements OnInit, OnDestroy {
   }
 
   getSelectedPortfolioStocks(
-    allStates: { [id: string]: { stocks: { [ticker: string]: Stock } } } | null
+    allStates: { [id: string]: { stocks: { [ticker: string]: Stock } } } | null,
   ): { [ticker: string]: Stock } {
     if (!allStates || !this.selectedPortfolioId) return {};
     return allStates[this.selectedPortfolioId]?.stocks ?? {};
@@ -116,7 +127,10 @@ export class PortfoliosComponent implements OnInit, OnDestroy {
       .subscribe((newName) => {
         if (newName) {
           this.store.dispatch(
-            renamePortfolio({ portfolioId: portfolio.id, newName: newName as string })
+            renamePortfolio({
+              portfolioId: portfolio.id,
+              newName: newName as string,
+            }),
           );
         }
       });
@@ -150,11 +164,19 @@ export class PortfoliosComponent implements OnInit, OnDestroy {
         if (!csvResult) return;
         if (csvResult.format === 'degiro') {
           this.store.dispatch(
-            importDeGiroCsv({ portfolioId: csvResult.portfolioId, data: csvResult.rows as any, mode: csvResult.mode })
+            importDeGiroCsv({
+              portfolioId: csvResult.portfolioId,
+              data: csvResult.rows as any,
+              mode: csvResult.mode,
+            }),
           );
         } else {
           this.store.dispatch(
-            importYahooCsv({ portfolioId: csvResult.portfolioId, rawRows: csvResult.rows, mode: csvResult.mode })
+            importYahooCsv({
+              portfolioId: csvResult.portfolioId,
+              rawRows: csvResult.rows,
+              mode: csvResult.mode,
+            }),
           );
         }
       });

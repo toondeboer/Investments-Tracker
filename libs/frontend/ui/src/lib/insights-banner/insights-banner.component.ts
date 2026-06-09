@@ -46,7 +46,7 @@ export class InsightsBannerComponent implements OnInit {
       .pipe(
         filter((state) => state.summary.portfolioValue > 0),
         take(1),
-        takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe(() => this.store.dispatch(loadInsights({})));
   }

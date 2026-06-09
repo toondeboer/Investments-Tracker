@@ -127,8 +127,13 @@
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50%      { transform: translateY(-8px); }
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
 }
 
 // ─── Toast notifications ──────────────────────────────────────────────────────
@@ -156,8 +161,14 @@
 }
 
 @keyframes fadeOutDown {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(8px); }
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px);
+  }
 }
 
 // ─── Custom dialog backdrop (CDK overlay) ────────────────────────────────────

@@ -17,7 +17,7 @@
         placeholder="you@example.com"
         [(ngModel)]="email"
         [disabled]="loading"
-        />
+      />
     </div>
 
     <div class="field">
@@ -29,10 +29,14 @@
         placeholder="••••••••"
         [(ngModel)]="password"
         [disabled]="loading"
-        />
+      />
     </div>
 
-    <button class="btn-primary" (click)="submit()" [disabled]="loading || !email || !password">
+    <button
+      class="btn-primary"
+      (click)="submit()"
+      [disabled]="loading || !email || !password"
+    >
       @if (!loading) {
         <span>Sign in</span>
       }

@@ -22,7 +22,11 @@ describe('parseYahooCsvInput', () => {
     // The signed convention: a sell reduces the running cost basis. A positive
     // value here would inflate "invested" and break profit once shares are sold.
     const { stock } = parseYahooCsvInput([
-      row({ 'Transaction Type': 'SHORT', 'Purchase Price': '120', Quantity: '10' }),
+      row({
+        'Transaction Type': 'SHORT',
+        'Purchase Price': '120',
+        Quantity: '10',
+      }),
     ]);
     expect(stock).toHaveLength(1);
     expect(stock[0].amount).toBe(-10);
@@ -31,8 +35,17 @@ describe('parseYahooCsvInput', () => {
 
   it('a buy then full sell nets the cost basis to (cost - proceeds)', () => {
     const { stock } = parseYahooCsvInput([
-      row({ 'Transaction Type': 'BUY', 'Purchase Price': '100', Quantity: '10' }),
-      row({ 'Transaction Type': 'SHORT', 'Purchase Price': '120', Quantity: '10', 'Trade Date': '20230610' }),
+      row({
+        'Transaction Type': 'BUY',
+        'Purchase Price': '100',
+        Quantity: '10',
+      }),
+      row({
+        'Transaction Type': 'SHORT',
+        'Purchase Price': '120',
+        Quantity: '10',
+        'Trade Date': '20230610',
+      }),
     ]);
     const netInvested = stock.reduce((s, tx) => s + tx.value, 0);
     const netShares = stock.reduce((s, tx) => s + tx.amount, 0);

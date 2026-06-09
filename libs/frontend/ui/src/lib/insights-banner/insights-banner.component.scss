@@ -5,7 +5,11 @@
   display: flex;
   gap: 14px;
   align-items: flex-start;
-  background: linear-gradient(135deg, rgba($color-gold, 0.07), rgba($color-gold, 0.02));
+  background: linear-gradient(
+    135deg,
+    rgba($color-gold, 0.07),
+    rgba($color-gold, 0.02)
+  );
   border: 1px solid $color-border;
   border-radius: $radius-md;
   padding: 16px 18px;
@@ -57,14 +61,25 @@
   height: 12px;
   width: 100%;
   border-radius: $radius-sm;
-  background: linear-gradient(90deg, rgba($color-muted, 0.1), rgba($color-muted, 0.25), rgba($color-muted, 0.1));
+  background: linear-gradient(
+    90deg,
+    rgba($color-muted, 0.1),
+    rgba($color-muted, 0.25),
+    rgba($color-muted, 0.1)
+  );
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 
-  &.short { width: 60%; }
+  &.short {
+    width: 60%;
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

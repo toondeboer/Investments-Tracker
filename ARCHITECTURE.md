@@ -58,8 +58,8 @@ component ──dispatch(getData)──▶ getData$ effect ──▶ StateServic
 
 ### Prices (the cross-slice bit)
 
-`state` must not depend on `yahoo` (it would be a circular lib dependency), so prices are *pushed
-into* `state` via an action rather than read across slices:
+`state` must not depend on `yahoo` (it would be a circular lib dependency), so prices are _pushed
+into_ `state` via an action rather than read across slices:
 
 ```
 getDataSuccess ──▶ yahoo getTicker$ effect ──▶ YahooService.getTickers() (zod-validated)
@@ -90,7 +90,7 @@ user can only read/write their own data.
 
 ### Authentication + "has the user paid?" flow
 
-The same token proves *who* the user is (`sub`), whether they're an **admin** (`cognito:groups`),
+The same token proves _who_ the user is (`sub`), whether they're an **admin** (`cognito:groups`),
 and — combined with their DynamoDB record — whether they're on a **paid** plan. Identity lives in
 Cognito; entitlement (`plan`) lives in DynamoDB and is written **only** by the Stripe webhook.
 
@@ -135,15 +135,15 @@ Cognito; entitlement (`plan`) lives in DynamoDB and is written **only** by the S
 Identity verification and the entitlement logic are **identical** in both; only the backing
 services differ:
 
-| Concern | Development (`sam local`) | Production (deployed) |
-|---|---|---|
-| Cognito pool | dedicated `sailor-dev` pool (isolates test users + `admin` group) | prod pool |
-| JWKS verification | same (live fetch from Cognito) | same |
-| DynamoDB (`plan`, counters) | DynamoDB Local (Docker) | `sailor` table |
-| Stripe secret/webhook | from `env.json` | from SSM SecureStrings |
-| Stripe mode | **test** | test (until live keys are set) |
-| Webhook delivery | `stripe listen` relay → `localhost:3000` | Stripe Dashboard endpoint → API Gateway |
-| `GLOBAL_MONTHLY_LIMIT` | `0` (disabled) | derived from budget (e.g. 450) |
+| Concern                     | Development (`sam local`)                                         | Production (deployed)                   |
+| --------------------------- | ----------------------------------------------------------------- | --------------------------------------- |
+| Cognito pool                | dedicated `sailor-dev` pool (isolates test users + `admin` group) | prod pool                               |
+| JWKS verification           | same (live fetch from Cognito)                                    | same                                    |
+| DynamoDB (`plan`, counters) | DynamoDB Local (Docker)                                           | `sailor` table                          |
+| Stripe secret/webhook       | from `env.json`                                                   | from SSM SecureStrings                  |
+| Stripe mode                 | **test**                                                          | test (until live keys are set)          |
+| Webhook delivery            | `stripe listen` relay → `localhost:3000`                          | Stripe Dashboard endpoint → API Gateway |
+| `GLOBAL_MONTHLY_LIMIT`      | `0` (disabled)                                                    | derived from budget (e.g. 450)          |
 
 > **Note — isolated dev pool.** Dev uses its own `sailor-dev` Cognito pool, so test users and the
 > `admin` group never touch prod. `environment.ts` (frontend) and the local Lambdas' `env.json`

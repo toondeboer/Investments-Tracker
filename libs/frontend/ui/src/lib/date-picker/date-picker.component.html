@@ -5,9 +5,9 @@
   [class.disabled]="disabled"
   [disabled]="disabled"
   (click)="open()"
-  >
+>
   <span class="trigger-text" [class.placeholder]="!valueDate">
-    {{ valueDate ? (valueDate | date:'d MMM y':'UTC') : placeholder }}
+    {{ valueDate ? (valueDate | date: 'd MMM y' : 'UTC') : placeholder }}
   </span>
   <lucide-icon name="Calendar" [size]="16"></lucide-icon>
 </button>
@@ -15,11 +15,21 @@
 <ng-template #calendar>
   <div class="calendar-panel">
     <div class="calendar-header">
-      <button type="button" class="nav-btn" (click)="prevMonth()" title="Previous month">
+      <button
+        type="button"
+        class="nav-btn"
+        (click)="prevMonth()"
+        title="Previous month"
+      >
         <lucide-icon name="ChevronLeft" [size]="18"></lucide-icon>
       </button>
       <span class="month-label">{{ monthLabel }}</span>
-      <button type="button" class="nav-btn" (click)="nextMonth()" title="Next month">
+      <button
+        type="button"
+        class="nav-btn"
+        (click)="nextMonth()"
+        title="Next month"
+      >
         <lucide-icon name="ChevronRight" [size]="18"></lucide-icon>
       </button>
     </div>
@@ -40,8 +50,8 @@
             [class.selected]="isSelected(cell)"
             [class.today]="isToday(cell)"
             (click)="selectDay(cell)"
-            >
-            {{ cell.date | date:'d':'UTC' }}
+          >
+            {{ cell.date | date: 'd' : 'UTC' }}
           </button>
         }
       }

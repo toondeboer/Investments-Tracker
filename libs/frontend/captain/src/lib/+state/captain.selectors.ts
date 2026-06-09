@@ -5,51 +5,51 @@ export const selectFeature = createFeatureSelector<FeatureState>(featureKey);
 
 export const selectMessages = createSelector(
   selectFeature,
-  (state) => state.messages
+  (state) => state.messages,
 );
 
 export const selectChatLoading = createSelector(
   selectFeature,
-  (state) => state.chatLoading
+  (state) => state.chatLoading,
 );
 
 export const selectChatError = createSelector(
   selectFeature,
-  (state) => state.chatError
+  (state) => state.chatError,
 );
 
 export const selectChatQuotaExceeded = createSelector(
   selectFeature,
-  (state) => state.chatQuotaExceeded
+  (state) => state.chatQuotaExceeded,
 );
 
 export const selectInsight = createSelector(
   selectFeature,
-  (state) => state.insight
+  (state) => state.insight,
 );
 
 export const selectInsightLoading = createSelector(
   selectFeature,
-  (state) => state.insightLoading
+  (state) => state.insightLoading,
 );
 
 export const selectInsightError = createSelector(
   selectFeature,
-  (state) => state.insightError
+  (state) => state.insightError,
 );
 
 export const selectStatus = createSelector(
   selectFeature,
-  (state) => state.status
+  (state) => state.status,
 );
 
 export const selectPlan = createSelector(
   selectStatus,
-  (status) => status?.plan ?? null
+  (status) => status?.plan ?? null,
 );
 
 /** Paid members and admins both have an elevated/unlimited plan. */
 export const selectIsPaidMember = createSelector(
   selectPlan,
-  (plan) => plan === 'paid' || plan === 'admin'
+  (plan) => plan === 'paid' || plan === 'admin',
 );

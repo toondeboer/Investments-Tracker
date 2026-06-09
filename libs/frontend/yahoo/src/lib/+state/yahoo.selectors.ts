@@ -5,5 +5,5 @@ export const selectFeature = createFeatureSelector<FeatureState>(featureKey);
 
 export const selectYahoo = createSelector(
   selectFeature,
-  (state: FeatureState) => state
+  (state: FeatureState) => state,
 );

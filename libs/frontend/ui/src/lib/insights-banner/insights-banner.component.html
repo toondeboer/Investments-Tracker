@@ -1,12 +1,16 @@
-@if ((insight$ | async); as insight) {
+@if (insight$ | async; as insight) {
   <div class="insight">
     <div class="insight-icon">
       <lucide-icon name="Compass" [size]="20"></lucide-icon>
     </div>
     <div class="insight-body">
-      <span class="insight-label">The capt<span class="ai">ai</span>n's read</span>
+      <span class="insight-label"
+        >The capt<span class="ai">ai</span>n's read</span
+      >
       <p class="insight-text">{{ insight.narrative }}</p>
-      <span class="insight-note">Facts about your portfolio, not financial advice.</span>
+      <span class="insight-note"
+        >Facts about your portfolio, not financial advice.</span
+      >
     </div>
   </div>
 } @else if (loading$ | async) {
@@ -15,7 +19,9 @@
       <lucide-icon name="Compass" [size]="20"></lucide-icon>
     </div>
     <div class="insight-body">
-      <span class="insight-label">The capt<span class="ai">ai</span>n's read</span>
+      <span class="insight-label"
+        >The capt<span class="ai">ai</span>n's read</span
+      >
       <div class="shimmer"></div>
       <div class="shimmer short"></div>
     </div>

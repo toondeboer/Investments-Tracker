@@ -106,7 +106,9 @@ export function buildDemoSeries(): DemoSeries {
 }
 
 /** Headline metrics derived from the generated series, for the hero stat cards. */
-export function buildDemoSummary(series: DemoSeries = buildDemoSeries()): Summary {
+export function buildDemoSummary(
+  series: DemoSeries = buildDemoSeries(),
+): Summary {
   const last = series.portfolioValues.length - 1;
   const portfolioValue = series.portfolioValues[last];
   const totalInvested = series.invested[last];
@@ -118,7 +120,10 @@ export function buildDemoSummary(series: DemoSeries = buildDemoSeries()): Summar
   const ret = (days: number) => {
     const prev = series.portfolioValues[Math.max(0, last - days)];
     const abs = portfolioValue - prev;
-    return { absolute: round2(abs), percentage: round2(prev ? (abs / prev) * 100 : 0) };
+    return {
+      absolute: round2(abs),
+      percentage: round2(prev ? (abs / prev) * 100 : 0),
+    };
   };
 
   return {
@@ -155,7 +160,10 @@ export function buildDemoAnnualReturns(): {
 }
 
 /** Hand-tuned quarterly dividends for the last two years. */
-export function buildDemoQuarterlyDividends(): { year: string; data: number[] }[] {
+export function buildDemoQuarterlyDividends(): {
+  year: string;
+  data: number[];
+}[] {
   const [, , prev, curr] = recentYears(4);
   return [
     { year: prev, data: [48, 55, 61, 67] },

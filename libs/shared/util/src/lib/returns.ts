@@ -32,7 +32,7 @@ export function getYieldPerYear(
   dates: Date[],
   portfolioValues: number[],
   netInvested: number[],
-  dividends: number[]
+  dividends: number[],
 ): { years: string[]; yields: number[]; profit: number[] } {
   const years: string[] = [];
   const yields: number[] = [];
@@ -90,7 +90,7 @@ export function getYieldPerYear(
 export function getPortfolioValues(
   dates: Date[],
   aggregatedAmounts: number[],
-  ticker: Ticker
+  ticker: Ticker,
 ): number[] {
   const values: number[] = [];
   let index = 0;
@@ -98,7 +98,10 @@ export function getPortfolioValues(
 
   for (let i = 0; i < dates.length; i++) {
     // Advance past all ticker dates strictly before dates[i], tracking last known price.
-    while (index < ticker.dates.length && isBeforeDay(ticker.dates[index], dates[i])) {
+    while (
+      index < ticker.dates.length &&
+      isBeforeDay(ticker.dates[index], dates[i])
+    ) {
       if (ticker.values[index] > 0) lastKnownPrice = ticker.values[index];
       index++;
     }
@@ -107,10 +110,16 @@ export function getPortfolioValues(
     // price is available — e.g. after a position is fully sold. (Without this a
     // missing price would make 0-share days NaN and corrupt profit.)
     if (aggregatedAmounts[i] === 0) {
-      if (index < ticker.dates.length && isSameDay(ticker.dates[index], dates[i])) {
+      if (
+        index < ticker.dates.length &&
+        isSameDay(ticker.dates[index], dates[i])
+      ) {
         const price = ticker.values[index];
         index++;
-        while (index < ticker.dates.length && isSameDay(ticker.dates[index], dates[i])) {
+        while (
+          index < ticker.dates.length &&
+          isSameDay(ticker.dates[index], dates[i])
+        ) {
           index++;
         }
         if (price > 0) lastKnownPrice = price;
@@ -119,12 +128,18 @@ export function getPortfolioValues(
       continue;
     }
 
-    if (index < ticker.dates.length && isSameDay(ticker.dates[index], dates[i])) {
+    if (
+      index < ticker.dates.length &&
+      isSameDay(ticker.dates[index], dates[i])
+    ) {
       // Exact date match — use this price.
       let price = ticker.values[index];
       index++;
       // Consume any duplicate entries for the same date (edge case).
-      while (index < ticker.dates.length && isSameDay(ticker.dates[index], dates[i])) {
+      while (
+        index < ticker.dates.length &&
+        isSameDay(ticker.dates[index], dates[i])
+      ) {
         price = ticker.values[index];
         index++;
       }
@@ -147,7 +162,7 @@ export function getPortfolioValues(
 export function getPortfolioValuesByPeriod(
   periodDates: Date[],
   aggregatedAmounts: number[],
-  ticker: Ticker
+  ticker: Ticker,
 ): number[] {
   const values: number[] = [];
   let tickerIdx = 0;
@@ -155,8 +170,12 @@ export function getPortfolioValuesByPeriod(
 
   for (let i = 0; i < periodDates.length; i++) {
     const periodDate = periodDates[i];
-    while (tickerIdx < ticker.dates.length && isOnOrBeforeDay(ticker.dates[tickerIdx], periodDate)) {
-      if (ticker.values[tickerIdx] > 0) lastKnownPrice = ticker.values[tickerIdx];
+    while (
+      tickerIdx < ticker.dates.length &&
+      isOnOrBeforeDay(ticker.dates[tickerIdx], periodDate)
+    ) {
+      if (ticker.values[tickerIdx] > 0)
+        lastKnownPrice = ticker.values[tickerIdx];
       tickerIdx++;
     }
     values.push(lastKnownPrice * aggregatedAmounts[i]);
@@ -175,7 +194,7 @@ export function getPortfolioValuesByPeriod(
 export function getReturn(
   profit: number[],
   grossInvested: number,
-  days: number
+  days: number,
 ): Return {
   const mostRecentProfit = getMostRecentValueFromList(profit);
   const startIndex =

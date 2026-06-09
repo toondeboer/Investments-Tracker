@@ -63,7 +63,9 @@
   padding: 10px 12px 10px 16px;
   cursor: pointer;
   border-left: 3px solid transparent;
-  transition: background 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
   gap: 4px;
 
   &:hover {

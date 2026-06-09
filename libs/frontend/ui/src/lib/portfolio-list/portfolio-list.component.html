@@ -1,7 +1,11 @@
 <div class="portfolio-list">
   <div class="list-header">
     <span class="list-title">Portfolios</span>
-    <button class="add-btn" (click)="createPortfolio.emit()" title="New portfolio">
+    <button
+      class="add-btn"
+      (click)="createPortfolio.emit()"
+      title="New portfolio"
+    >
       <lucide-icon name="Plus" [size]="18"></lucide-icon>
     </button>
   </div>
@@ -12,13 +16,18 @@
         class="portfolio-item"
         [class.selected]="portfolio.id === selectedPortfolioId"
         (click)="selectPortfolio.emit(portfolio.id)"
-        >
+      >
         <div class="portfolio-info">
           <div class="portfolio-name">{{ portfolio.name }}</div>
-          <div class="portfolio-count">{{ transactionCount(portfolio) }} transactions</div>
+          <div class="portfolio-count">
+            {{ transactionCount(portfolio) }} transactions
+          </div>
           @if (portfolioStates?.[portfolio.id]?.summary?.portfolioValue) {
             <div class="portfolio-value">
-              {{ portfolioStates![portfolio.id].summary.portfolioValue | currency:baseCurrency:'symbol':'1.0-0' }}
+              {{
+                portfolioStates![portfolio.id].summary.portfolioValue
+                  | currency: baseCurrency : 'symbol' : '1.0-0'
+              }}
             </div>
           }
         </div>
@@ -27,14 +36,14 @@
             class="action-btn"
             title="Rename"
             (click)="renamePortfolio.emit(portfolio)"
-            >
+          >
             <lucide-icon name="Pencil" [size]="16"></lucide-icon>
           </button>
           <button
             class="action-btn delete-btn"
             title="Delete"
             (click)="deletePortfolio.emit(portfolio)"
-            >
+          >
             <lucide-icon name="Trash2" [size]="16"></lucide-icon>
           </button>
         </div>

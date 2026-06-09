@@ -25,6 +25,8 @@ export class SettingsComponent implements OnInit {
   }
 
   onCurrencyChange(currency: string) {
-    this.store.dispatch(updateSettings({ settings: { baseCurrency: currency } }));
+    this.store.dispatch(
+      updateSettings({ settings: { baseCurrency: currency } }),
+    );
   }
 }

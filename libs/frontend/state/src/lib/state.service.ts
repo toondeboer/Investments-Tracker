@@ -15,12 +15,11 @@ export class StateService {
   private environment = inject<any>('ENVIRONMENT' as any);
   private http = inject(HttpClient);
 
-
   public getData(): Observable<DatabaseDto> {
     return this.http.get<unknown>(`${this.environment.dynamoDBLambdaUrl}`).pipe(
       timeout(DYNAMODB_TIMEOUT_MS),
       retryWithBackoff(),
-      map((response) => parseDatabaseDto(response))
+      map((response) => parseDatabaseDto(response)),
     );
   }
 
@@ -30,7 +29,7 @@ export class StateService {
       .pipe(
         timeout(DYNAMODB_TIMEOUT_MS),
         retryWithBackoff(),
-        map((response) => parseDatabaseDto(response))
+        map((response) => parseDatabaseDto(response)),
       );
   }
 }

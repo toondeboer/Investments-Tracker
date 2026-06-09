@@ -39,7 +39,7 @@ describe('demoChatReply', () => {
 
   it('answers a known factual prompt about dividends', () => {
     expect(demoChatReply('Explain my dividends').toLowerCase()).toContain(
-      'dividend'
+      'dividend',
     );
   });
 

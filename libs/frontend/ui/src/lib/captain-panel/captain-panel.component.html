@@ -25,7 +25,11 @@
   <div class="captain-messages">
     @if ((messages$ | async)?.length) {
       @for (msg of messages$ | async; track $index) {
-        <div class="bubble" [class.user]="msg.role === 'user'" [class.captain-bubble]="msg.role === 'assistant'">
+        <div
+          class="bubble"
+          [class.user]="msg.role === 'user'"
+          [class.captain-bubble]="msg.role === 'assistant'"
+        >
           {{ msg.content }}
         </div>
       }
@@ -45,7 +49,10 @@
     @if (quotaExceeded$ | async) {
       <div class="captain-quota">
         <lucide-icon name="Anchor" [size]="22"></lucide-icon>
-        <p>You've used all your capt<span class="ai">ai</span>n questions this month.</p>
+        <p>
+          You've used all your capt<span class="ai">ai</span>n questions this
+          month.
+        </p>
         @if (!data?.demo) {
           <button class="upgrade-btn" (click)="upgrade()" type="button">
             Upgrade for more
@@ -53,14 +60,19 @@
         }
       </div>
     } @else if (error$ | async) {
-      <div class="captain-error">The capt<span class="ai">ai</span>n couldn't reply just now. Try again shortly.</div>
+      <div class="captain-error">
+        The capt<span class="ai">ai</span>n couldn't reply just now. Try again
+        shortly.
+      </div>
     }
   </div>
 
   <!-- Ready-to-use prompts -->
   <div class="captain-prompts">
     @for (prompt of prompts; track prompt) {
-      <button class="prompt-chip" (click)="send(prompt)" type="button">{{ prompt }}</button>
+      <button class="prompt-chip" (click)="send(prompt)" type="button">
+        {{ prompt }}
+      </button>
     }
   </div>
 
@@ -73,7 +85,12 @@
       placeholder="Ask about your portfolio…"
       aria-label="Message the captain"
     />
-    <button class="send-btn" (click)="send(draft)" [disabled]="!draft.trim()" aria-label="Send">
+    <button
+      class="send-btn"
+      (click)="send(draft)"
+      [disabled]="!draft.trim()"
+      aria-label="Send"
+    >
       <lucide-icon name="Send" [size]="18"></lucide-icon>
     </button>
   </div>
@@ -91,6 +108,7 @@
 
   <!-- Disclaimer -->
   <p class="captain-disclaimer">
-    The capt<span class="ai">ai</span>n shares facts about your portfolio, not financial advice.
+    The capt<span class="ai">ai</span>n shares facts about your portfolio, not
+    financial advice.
   </p>
 </div>

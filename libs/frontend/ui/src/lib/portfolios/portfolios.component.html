@@ -1,4 +1,11 @@
-@if ({ portfolios: portfolios$ | async, allStates: allPortfolioStates$ | async, baseCurrency: baseCurrency$ | async }; as vm) {
+@if (
+  {
+    portfolios: portfolios$ | async,
+    allStates: allPortfolioStates$ | async,
+    baseCurrency: baseCurrency$ | async,
+  };
+  as vm
+) {
   <div class="portfolios-layout">
     @if (!mobileQuery.matches || !showDetail) {
       <aside class="portfolios-sidebar">

@@ -12,7 +12,10 @@ import { AuthService } from '../auth.service';
 export class JwtInterceptor implements HttpInterceptor {
   private readonly auth = inject(AuthService);
 
-  intercept(req: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
+  intercept(
+    req: HttpRequest<unknown>,
+    next: HttpHandler,
+  ): Observable<HttpEvent<unknown>> {
     const token = this.auth.getIdToken();
     if (token) {
       req = req.clone({ setHeaders: { Authorization: token } });

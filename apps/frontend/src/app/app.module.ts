@@ -32,7 +32,7 @@ import { JwtInterceptor } from '../auth/jwtInterceptor/JwtInterceptor';
     StateModule,
     YahooModule,
     CaptainModule,
-    StoreDevtoolsModule.instrument({connectInZone: true}),
+    StoreDevtoolsModule.instrument({ connectInZone: true }),
     UiModule,
     OverlayModule,
     LucideAngularModule.pick(APP_ICONS),

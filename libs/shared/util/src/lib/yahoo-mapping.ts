@@ -3,10 +3,13 @@ import { Ticker, YahooObject } from './types';
 export function yahooObjectsToTickers(yahooObjects: YahooObject[]): {
   [ticker: string]: Ticker;
 } {
-  return yahooObjects.reduce((acc, yahooObject) => {
-    acc[yahooObject.symbol] = yahooObjectToTicker(yahooObject);
-    return acc;
-  }, {} as { [ticker: string]: Ticker });
+  return yahooObjects.reduce(
+    (acc, yahooObject) => {
+      acc[yahooObject.symbol] = yahooObjectToTicker(yahooObject);
+      return acc;
+    },
+    {} as { [ticker: string]: Ticker },
+  );
 }
 
 export function yahooObjectToTicker(yahooObject: YahooObject): Ticker {

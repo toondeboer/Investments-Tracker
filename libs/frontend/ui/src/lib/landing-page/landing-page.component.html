@@ -7,34 +7,81 @@
         <span class="wordmark">s<span class="ai">ai</span>lor</span>
       </a>
       <ul class="nav-links">
-        <li><a href="#captain" (click)="scrollTo('captain', $event)">Meet the capt<span class="ai">ai</span>n</a></li>
-        <li><a href="#features" (click)="scrollTo('features', $event)">Features</a></li>
-        <li><a href="#how-it-works" (click)="scrollTo('how-it-works', $event)">How It Works</a></li>
+        <li>
+          <a href="#captain" (click)="scrollTo('captain', $event)"
+            >Meet the capt<span class="ai">ai</span>n</a
+          >
+        </li>
+        <li>
+          <a href="#features" (click)="scrollTo('features', $event)"
+            >Features</a
+          >
+        </li>
+        <li>
+          <a href="#how-it-works" (click)="scrollTo('how-it-works', $event)"
+            >How It Works</a
+          >
+        </li>
         <li><a routerLink="/demo" class="nav-demo-link">Live demo</a></li>
       </ul>
       <div class="cta-buttons">
-        <button class="nav-btn nav-btn-ghost" (click)="onClick()">Sign In</button>
+        <button class="nav-btn nav-btn-ghost" (click)="onClick()">
+          Sign In
+        </button>
         <button class="nav-btn nav-btn-primary" (click)="onClick()">
           Get Started
           <lucide-icon name="Navigation" [size]="16"></lucide-icon>
         </button>
       </div>
-      <button class="mobile-menu" [class.active]="mobileMenuOpen" (click)="toggleMobileMenu()">
-        <lucide-icon [name]="mobileMenuOpen ? 'ChevronLeft' : 'Menu'" [size]="20"></lucide-icon>
+      <button
+        class="mobile-menu"
+        [class.active]="mobileMenuOpen"
+        (click)="toggleMobileMenu()"
+      >
+        <lucide-icon
+          [name]="mobileMenuOpen ? 'ChevronLeft' : 'Menu'"
+          [size]="20"
+        ></lucide-icon>
       </button>
     </nav>
 
     <!-- Mobile Navigation -->
     <div class="mobile-nav" [class.active]="mobileMenuOpen">
       <ul class="mobile-nav-links">
-        <li><a href="#captain" (click)="scrollTo('captain', $event); closeMobileMenu()">Meet the capt<span class="ai">ai</span>n</a></li>
-        <li><a href="#features" (click)="scrollTo('features', $event); closeMobileMenu()">Features</a></li>
-        <li><a href="#how-it-works" (click)="scrollTo('how-it-works', $event); closeMobileMenu()">How It Works</a></li>
+        <li>
+          <a
+            href="#captain"
+            (click)="scrollTo('captain', $event); closeMobileMenu()"
+            >Meet the capt<span class="ai">ai</span>n</a
+          >
+        </li>
+        <li>
+          <a
+            href="#features"
+            (click)="scrollTo('features', $event); closeMobileMenu()"
+            >Features</a
+          >
+        </li>
+        <li>
+          <a
+            href="#how-it-works"
+            (click)="scrollTo('how-it-works', $event); closeMobileMenu()"
+            >How It Works</a
+          >
+        </li>
         <li><a routerLink="/demo" (click)="closeMobileMenu()">Live demo</a></li>
       </ul>
       <div class="mobile-cta-buttons">
-        <button class="nav-btn nav-btn-ghost" (click)="onClick(); closeMobileMenu()">Sign In</button>
-        <button class="nav-btn nav-btn-primary" (click)="onClick(); closeMobileMenu()">
+        <button
+          class="nav-btn nav-btn-ghost"
+          (click)="onClick(); closeMobileMenu()"
+        >
+          Sign In
+        </button>
+        <button
+          class="nav-btn nav-btn-primary"
+          (click)="onClick(); closeMobileMenu()"
+        >
           Get Started
           <lucide-icon name="Navigation" [size]="16"></lucide-icon>
         </button>
@@ -57,11 +104,14 @@
         Your Investments<br />with <em>AI</em>-Powered Precision
       </h1>
       <p class="hero-subtitle">
-        Chart your course to financial clarity — real-time analytics, seamless DeGiro integration,
-        and intelligent insights to help you sail toward your goals.
+        Chart your course to financial clarity — real-time analytics, seamless
+        DeGiro integration, and intelligent insights to help you sail toward
+        your goals.
       </p>
       <div class="hero-cta">
-        <button class="btn btn-primary btn-large" (click)="onClick()">Start Your Voyage</button>
+        <button class="btn btn-primary btn-large" (click)="onClick()">
+          Start Your Voyage
+        </button>
         <a routerLink="/demo" class="btn btn-secondary btn-large hero-demo-btn">
           <lucide-icon name="LineChart" [size]="18"></lucide-icon>
           See a Live Demo
@@ -84,7 +134,9 @@
             <div class="stat-label">Total Return</div>
           </div>
           <div class="stat-card">
-            <div class="stat-value">€{{ portfolioValue | number:'1.0-0' }}</div>
+            <div class="stat-value">
+              €{{ portfolioValue | number: '1.0-0' }}
+            </div>
             <div class="stat-label">Portfolio Value</div>
           </div>
         </div>
@@ -94,8 +146,14 @@
     <!-- wave divider into the captain spotlight -->
     <div class="wave-divider wave-into-navy">
       <svg viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
-        <path class="wave-back" d="M0,64 C240,112 480,16 720,56 C960,96 1200,24 1440,72 L1440,120 L0,120 Z" />
-        <path class="wave-front" d="M0,80 C240,40 480,120 720,80 C960,40 1200,112 1440,72 L1440,120 L0,120 Z" />
+        <path
+          class="wave-back"
+          d="M0,64 C240,112 480,16 720,56 C960,96 1200,24 1440,72 L1440,120 L0,120 Z"
+        />
+        <path
+          class="wave-front"
+          d="M0,80 C240,40 480,120 720,80 C960,40 1200,112 1440,72 L1440,120 L0,120 Z"
+        />
       </svg>
     </div>
   </section>
@@ -111,10 +169,13 @@
         <h2>Meet the capt<span class="ai">ai</span>n</h2>
         <p>
           Your personal AI first mate reads your charts and explains what's
-          happening in plain language — daily insights and on-demand answers,
-          no jargon required. It's the one thing no spreadsheet can do for you.
+          happening in plain language — daily insights and on-demand answers, no
+          jargon required. It's the one thing no spreadsheet can do for you.
         </p>
-        <a routerLink="/demo" class="btn btn-primary btn-large captain-spotlight-cta">
+        <a
+          routerLink="/demo"
+          class="btn btn-primary btn-large captain-spotlight-cta"
+        >
           <span>Ask the capt<span class="ai">ai</span>n</span>
           <lucide-icon name="ArrowRight" [size]="18"></lucide-icon>
         </a>
@@ -125,7 +186,9 @@
             <lucide-icon name="Ship" [size]="18"></lucide-icon>
             <span>Ask the capt<span class="ai">ai</span>n</span>
           </div>
-          <div class="captain-preview-bubble user">How's my portfolio doing this month?</div>
+          <div class="captain-preview-bubble user">
+            How's my portfolio doing this month?
+          </div>
           <div class="captain-preview-bubble reply">
             You're up 4.2% this month, mostly driven by your tech holdings.
             Dividends from three positions also landed — nice timing just before
@@ -138,8 +201,14 @@
     <!-- wave divider into features -->
     <div class="wave-divider wave-into-alt">
       <svg viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
-        <path class="wave-back" d="M0,64 C240,112 480,16 720,56 C960,96 1200,24 1440,72 L1440,120 L0,120 Z" />
-        <path class="wave-front" d="M0,80 C240,40 480,120 720,80 C960,40 1200,112 1440,72 L1440,120 L0,120 Z" />
+        <path
+          class="wave-back"
+          d="M0,64 C240,112 480,16 720,56 C960,96 1200,24 1440,72 L1440,120 L0,120 Z"
+        />
+        <path
+          class="wave-front"
+          d="M0,80 C240,40 480,120 720,80 C960,40 1200,112 1440,72 L1440,120 L0,120 Z"
+        />
       </svg>
     </div>
   </section>
@@ -147,9 +216,15 @@
   <!-- Features Section -->
   <section id="features" class="features">
     <div class="container">
-      <h2 class="section-title" awsRevealOnScroll>Everything You Need to Chart Your Course</h2>
+      <h2 class="section-title" awsRevealOnScroll>
+        Everything You Need to Chart Your Course
+      </h2>
       <div class="features-grid">
-        @for (feature of features; track trackByFeature($index, feature); let i = $index) {
+        @for (
+          feature of features;
+          track trackByFeature($index, feature);
+          let i = $index
+        ) {
           <div class="feature-card" [awsRevealOnScroll]="i * 120">
             <div class="feature-icon">
               <lucide-icon [name]="feature.icon" [size]="34"></lucide-icon>
@@ -164,8 +239,14 @@
     <!-- wave divider into how-it-works -->
     <div class="wave-divider wave-into-base">
       <svg viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
-        <path class="wave-back" d="M0,64 C240,112 480,16 720,56 C960,96 1200,24 1440,72 L1440,120 L0,120 Z" />
-        <path class="wave-front" d="M0,80 C240,40 480,120 720,80 C960,40 1200,112 1440,72 L1440,120 L0,120 Z" />
+        <path
+          class="wave-back"
+          d="M0,64 C240,112 480,16 720,56 C960,96 1200,24 1440,72 L1440,120 L0,120 Z"
+        />
+        <path
+          class="wave-front"
+          d="M0,80 C240,40 480,120 720,80 C960,40 1200,112 1440,72 L1440,120 L0,120 Z"
+        />
       </svg>
     </div>
   </section>
@@ -189,8 +270,14 @@
     <!-- wave divider into CTA -->
     <div class="wave-divider wave-into-navy">
       <svg viewBox="0 0 1440 120" preserveAspectRatio="none" aria-hidden="true">
-        <path class="wave-back" d="M0,64 C240,112 480,16 720,56 C960,96 1200,24 1440,72 L1440,120 L0,120 Z" />
-        <path class="wave-front" d="M0,80 C240,40 480,120 720,80 C960,40 1200,112 1440,72 L1440,120 L0,120 Z" />
+        <path
+          class="wave-back"
+          d="M0,64 C240,112 480,16 720,56 C960,96 1200,24 1440,72 L1440,120 L0,120 Z"
+        />
+        <path
+          class="wave-front"
+          d="M0,80 C240,40 480,120 720,80 C960,40 1200,112 1440,72 L1440,120 L0,120 Z"
+        />
       </svg>
     </div>
   </section>
@@ -199,7 +286,10 @@
   <section class="cta-section">
     <div class="container" awsRevealOnScroll>
       <h2>Ready to Navigate Smarter?</h2>
-      <p>Join investors who trust sailor to chart their financial journey with AI-powered clarity.</p>
+      <p>
+        Join investors who trust sailor to chart their financial journey with
+        AI-powered clarity.
+      </p>
       <button class="btn btn-primary btn-large cta-button" (click)="onClick()">
         Start Your Voyage
         <lucide-icon name="ArrowRight" [size]="20"></lucide-icon>
@@ -214,7 +304,10 @@
         <lucide-icon name="Anchor" [size]="18"></lucide-icon>
         <span class="wordmark">s<span class="ai">ai</span>lor</span>
       </div>
-      <p>&copy; {{ currentYear }} sailor. All rights reserved. | Privacy Policy | Terms of Service</p>
+      <p>
+        &copy; {{ currentYear }} sailor. All rights reserved. | Privacy Policy |
+        Terms of Service
+      </p>
     </div>
   </footer>
 </div>

@@ -1,4 +1,14 @@
-import { Component, ElementRef, forwardRef, Input, ViewChild, ViewContainerRef, TemplateRef, OnDestroy, inject } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  forwardRef,
+  Input,
+  ViewChild,
+  ViewContainerRef,
+  TemplateRef,
+  OnDestroy,
+  inject,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { Overlay, OverlayRef } from '@angular/cdk/overlay';
@@ -35,7 +45,8 @@ export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
   @Input() placeholder = 'Select a date';
 
   @ViewChild('trigger', { static: true }) trigger!: ElementRef<HTMLElement>;
-  @ViewChild('calendar', { static: true }) calendarTemplate!: TemplateRef<unknown>;
+  @ViewChild('calendar', { static: true })
+  calendarTemplate!: TemplateRef<unknown>;
 
   readonly weekdays = WEEKDAYS;
 
@@ -93,8 +104,20 @@ export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
         .position()
         .flexibleConnectedTo(this.trigger)
         .withPositions([
-          { originX: 'start', originY: 'bottom', overlayX: 'start', overlayY: 'top', offsetY: 6 },
-          { originX: 'start', originY: 'top', overlayX: 'start', overlayY: 'bottom', offsetY: -6 },
+          {
+            originX: 'start',
+            originY: 'bottom',
+            overlayX: 'start',
+            overlayY: 'top',
+            offsetY: 6,
+          },
+          {
+            originX: 'start',
+            originY: 'top',
+            overlayX: 'start',
+            overlayY: 'bottom',
+            offsetY: -6,
+          },
         ]),
     });
 
@@ -102,7 +125,9 @@ export class DatePickerComponent implements ControlValueAccessor, OnDestroy {
     this.overlayRef.keydownEvents().subscribe((e) => {
       if (e.key === 'Escape') this.close();
     });
-    this.overlayRef.attach(new TemplatePortal(this.calendarTemplate, this.viewContainerRef));
+    this.overlayRef.attach(
+      new TemplatePortal(this.calendarTemplate, this.viewContainerRef),
+    );
   }
 
   close(): void {

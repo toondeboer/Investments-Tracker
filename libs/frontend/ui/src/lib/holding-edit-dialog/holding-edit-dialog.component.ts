@@ -20,7 +20,10 @@ export type HoldingEditResult = {
   imports: [FormsModule],
 })
 export class HoldingEditDialogComponent {
-  dialogRef = inject<DialogRef<HoldingEditDialogComponent, HoldingEditResult | undefined>>(DIALOG_REF);
+  dialogRef =
+    inject<
+      DialogRef<HoldingEditDialogComponent, HoldingEditResult | undefined>
+    >(DIALOG_REF);
   data = inject<HoldingEditDialogData>(DIALOG_DATA);
 
   ticker: string;
@@ -39,7 +42,10 @@ export class HoldingEditDialogComponent {
 
   confirm() {
     if (!this.canConfirm) return;
-    this.dialogRef.close({ newTicker: this.ticker.trim(), currency: this.currency });
+    this.dialogRef.close({
+      newTicker: this.ticker.trim(),
+      currency: this.currency,
+    });
   }
 
   cancel() {

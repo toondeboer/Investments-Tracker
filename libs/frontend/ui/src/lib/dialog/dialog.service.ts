@@ -16,10 +16,9 @@ export class DialogService {
   private injector = inject(Injector);
   private focusTrapFactory = inject(FocusTrapFactory);
 
-
   open<T, D = unknown, R = unknown>(
     component: Type<T>,
-    config: DialogConfig<D> = {}
+    config: DialogConfig<D> = {},
   ): DialogRef<T, R> {
     const dialogRef = new DialogRef<T, R>();
 
@@ -34,7 +33,7 @@ export class DialogService {
           .centerHorizontally()
           .centerVertically(),
         width: config.width,
-      })
+      }),
     );
 
     const contentInjector = Injector.create({
@@ -51,7 +50,9 @@ export class DialogService {
     focusTrap.focusInitialElementWhenReady();
 
     const keydownSub = fromEvent<KeyboardEvent>(document, 'keydown').subscribe(
-      (e) => { if (e.key === 'Escape') dialogRef.close(); }
+      (e) => {
+        if (e.key === 'Escape') dialogRef.close();
+      },
     );
 
     overlayRef.backdropClick().subscribe(() => dialogRef.close());

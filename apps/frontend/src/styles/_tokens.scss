@@ -3,42 +3,42 @@
 // Canonical source of truth for the design system is apps/frontend/tailwind.config.js.
 
 // ─── Backgrounds (dark navy dominant) ────────────────────────────────────────
-$color-bg-base:     #0A1628; // deep ocean — main page background
-$color-bg-surface:  #0F2035; // card surfaces
+$color-bg-base: #0a1628; // deep ocean — main page background
+$color-bg-surface: #0f2035; // card surfaces
 $color-bg-elevated: #162840; // modals, dropdowns
-$color-bg-alt:      #0D1F38; // alternate sections (features, footer)
+$color-bg-alt: #0d1f38; // alternate sections (features, footer)
 
 // ─── Navy blues ──────────────────────────────────────────────────────────────
-$color-navy:        #1B3A5C;
-$color-navy-light:  #2E5F8A; // hover, links
-$color-ocean:       #1E6091; // interactive elements
+$color-navy: #1b3a5c;
+$color-navy-light: #2e5f8a; // hover, links
+$color-ocean: #1e6091; // interactive elements
 
 // ─── Gold & sand accent ──────────────────────────────────────────────────────
-$color-gold:        #C9A84C; // antique gold — primary accent
-$color-gold-light:  #E8C97A; // hover state
-$color-gold-dark:   #A08030; // active state
-$color-sand:        #E8D5B7; // warm sand highlight
-$color-cream:       #F5F0E8; // primary text on dark
+$color-gold: #c9a84c; // antique gold — primary accent
+$color-gold-light: #e8c97a; // hover state
+$color-gold-dark: #a08030; // active state
+$color-sand: #e8d5b7; // warm sand highlight
+$color-cream: #f5f0e8; // primary text on dark
 
 // ─── Semantic ────────────────────────────────────────────────────────────────
-$color-success:     #2ECC71;
-$color-error:       #E74C3C;
-$color-muted:       #8FA8C0; // nautical grey-blue — secondary text
+$color-success: #2ecc71;
+$color-error: #e74c3c;
+$color-muted: #8fa8c0; // nautical grey-blue — secondary text
 
 // ─── Borders ─────────────────────────────────────────────────────────────────
-$color-border:        rgba(201, 168, 76, 0.15); // subtle gold
-$color-border-strong: rgba(201, 168, 76, 0.4);  // clear gold
+$color-border: rgba(201, 168, 76, 0.15); // subtle gold
+$color-border-strong: rgba(201, 168, 76, 0.4); // clear gold
 
 // ─── Gradients ───────────────────────────────────────────────────────────────
-$brand-gradient:    linear-gradient(135deg, #1B3A5C 0%, #0A1628 100%);
-$brand-gradient-45: linear-gradient(45deg,  #1B3A5C, #0A1628);
-$accent-gradient:   linear-gradient(135deg, #C9A84C 0%, #E8C97A 100%);
-$ocean-gradient:    linear-gradient(180deg, #0A1628 0%, #1E6091 100%);
+$brand-gradient: linear-gradient(135deg, #1b3a5c 0%, #0a1628 100%);
+$brand-gradient-45: linear-gradient(45deg, #1b3a5c, #0a1628);
+$accent-gradient: linear-gradient(135deg, #c9a84c 0%, #e8c97a 100%);
+$ocean-gradient: linear-gradient(180deg, #0a1628 0%, #1e6091 100%);
 
 // ─── Glass / translucent surfaces ────────────────────────────────────────────
-$glass-bg:        rgba(10, 22, 40, 0.7);
+$glass-bg: rgba(10, 22, 40, 0.7);
 $glass-bg-strong: rgba(10, 22, 40, 0.95);
-$glass-border:    rgba(201, 168, 76, 0.25);
+$glass-border: rgba(201, 168, 76, 0.25);
 
 // ─── Page ────────────────────────────────────────────────────────────────────
 $page-bg: $color-bg-base;
@@ -50,17 +50,23 @@ $radius-lg: 16px;
 $radius-xl: 20px;
 
 // ─── Shadows ─────────────────────────────────────────────────────────────────
-$shadow-card:       0 10px 40px rgba(0, 0, 0, 0.4);
+$shadow-card: 0 10px 40px rgba(0, 0, 0, 0.4);
 $shadow-card-hover: 0 20px 60px rgba(0, 0, 0, 0.5);
-$shadow-soft:       0 8px 32px  rgba(0, 0, 0, 0.3);
-$shadow-gold:       0 0  20px   rgba(201, 168, 76, 0.2);
-$shadow-focus-gold: 0 0  0 2px  rgba(201, 168, 76, 0.15); // keyboard focus ring
+$shadow-soft: 0 8px 32px rgba(0, 0, 0, 0.3);
+$shadow-gold: 0 0 20px rgba(201, 168, 76, 0.2);
+$shadow-focus-gold: 0 0 0 2px rgba(201, 168, 76, 0.15); // keyboard focus ring
 
 // ─── Motion ──────────────────────────────────────────────────────────────────
 $transition-base: all 0.3s ease;
 
 // ─── Typography (two-font system) ────────────────────────────────────────────
-$font-sans:  'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$font-sans:
+  'Inter',
+  -apple-system,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  Roboto,
+  sans-serif;
 $font-serif: 'Playfair Display', Georgia, 'Times New Roman', serif;
 
 // ─── Breakpoints ─────────────────────────────────────────────────────────────

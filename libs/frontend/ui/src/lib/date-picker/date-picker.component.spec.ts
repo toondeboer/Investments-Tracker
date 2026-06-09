@@ -34,7 +34,11 @@ describe('DatePickerComponent', () => {
     const c = create();
     let changed: string | null = null;
     c.registerOnChange((v) => (changed = v));
-    c.selectDay({ date: new Date('2023-06-20'), iso: '2023-06-20', inMonth: true });
+    c.selectDay({
+      date: new Date('2023-06-20'),
+      iso: '2023-06-20',
+      inMonth: true,
+    });
     expect(c.value).toBe('2023-06-20');
     expect(changed).toBe('2023-06-20');
   });
@@ -42,7 +46,19 @@ describe('DatePickerComponent', () => {
   it('isSelected marks the active day', () => {
     const c = create();
     c.writeValue('2023-06-15');
-    expect(c.isSelected({ date: new Date('2023-06-15'), iso: '2023-06-15', inMonth: true })).toBe(true);
-    expect(c.isSelected({ date: new Date('2023-06-16'), iso: '2023-06-16', inMonth: true })).toBe(false);
+    expect(
+      c.isSelected({
+        date: new Date('2023-06-15'),
+        iso: '2023-06-15',
+        inMonth: true,
+      }),
+    ).toBe(true);
+    expect(
+      c.isSelected({
+        date: new Date('2023-06-16'),
+        iso: '2023-06-16',
+        inMonth: true,
+      }),
+    ).toBe(false);
   });
 });

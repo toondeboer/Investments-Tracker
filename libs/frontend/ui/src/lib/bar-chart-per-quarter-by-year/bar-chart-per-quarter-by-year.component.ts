@@ -18,9 +18,7 @@ import {
   selector: 'aws-bar-chart-per-quarter-by-year',
   templateUrl: './bar-chart-per-quarter-by-year.component.html',
   styleUrls: ['./bar-chart-per-quarter-by-year.component.scss'],
-  imports: [
-    NgxEchartsDirective
-]
+  imports: [NgxEchartsDirective],
 })
 export class BarChartPerQuarterByYearComponent implements OnChanges {
   @Input() series: { year: string; data: number[] }[] = [];
@@ -39,9 +37,13 @@ export class BarChartPerQuarterByYearComponent implements OnChanges {
       title: baseTitle('Dividend'),
       grid: baseGrid(72),
       tooltip: baseTooltip('axis', {
-        valueFormatter: (value) => formatMoney(value as number, this.currencySymbol),
+        valueFormatter: (value) =>
+          formatMoney(value as number, this.currencySymbol),
       }),
-      legend: scrollLegend(40, this.series.map((serie) => serie.year)),
+      legend: scrollLegend(
+        40,
+        this.series.map((serie) => serie.year),
+      ),
       xAxis: {
         type: 'category',
         data: ['Q1', 'Q2', 'Q3', 'Q4'],
@@ -51,7 +53,10 @@ export class BarChartPerQuarterByYearComponent implements OnChanges {
       },
       yAxis: {
         type: 'value',
-        axisLabel: { formatter: `{value} ${this.currencySymbol}`, color: NAUTICAL_MUTED },
+        axisLabel: {
+          formatter: `{value} ${this.currencySymbol}`,
+          color: NAUTICAL_MUTED,
+        },
         axisLine: axisStyle.axisLine,
         splitLine: axisStyle.splitLine,
       },
