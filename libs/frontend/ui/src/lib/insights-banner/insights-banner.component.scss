@@ -52,6 +52,20 @@
   line-height: 1.5;
 }
 
+// Emphasised figures from the narrative's `**…**` runs.
+.insight-strong {
+  font-weight: 600;
+}
+
+// Tint signed figures so gains and losses read at a glance.
+.insight-positive {
+  color: $color-success;
+}
+
+.insight-negative {
+  color: $color-error;
+}
+
 .insight-note {
   font-size: 0.7rem;
   color: $color-muted;

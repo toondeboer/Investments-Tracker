@@ -1,7 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { provideMockStore, MockStore } from '@ngrx/store/testing';
 import { selectState } from '@aws/state';
-import { loadInsights } from '@aws/captain';
+import {
+  loadInsights,
+  selectInsight,
+  selectInsightLoading,
+} from '@aws/captain';
+import { LucideAngularModule } from 'lucide-angular';
+import { APP_ICONS } from '../icons';
 import { InsightsBannerComponent } from './insights-banner.component';
 
 describe('InsightsBannerComponent', () => {
@@ -11,7 +17,7 @@ describe('InsightsBannerComponent', () => {
 
   function setup(portfolioValue: number) {
     TestBed.configureTestingModule({
-      imports: [InsightsBannerComponent],
+      imports: [InsightsBannerComponent, LucideAngularModule.pick(APP_ICONS)],
       providers: [
         provideMockStore({
           selectors: [
@@ -43,5 +49,25 @@ describe('InsightsBannerComponent', () => {
     setup(1234);
     component.ngOnInit();
     expect(dispatch).toHaveBeenCalledWith(loadInsights({}));
+  });
+
+  it('renders bold figures without asterisks and tints signed ones', () => {
+    setup(1234);
+    store.overrideSelector(selectInsightLoading, false);
+    store.overrideSelector(selectInsight, {
+      narrative:
+        'value is **€42,153.34**; return is **+€5,192.08** but the week was **-€1,430.29**',
+      generatedAt: '',
+      fingerprint: 'test',
+    });
+    const fixture = TestBed.createComponent(InsightsBannerComponent);
+    fixture.detectChanges();
+    const text: string = fixture.nativeElement.textContent;
+    expect(text).not.toContain('*');
+
+    const positive = fixture.nativeElement.querySelector('.insight-positive');
+    const negative = fixture.nativeElement.querySelector('.insight-negative');
+    expect(positive?.textContent).toContain('+€5,192.08');
+    expect(negative?.textContent).toContain('-€1,430.29');
   });
 });

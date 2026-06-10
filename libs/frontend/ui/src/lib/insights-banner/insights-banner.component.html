@@ -7,7 +7,16 @@
       <span class="insight-label"
         >The capt<span class="ai">ai</span>n's read</span
       >
-      <p class="insight-text">{{ insight.narrative }}</p>
+      <p class="insight-text">
+        @for (segment of parseNarrative(insight.narrative); track $index) {
+          <span
+            [class.insight-strong]="segment.bold"
+            [class.insight-positive]="segment.tone === 'positive'"
+            [class.insight-negative]="segment.tone === 'negative'"
+            >{{ segment.text }}</span
+          >
+        }
+      </p>
       <span class="insight-note"
         >Facts about your portfolio, not financial advice.</span
       >

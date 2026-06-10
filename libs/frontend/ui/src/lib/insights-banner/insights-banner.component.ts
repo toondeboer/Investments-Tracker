@@ -10,6 +10,7 @@ import {
   selectInsight,
   selectInsightLoading,
 } from '@aws/captain';
+import { parseInsightNarrative } from './insight-narrative';
 
 /**
  * The dashboard's "Captain's read": a short, auto-generated narrative about the
@@ -33,6 +34,9 @@ export class InsightsBannerComponent implements OnInit {
 
   insight$ = this.store.select(selectInsight);
   loading$ = this.store.select(selectInsightLoading);
+
+  /** Turn the markdown-flavoured narrative into render-ready, tinted segments. */
+  readonly parseNarrative = parseInsightNarrative;
 
   ngOnInit(): void {
     if (this.demo) {
