@@ -12,11 +12,7 @@ import {
   setSelectedPortfolios,
   setTimeRange,
 } from '@aws/state';
-import {
-  loadStatus,
-  selectIsPaidMember,
-  selectPlan,
-} from '@aws/captain';
+import { loadStatus, selectIsPaidMember, selectPlan } from '@aws/captain';
 import { getCurrencySymbol, TIME_RANGE_LABELS, TimeRange } from '@aws/util';
 import { Store } from '@ngrx/store';
 import { LucideAngularModule } from 'lucide-angular';
@@ -29,7 +25,16 @@ import { InsightsBannerComponent } from '../insights-banner/insights-banner.comp
   selector: 'aws-dashboard',
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss'],
-  imports: [SummaryComponent, AsyncPipe, CommonModule, DatePipe, ActiveTickersComponent, InsightsBannerComponent, LucideAngularModule, RouterLink],
+  imports: [
+    SummaryComponent,
+    AsyncPipe,
+    CommonModule,
+    DatePipe,
+    ActiveTickersComponent,
+    InsightsBannerComponent,
+    LucideAngularModule,
+    RouterLink,
+  ],
 })
 export class DashboardComponent implements OnInit {
   private store = inject(Store);
@@ -65,7 +70,10 @@ export class DashboardComponent implements OnInit {
   readonly ranges: TimeRange[] = ['1M', '3M', '6M', 'YTD', '1Y', '5Y', 'ALL'];
   readonly rangeLabels = TIME_RANGE_LABELS;
 
-  isPortfolioActive(portfolioId: string, selectedIds: string[] | 'all'): boolean {
+  isPortfolioActive(
+    portfolioId: string,
+    selectedIds: string[] | 'all',
+  ): boolean {
     return selectedIds === 'all' || selectedIds.includes(portfolioId);
   }
 
@@ -73,7 +81,11 @@ export class DashboardComponent implements OnInit {
     return portfolios.map((p) => p.id);
   }
 
-  togglePortfolio(portfolioId: string, selectedIds: string[] | 'all', allIds: string[]) {
+  togglePortfolio(
+    portfolioId: string,
+    selectedIds: string[] | 'all',
+    allIds: string[],
+  ) {
     let current = selectedIds === 'all' ? [...allIds] : [...selectedIds];
     if (current.includes(portfolioId)) {
       current = current.filter((id) => id !== portfolioId);

@@ -35,16 +35,17 @@ describe('RevealOnScrollDirective', () => {
       removeEventListener: jest.fn(),
     })) as unknown as typeof window.matchMedia;
 
-    (window as unknown as { IntersectionObserver: unknown }).IntersectionObserver =
-      class {
-        constructor(cb: IntersectionObserverCallback) {
-          intersectionCallback = cb;
-        }
-        observe = observeSpy;
-        disconnect = disconnectSpy;
-        unobserve = jest.fn();
-        takeRecords = jest.fn();
-      } as unknown as typeof IntersectionObserver;
+    (
+      window as unknown as { IntersectionObserver: unknown }
+    ).IntersectionObserver = class {
+      constructor(cb: IntersectionObserverCallback) {
+        intersectionCallback = cb;
+      }
+      observe = observeSpy;
+      disconnect = disconnectSpy;
+      unobserve = jest.fn();
+      takeRecords = jest.fn();
+    } as unknown as typeof IntersectionObserver;
 
     TestBed.configureTestingModule({ imports: [HostComponent] });
   });
@@ -60,7 +61,7 @@ describe('RevealOnScrollDirective', () => {
     buildFixture();
     intersectionCallback(
       [{ isIntersecting: true } as IntersectionObserverEntry],
-      {} as IntersectionObserver
+      {} as IntersectionObserver,
     );
     expect(element.style.opacity).toBe('1');
     expect(element.style.transform).toBe('none');

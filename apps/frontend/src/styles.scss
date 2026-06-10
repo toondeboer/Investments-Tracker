@@ -2,9 +2,8 @@
 @use './styles/tokens' as *;
 @use './styles/globals';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@config '../tailwind.config.js';
 
 // ─── Global base ─────────────────────────────────────────────────────────────
 html,

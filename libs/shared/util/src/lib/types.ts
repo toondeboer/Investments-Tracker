@@ -141,10 +141,10 @@ export const TIME_RANGE_LABELS: Record<TimeRange, string> = {
   '1M': '1M',
   '3M': '3M',
   '6M': '6M',
-  'YTD': 'YTD',
+  YTD: 'YTD',
   '1Y': '1Y',
   '5Y': '5Y',
-  'ALL': 'All',
+  ALL: 'All',
 };
 
 export type YahooObject = {
@@ -171,11 +171,11 @@ export type YahooObject = {
                 volume: number[];
                 close: number[];
                 open: number[];
-              }
+              },
             ];
             adjclose: [{ adjclose: number[] }];
           };
-        }
+        },
       ];
     };
   };

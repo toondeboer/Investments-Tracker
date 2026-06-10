@@ -31,16 +31,20 @@ describe('golden portfolio (characterization)', () => {
     const result = computePortfolioState(goldenDbo, goldenTickers);
     const { native } = GOLDEN_EXPECTED;
 
-    it.each(Object.entries(native))('stock %s matches hand-computed values', (key, exp) => {
-      const ticker = key === 'VUSA' ? 'VUSA.AS' : key === 'LLOY' ? 'LLOY.L' : 'AAPL';
-      const s = result.stocks[ticker].summary;
-      expect(s.portfolioValue).toBeCloseTo(exp.value);
-      expect(s.totalInvested).toBeCloseTo(exp.invested);
-      expect(s.totalCommission).toBeCloseTo(exp.commission);
-      expect(s.totalDividend).toBeCloseTo(exp.dividend);
-      expect(s.amountOfShares).toBe(exp.shares);
-      expect(s.averageSharePrice).toBeCloseTo(exp.avgPrice);
-    });
+    it.each(Object.entries(native))(
+      'stock %s matches hand-computed values',
+      (key, exp) => {
+        const ticker =
+          key === 'VUSA' ? 'VUSA.AS' : key === 'LLOY' ? 'LLOY.L' : 'AAPL';
+        const s = result.stocks[ticker].summary;
+        expect(s.portfolioValue).toBeCloseTo(exp.value);
+        expect(s.totalInvested).toBeCloseTo(exp.invested);
+        expect(s.totalCommission).toBeCloseTo(exp.commission);
+        expect(s.totalDividend).toBeCloseTo(exp.dividend);
+        expect(s.amountOfShares).toBe(exp.shares);
+        expect(s.averageSharePrice).toBeCloseTo(exp.avgPrice);
+      },
+    );
   });
 
   describe('EUR display', () => {
@@ -62,8 +66,12 @@ describe('golden portfolio (characterization)', () => {
       // Each purchase/commission is converted at its own transaction-date FX
       // rate (AAPL bought 4@$100 at 0.90 + 2@$110 at 1.00), so invested no
       // longer drifts with today's rate. See eur.spotAtPurchase in the fixture.
-      expect(result.summary.totalInvested).toBeCloseTo(eur.spotAtPurchase.totalInvested);
-      expect(result.summary.totalCommission).toBeCloseTo(eur.spotAtPurchase.totalCommission);
+      expect(result.summary.totalInvested).toBeCloseTo(
+        eur.spotAtPurchase.totalInvested,
+      );
+      expect(result.summary.totalCommission).toBeCloseTo(
+        eur.spotAtPurchase.totalCommission,
+      );
     });
   });
 
@@ -83,24 +91,35 @@ describe('golden portfolio (characterization)', () => {
     const ranges: TimeRange[] = ['1M', '1Y', '5Y', 'ALL'];
     const currencies: (string | undefined)[] = [undefined, 'EUR', 'USD'];
 
-    it.each(ranges)('chart arrays align with the dates array (range %s)', (range) => {
-      for (const cur of currencies) {
-        const result = computePortfolioState(goldenDbo, goldenTickers, cur, range);
-        const n = result.dates.length;
-        expect(n).toBeGreaterThan(0);
-        for (const ticker of Object.keys(result.stocks)) {
-          const cd = result.stocks[ticker].chartData;
-          expect(cd.portfolioValues).toHaveLength(n);
-          expect(cd.profit).toHaveLength(n);
-          expect(cd.stock.aggregatedValues).toHaveLength(n);
-          expect(cd.commission.aggregatedValues).toHaveLength(n);
+    it.each(ranges)(
+      'chart arrays align with the dates array (range %s)',
+      (range) => {
+        for (const cur of currencies) {
+          const result = computePortfolioState(
+            goldenDbo,
+            goldenTickers,
+            cur,
+            range,
+          );
+          const n = result.dates.length;
+          expect(n).toBeGreaterThan(0);
+          for (const ticker of Object.keys(result.stocks)) {
+            const cd = result.stocks[ticker].chartData;
+            expect(cd.portfolioValues).toHaveLength(n);
+            expect(cd.profit).toHaveLength(n);
+            expect(cd.stock.aggregatedValues).toHaveLength(n);
+            expect(cd.commission.aggregatedValues).toHaveLength(n);
+          }
         }
-      }
-    });
+      },
+    );
 
     it('summary point-in-time totals are range-independent (EUR)', () => {
       const ranges2: TimeRange[] = ['1M', '3M', '6M', '1Y', '5Y', 'ALL'];
-      const summaries = ranges2.map((r) => computePortfolioState(goldenDbo, goldenTickers, 'EUR', r).summary);
+      const summaries = ranges2.map(
+        (r) =>
+          computePortfolioState(goldenDbo, goldenTickers, 'EUR', r).summary,
+      );
       const base = summaries[0];
       for (const s of summaries) {
         expect(s.portfolioValue).toBeCloseTo(base.portfolioValue);
@@ -110,19 +129,27 @@ describe('golden portfolio (characterization)', () => {
       }
     });
 
-    it.each(ranges)('no summary number is NaN or Infinity (range %s)', (range) => {
-      for (const cur of currencies) {
-        const { summary } = computePortfolioState(goldenDbo, goldenTickers, cur, range);
-        expect(finite(summary.portfolioValue)).toBe(true);
-        expect(finite(summary.totalInvested)).toBe(true);
-        expect(finite(summary.totalCommission)).toBe(true);
-        expect(finite(summary.totalDividend)).toBe(true);
-        expect(finite(summary.totalReturn.absolute)).toBe(true);
-        expect(finite(summary.totalReturn.percentage)).toBe(true);
-        expect(finite(summary.dailyReturn.absolute)).toBe(true);
-        expect(finite(summary.weeklyReturn.absolute)).toBe(true);
-        expect(finite(summary.monthlyReturn.absolute)).toBe(true);
-      }
-    });
+    it.each(ranges)(
+      'no summary number is NaN or Infinity (range %s)',
+      (range) => {
+        for (const cur of currencies) {
+          const { summary } = computePortfolioState(
+            goldenDbo,
+            goldenTickers,
+            cur,
+            range,
+          );
+          expect(finite(summary.portfolioValue)).toBe(true);
+          expect(finite(summary.totalInvested)).toBe(true);
+          expect(finite(summary.totalCommission)).toBe(true);
+          expect(finite(summary.totalDividend)).toBe(true);
+          expect(finite(summary.totalReturn.absolute)).toBe(true);
+          expect(finite(summary.totalReturn.percentage)).toBe(true);
+          expect(finite(summary.dailyReturn.absolute)).toBe(true);
+          expect(finite(summary.weeklyReturn.absolute)).toBe(true);
+          expect(finite(summary.monthlyReturn.absolute)).toBe(true);
+        }
+      },
+    );
   });
 });

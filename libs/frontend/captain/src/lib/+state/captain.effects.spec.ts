@@ -53,7 +53,9 @@ describe('CaptainEffects', () => {
     localStorage.clear();
     service = {
       chat: jest.fn().mockReturnValue(of({ reply: 'live chat reply', usage })),
-      insights: jest.fn().mockReturnValue(of({ reply: 'live narrative', usage })),
+      insights: jest
+        .fn()
+        .mockReturnValue(of({ reply: 'live narrative', usage })),
       status: jest.fn().mockReturnValue(of(usage)),
     };
     TestBed.configureTestingModule({
@@ -77,7 +79,7 @@ describe('CaptainEffects', () => {
       actions$ = of(sendMessage({ content: 'Should I sell?', demo: true }));
       effects.sendMessage$.pipe(take(1)).subscribe((action) => {
         expect(action).toEqual(
-          sendMessageSuccess({ reply: demoChatReply('Should I sell?') })
+          sendMessageSuccess({ reply: demoChatReply('Should I sell?') }),
         );
         expect(service.chat).not.toHaveBeenCalled();
         done();
@@ -89,7 +91,7 @@ describe('CaptainEffects', () => {
       actions$ = of(sendMessage({ content: 'How did I do?' }));
       effects.sendMessage$.pipe(take(1)).subscribe((action) => {
         expect(action).toEqual(
-          sendMessageSuccess({ reply: 'live chat reply', usage })
+          sendMessageSuccess({ reply: 'live chat reply', usage }),
         );
         expect(service.chat).toHaveBeenCalledTimes(1);
         done();
@@ -99,7 +101,13 @@ describe('CaptainEffects', () => {
     it('maps a 429 to a quota-exceeded failure', (done) => {
       setup();
       service.chat.mockReturnValue(
-        throwError(() => new HttpErrorResponse({ status: 429, statusText: 'Too Many Requests' }))
+        throwError(
+          () =>
+            new HttpErrorResponse({
+              status: 429,
+              statusText: 'Too Many Requests',
+            }),
+        ),
       );
       actions$ = of(sendMessage({ content: 'How did I do?' }));
       effects.sendMessage$.pipe(take(1)).subscribe((action: any) => {
@@ -112,7 +120,10 @@ describe('CaptainEffects', () => {
     it('does not flag a non-429 error as a quota issue', (done) => {
       setup();
       service.chat.mockReturnValue(
-        throwError(() => new HttpErrorResponse({ status: 500, statusText: 'Server Error' }))
+        throwError(
+          () =>
+            new HttpErrorResponse({ status: 500, statusText: 'Server Error' }),
+        ),
       );
       actions$ = of(sendMessage({ content: 'How did I do?' }));
       effects.sendMessage$.pipe(take(1)).subscribe((action: any) => {
@@ -147,7 +158,11 @@ describe('CaptainEffects', () => {
     it('uses the cached insight on a same-day hit — no service call (no spend)', (done) => {
       setup();
       const fingerprint = insightFingerprint(buildCaptainSummary(state, 'EUR'));
-      const cached = { narrative: 'cached read', generatedAt: '2026-06-03T00:00:00Z', fingerprint };
+      const cached = {
+        narrative: 'cached read',
+        generatedAt: '2026-06-03T00:00:00Z',
+        fingerprint,
+      };
       writeCachedInsight(cached);
 
       actions$ = of(loadInsights({}));

@@ -48,8 +48,20 @@ const state: PortfolioState = {
   currencies: ['EUR'],
   summary,
   stocks: {
-    AAA: stock('AAA', { portfolioValue: 700, amountOfShares: 7, weeklyReturn: ret(8, 1.2), monthlyReturn: ret(20, 3), totalReturn: ret(100, 16.5) }),
-    BBB: stock('BBB', { portfolioValue: 300, amountOfShares: 30, weeklyReturn: ret(-20, -8.4), monthlyReturn: ret(-10, -3), totalReturn: ret(50, 9) }),
+    AAA: stock('AAA', {
+      portfolioValue: 700,
+      amountOfShares: 7,
+      weeklyReturn: ret(8, 1.2),
+      monthlyReturn: ret(20, 3),
+      totalReturn: ret(100, 16.5),
+    }),
+    BBB: stock('BBB', {
+      portfolioValue: 300,
+      amountOfShares: 30,
+      weeklyReturn: ret(-20, -8.4),
+      monthlyReturn: ret(-10, -3),
+      totalReturn: ret(50, 9),
+    }),
   },
 };
 
@@ -58,7 +70,10 @@ describe('buildCaptainSummary', () => {
     const result = buildCaptainSummary(state, 'EUR');
     expect(result.currency).toBe('EUR');
     expect(result.portfolio.value).toBe(1000);
-    expect(result.portfolio.dailyReturn).toEqual({ absolute: 1.23, percentage: 0.12 });
+    expect(result.portfolio.dailyReturn).toEqual({
+      absolute: 1.23,
+      percentage: 0.12,
+    });
     expect(result.holdings).toHaveLength(2);
   });
 
@@ -81,8 +96,24 @@ describe('buildCaptainSummary', () => {
 
 describe('detectMovers', () => {
   const holdings: CaptainHolding[] = [
-    { ticker: 'AAA', value: 700, allocationPct: 70, shares: 7, weeklyReturnPct: 1.2, monthlyReturnPct: 3, totalReturnPct: 16.5 },
-    { ticker: 'BBB', value: 300, allocationPct: 30, shares: 30, weeklyReturnPct: -8.4, monthlyReturnPct: -3, totalReturnPct: 9 },
+    {
+      ticker: 'AAA',
+      value: 700,
+      allocationPct: 70,
+      shares: 7,
+      weeklyReturnPct: 1.2,
+      monthlyReturnPct: 3,
+      totalReturnPct: 16.5,
+    },
+    {
+      ticker: 'BBB',
+      value: 300,
+      allocationPct: 30,
+      shares: 30,
+      weeklyReturnPct: -8.4,
+      monthlyReturnPct: -3,
+      totalReturnPct: 9,
+    },
   ];
 
   it('ranks by the absolute size of the weekly move', () => {

@@ -3,10 +3,10 @@
 [![CI](https://github.com/toondeboer/sailor/actions/workflows/ci.yml/badge.svg)](https://github.com/toondeboer/sailor/actions/workflows/ci.yml)
 ![Angular](https://img.shields.io/badge/Angular-21-DD0031?logo=angular&logoColor=white)
 ![NgRx](https://img.shields.io/badge/NgRx-21-BA2BD2?logo=reactivex&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-6.0-3178C6?logo=typescript&logoColor=white)
 ![Python](https://img.shields.io/badge/Python-3.13-3776AB?logo=python&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-Lambda%20%2B%20DynamoDB-FF9900?logo=amazonaws&logoColor=white)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v3-06B6D4?logo=tailwindcss&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?logo=tailwindcss&logoColor=white)
 
 Multi-portfolio investment tracker with per-currency holdings, dividend tracking, and
 time-series P&L charts. Live at **[sailor.toondeboer.com](https://sailor.toondeboer.com)**.
@@ -19,13 +19,13 @@ the full project layout and data flow.
 
 ## ⚡ Prerequisites
 
-| Tool | Version | Install |
-|---|---|---|
-| Node.js | 22+ | `brew install node` |
-| Yarn | 1.x classic | `npm i -g yarn` |
-| Python | 3.13 | `brew install python@3.13` |
-| Docker | any | [docker.com](https://www.docker.com) |
-| AWS SAM CLI | any | `brew install aws-sam-cli` |
+| Tool        | Version     | Install                              |
+| ----------- | ----------- | ------------------------------------ |
+| Node.js     | 22+         | `brew install node`                  |
+| Yarn        | 1.x classic | `npm i -g yarn`                      |
+| Python      | 3.13        | `brew install python@3.13`           |
+| Docker      | any         | [docker.com](https://www.docker.com) |
+| AWS SAM CLI | any         | `brew install aws-sam-cli`           |
 
 ---
 
@@ -86,7 +86,7 @@ env.json`, serving the Lambdas on `http://localhost:3000`. Re-run it after any L
 >   `aws ssm put-parameter --name /sailor/openai-api-key --type SecureString --value sk-...`
 
 > **Tip:** prefer real credentials instead? Run `aws sso login` and `sam local start-api
-> --env-vars env.json` directly — then the SSM fallback works too.
+--env-vars env.json` directly — then the SSM fallback works too.
 
 ### 4 — Frontend
 
@@ -101,15 +101,15 @@ Open `http://localhost:4200`. The dev server proxies `/microservice`, `/yahoo_fi
 
 ## 🔧 Useful commands
 
-| Command | Purpose |
-|---|---|
-| `nx serve frontend` | Dev server with hot reload |
-| `nx run-many -t test` | Run all unit tests |
-| `nx test util` | Test a single project |
-| `nx lint <project>` | Lint a project |
-| `nx build frontend` | Production build |
-| `nx affected -t lint test build` | What CI runs on a PR |
-| `sam build` | Package Python Lambdas |
+| Command                          | Purpose                    |
+| -------------------------------- | -------------------------- |
+| `nx serve frontend`              | Dev server with hot reload |
+| `nx run-many -t test`            | Run all unit tests         |
+| `nx test util`                   | Test a single project      |
+| `nx lint <project>`              | Lint a project             |
+| `nx build frontend`              | Production build           |
+| `nx affected -t lint test build` | What CI runs on a PR       |
+| `sam build`                      | Package Python Lambdas     |
 
 ---
 
@@ -189,12 +189,12 @@ w_i         = ( year_end − flow_date_i ) / ( year_end − year_start )
 R_year      = gain / avg_capital
 ```
 
-| Symbol | Meaning |
-|---|---|
-| EMV | Ending market value (year-end or today for the current year) |
-| BMV | Beginning market value (prior year-end; 0 for the first year) |
-| net_flows | Cash into the portfolio (buys +, sells −, dividends −) |
-| w_i | Time-weight: fraction of the year the cash was invested |
+| Symbol    | Meaning                                                       |
+| --------- | ------------------------------------------------------------- |
+| EMV       | Ending market value (year-end or today for the current year)  |
+| BMV       | Beginning market value (prior year-end; 0 for the first year) |
+| net_flows | Cash into the portfolio (buys +, sells −, dividends −)        |
+| w_i       | Time-weight: fraction of the year the cash was invested       |
 
 When `avg_capital ≤ 0` (position opened and closed in the same year) the return is recorded
 as 0 rather than dividing by zero.
@@ -238,10 +238,10 @@ ending at quarter i.
 
 Two separate conversion schemes are applied depending on what is being converted:
 
-| What | Rate used | Why |
-|---|---|---|
+| What                              | Rate used                               | Why                                        |
+| --------------------------------- | --------------------------------------- | ------------------------------------------ |
 | Cost basis, commission, dividends | Spot rate on the transaction's own date | Locks the historical cost in base currency |
-| Current market value | Spot rate on each chart date | Reflects live currency exposure |
+| Current market value              | Spot rate on each chart date            | Reflects live currency exposure            |
 
 FX rates are forward-filled across gaps and backward-filled before the start of history.
 `GBp` (pence) is automatically scaled by `× 0.01` to convert to GBP before any further
@@ -283,7 +283,7 @@ TTL):
   GPT-5.4-mini rates a worst-case call is ≈ $0.0105, so `450` keeps a $5/mo budget safe (~$4.73).
 - **Admin bypass** — members of the Cognito `admin` group are unlimited.
 
-Upgrades go through **Stripe Checkout** (run in *test mode* until you're ready for real
+Upgrades go through **Stripe Checkout** (run in _test mode_ until you're ready for real
 charges). The `billing` Lambda's webhook is the **only** writer of a user's `plan` — the
 client is never trusted to grant itself paid access.
 
@@ -360,11 +360,11 @@ and flags the paid user in DynamoDB Local):
 POOL_ID=<DEV_POOL> ./scripts/seed-test-users.sh
 ```
 
-| Username | Password | What it tests |
-|---|---|---|
-| `admin@test` | `Passw0rd!` | Admin — unlimited; "Admin" badge; no upgrade button |
-| `paid@test` | `Passw0rd!` | Paid — `PAID_MONTHLY_LIMIT`; "Captain Plus" badge; no upgrade button |
-| `regular@test` | `Passw0rd!` | Free — `FREE_MONTHLY_LIMIT`; upgrade CTA when the cap is hit |
+| Username       | Password    | What it tests                                                        |
+| -------------- | ----------- | -------------------------------------------------------------------- |
+| `admin@test`   | `Passw0rd!` | Admin — unlimited; "Admin" badge; no upgrade button                  |
+| `paid@test`    | `Passw0rd!` | Paid — `PAID_MONTHLY_LIMIT`; "Captain Plus" badge; no upgrade button |
+| `regular@test` | `Passw0rd!` | Free — `FREE_MONTHLY_LIMIT`; upgrade CTA when the cap is hit         |
 
 > Override the password with `PASSWORD=… POOL_ID=… ./scripts/seed-test-users.sh`. Re-run after
 > resetting the local table — the paid flag lives in DynamoDB Local.

@@ -39,11 +39,13 @@ export class CaptainEffects {
       withLatestFrom(
         this.store.select(selectMessages),
         this.store.select(selectState),
-        this.store.select(selectBaseCurrency)
+        this.store.select(selectBaseCurrency),
       ),
       switchMap(([action, messages, state, currency]) => {
         if (action.demo) {
-          return of(sendMessageSuccess({ reply: demoChatReply(action.content) }));
+          return of(
+            sendMessageSuccess({ reply: demoChatReply(action.content) }),
+          );
         }
         const summary = buildCaptainSummary(state, currency);
         return this.service.chat(messages, summary).pipe(
@@ -53,12 +55,12 @@ export class CaptainEffects {
               sendMessageFailure({
                 error: error.message,
                 quota: error.status === 429,
-              })
-            )
-          )
+              }),
+            ),
+          ),
         );
-      })
-    )
+      }),
+    ),
   );
 
   // Generate the dashboard "Captain's read", cached per day + portfolio so a
@@ -68,7 +70,7 @@ export class CaptainEffects {
       ofType(loadInsights),
       withLatestFrom(
         this.store.select(selectState),
-        this.store.select(selectBaseCurrency)
+        this.store.select(selectBaseCurrency),
       ),
       switchMap(([action, state, currency]) => {
         if (action.demo) {
@@ -93,11 +95,11 @@ export class CaptainEffects {
             return loadInsightsSuccess({ insight, usage });
           }),
           catchError((error: HttpErrorResponse) =>
-            of(loadInsightsFailure({ error: error.message }))
-          )
+            of(loadInsightsFailure({ error: error.message })),
+          ),
         );
-      })
-    )
+      }),
+    ),
   );
 
   // Fetch the plan + monthly usage snapshot (no spend). Used for the dashboard
@@ -109,9 +111,9 @@ export class CaptainEffects {
       switchMap(() =>
         this.service.status().pipe(
           map((status) => loadStatusSuccess({ status })),
-          catchError(() => EMPTY)
-        )
-      )
-    )
+          catchError(() => EMPTY),
+        ),
+      ),
+    ),
   );
 }

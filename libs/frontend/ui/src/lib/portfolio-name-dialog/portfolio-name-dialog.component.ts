@@ -15,7 +15,8 @@ export type PortfolioNameDialogData = {
   imports: [FormsModule],
 })
 export class PortfolioNameDialogComponent {
-  dialogRef = inject<DialogRef<PortfolioNameDialogComponent, string>>(DIALOG_REF);
+  dialogRef =
+    inject<DialogRef<PortfolioNameDialogComponent, string>>(DIALOG_REF);
   data = inject<PortfolioNameDialogData>(DIALOG_DATA);
 
   name: string;

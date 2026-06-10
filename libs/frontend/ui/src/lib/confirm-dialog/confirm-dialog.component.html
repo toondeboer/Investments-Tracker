@@ -5,7 +5,9 @@
 </div>
 
 <div class="dialog-actions">
-  <button class="btn btn-secondary" (click)="dialogRef.close(false)">Cancel</button>
+  <button class="btn btn-secondary" (click)="dialogRef.close(false)">
+    Cancel
+  </button>
   <button class="btn btn-danger" (click)="dialogRef.close(true)">
     {{ data.confirmLabel ?? 'Delete' }}
   </button>

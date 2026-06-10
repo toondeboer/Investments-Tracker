@@ -1,4 +1,14 @@
-import { ChartGranularity, PortfolioDbo, Stock, Summary, Ticker, TimeRange, Transaction, Transactions, TransactionsDbo } from './types';
+import {
+  ChartGranularity,
+  PortfolioDbo,
+  Stock,
+  Summary,
+  Ticker,
+  TimeRange,
+  Transaction,
+  Transactions,
+  TransactionsDbo,
+} from './types';
 import {
   addLists,
   buildDividendTransactions,
@@ -71,12 +81,15 @@ export function computePortfolioState(
   transactionsDbo: TransactionsDbo,
   tickers: { [ticker: string]: Ticker },
   displayCurrency?: string,
-  range: TimeRange = 'ALL'
+  range: TimeRange = 'ALL',
 ): PortfolioState {
   const txState = computeTransactionState(transactionsDbo, range);
 
   // No stocks, or prices haven't arrived yet -> the transaction-only view.
-  if (Object.keys(txState.stocks).length === 0 || Object.keys(tickers).length === 0) {
+  if (
+    Object.keys(txState.stocks).length === 0 ||
+    Object.keys(tickers).length === 0
+  ) {
     const { transactions, stocks, dates, summary, currencies } = txState;
     return { transactions, stocks, dates, summary, currencies };
   }
@@ -106,7 +119,7 @@ interface TransactionState extends PortfolioState {
 /** Stage 1: everything derivable from the transactions alone (no prices). */
 function computeTransactionState(
   transactionsDbo: TransactionsDbo,
-  range: TimeRange
+  range: TimeRange,
 ): TransactionState {
   const baseStocks = transactionsDboToStocks(transactionsDbo);
   const transactions = transactionsDboToTransactions(transactionsDbo);
@@ -117,9 +130,17 @@ function computeTransactionState(
   // boundaries below are unused (the orchestrator returns before stage 2).
   if (Object.keys(baseStocks).length === 0) {
     return {
-      transactions, stocks: {}, dates: [], summary: createInitialSummary(), currencies,
-      startDate: today, today, granularity: 'monthly',
-      effectiveRangeStart: today, windowStart: today, returnDates: [],
+      transactions,
+      stocks: {},
+      dates: [],
+      summary: createInitialSummary(),
+      currencies,
+      startDate: today,
+      today,
+      granularity: 'monthly',
+      effectiveRangeStart: today,
+      windowStart: today,
+      returnDates: [],
     };
   }
 
@@ -128,7 +149,9 @@ function computeTransactionState(
   const granularity = getGranularityForRange(range);
   const rangeStart = getRangeStartDate(range, startDate);
   // Clamp rangeStart to portfolio start — can't display before first transaction.
-  const effectiveRangeStart = isBeforeDay(startDate, rangeStart) ? rangeStart : startDate;
+  const effectiveRangeStart = isBeforeDay(startDate, rangeStart)
+    ? rangeStart
+    : startDate;
 
   let dates: Date[];
   if (granularity === 'monthly') {
@@ -151,7 +174,7 @@ function computeTransactionState(
   returnWindowStart.setUTCDate(returnWindowStart.getUTCDate() - 30);
   const returnDates = getDailyDates(
     isBeforeDay(startDate, returnWindowStart) ? returnWindowStart : startDate,
-    today
+    today,
   );
 
   let totalInvestedSummary = 0;
@@ -167,30 +190,69 @@ function computeTransactionState(
     // so that aggregatedAmounts/aggregatedValues start from the correct baseline.
     const stockSnapshot = computePreRangeSnapshot(t.stock, windowStart);
     const dividendSnapshot = computePreRangeSnapshot(t.dividend, windowStart);
-    const commissionSnapshot = computePreRangeSnapshot(t.commission, windowStart);
+    const commissionSnapshot = computePreRangeSnapshot(
+      t.commission,
+      windowStart,
+    );
 
     // Chart-resolution data for this stock.
-    const stockAmountsAndValues = granularity === 'daily'
-      ? getTransactionAmountsAndValues(dates, t.stock, stockSnapshot.amount, stockSnapshot.value)
-      : getTransactionAmountsAndValuesByPeriod(dates, t.stock, effectiveRangeStart);
+    const stockAmountsAndValues =
+      granularity === 'daily'
+        ? getTransactionAmountsAndValues(
+            dates,
+            t.stock,
+            stockSnapshot.amount,
+            stockSnapshot.value,
+          )
+        : getTransactionAmountsAndValuesByPeriod(
+            dates,
+            t.stock,
+            effectiveRangeStart,
+          );
 
-    const dividendAmountsAndValues = granularity === 'daily'
-      ? getTransactionAmountsAndValues(dates, t.dividend, dividendSnapshot.amount, dividendSnapshot.value)
-      : getTransactionAmountsAndValuesByPeriod(dates, t.dividend, effectiveRangeStart);
+    const dividendAmountsAndValues =
+      granularity === 'daily'
+        ? getTransactionAmountsAndValues(
+            dates,
+            t.dividend,
+            dividendSnapshot.amount,
+            dividendSnapshot.value,
+          )
+        : getTransactionAmountsAndValuesByPeriod(
+            dates,
+            t.dividend,
+            effectiveRangeStart,
+          );
 
-    const commissionAmountsAndValues = granularity === 'daily'
-      ? getTransactionAmountsAndValues(dates, t.commission, commissionSnapshot.amount, commissionSnapshot.value)
-      : getTransactionAmountsAndValuesByPeriod(dates, t.commission, effectiveRangeStart);
+    const commissionAmountsAndValues =
+      granularity === 'daily'
+        ? getTransactionAmountsAndValues(
+            dates,
+            t.commission,
+            commissionSnapshot.amount,
+            commissionSnapshot.value,
+          )
+        : getTransactionAmountsAndValuesByPeriod(
+            dates,
+            t.commission,
+            effectiveRangeStart,
+          );
 
-    const dividendPerQuarterByYear = getDividendPerQuarterByYear(startDate, t.dividend);
-    const dividendPerQuarter = getDividendPerQuarter(startDate, dividendPerQuarterByYear);
+    const dividendPerQuarterByYear = getDividendPerQuarterByYear(
+      startDate,
+      t.dividend,
+    );
+    const dividendPerQuarter = getDividendPerQuarter(
+      startDate,
+      dividendPerQuarterByYear,
+    );
     const dividendTtmPerQuarter = getDividendTtmPerQuarter(dividendPerQuarter);
 
     // Point-in-time totals: sum all historical transactions (O(transactions)).
     const totalInvested = t.stock.reduce((s, tx) => s + tx.value, 0);
     totalInvestedSummary += totalInvested;
     const amountOfShares = getMostRecentValueFromList(
-      stockAmountsAndValues.aggregatedAmounts
+      stockAmountsAndValues.aggregatedAmounts,
     ).value;
     const totalDividend = t.dividend.reduce((s, tx) => s + tx.value, 0);
     totalDividendSummary += totalDividend;
@@ -214,7 +276,8 @@ function computeTransactionState(
         ...stock.summary,
         totalInvested,
         amountOfShares,
-        averageSharePrice: amountOfShares !== 0 ? totalInvested / amountOfShares : 0,
+        averageSharePrice:
+          amountOfShares !== 0 ? totalInvested / amountOfShares : 0,
         totalDividend,
         totalCommission,
       },
@@ -230,8 +293,17 @@ function computeTransactionState(
   };
 
   return {
-    transactions, stocks: computedStocks, dates, summary, currencies,
-    startDate, today, granularity, effectiveRangeStart, windowStart, returnDates,
+    transactions,
+    stocks: computedStocks,
+    dates,
+    summary,
+    currencies,
+    startDate,
+    today,
+    granularity,
+    effectiveRangeStart,
+    windowStart,
+    returnDates,
   };
 }
 
@@ -239,11 +311,19 @@ function computeTransactionState(
 function computePriceState(
   txState: TransactionState,
   tickers: { [ticker: string]: Ticker },
-  displayCurrency?: string
+  displayCurrency?: string,
 ): PortfolioState {
   const {
-    transactions, currencies, dates, granularity, effectiveRangeStart,
-    windowStart, returnDates, startDate, today, stocks: computedStocks,
+    transactions,
+    currencies,
+    dates,
+    granularity,
+    effectiveRangeStart,
+    windowStart,
+    returnDates,
+    startDate,
+    today,
+    stocks: computedStocks,
   } = txState;
 
   let portfolioValuesSummary = 0;
@@ -276,7 +356,11 @@ function computePriceState(
       continue;
     }
 
-    const fx = createFxConverter(stock.currency.value, displayCurrency, tickers);
+    const fx = createFxConverter(
+      stock.currency.value,
+      displayCurrency,
+      tickers,
+    );
 
     // Transactions with each value pre-converted at its own date's FX rate, so
     // cost basis / commission / dividends are locked at the spot rate that
@@ -285,7 +369,9 @@ function computePriceState(
     // series builder.
     const fxConvert = fx ? fx.convert : undefined;
     const stockTxFx = fx ? fx.convertTransactions(t.stock) : t.stock;
-    const commissionTxFx = fx ? fx.convertTransactions(t.commission) : t.commission;
+    const commissionTxFx = fx
+      ? fx.convertTransactions(t.commission)
+      : t.commission;
 
     const fxArgs = {
       ticker,
@@ -315,7 +401,9 @@ function computePriceState(
     // Current share price in the display currency (today's spot rate).
     let currentSharePrice = getMostRecentValueFromList(ticker.values).value;
     if (fx) {
-      currentSharePrice *= getMostRecentValueFromList(fx.getScaledRates(dates)).value;
+      currentSharePrice *= getMostRecentValueFromList(
+        fx.getScaledRates(dates),
+      ).value;
     }
 
     // --- All-time monthly series for yield + dividend charts (range-independent) ---
@@ -335,7 +423,12 @@ function computePriceState(
     // ex-date inside updateDividendsByPeriod, so they're already in the display
     // currency — no second per-period scaling.
     const allTimeDividendBase = updateDividendsByPeriod(
-      allTimeSeries.aggregatedAmounts, ticker, allTimeDates, startDate, startDate, fxConvert
+      allTimeSeries.aggregatedAmounts,
+      ticker,
+      allTimeDates,
+      startDate,
+      startDate,
+      fxConvert,
     );
     const convertedDividend = {
       transactionValues: allTimeDividendBase.transactionValues,
@@ -346,7 +439,9 @@ function computePriceState(
       perQuarter: allTimeDividendBase.perQuarter,
       ttmPerQuarter: allTimeDividendBase.ttmPerQuarter,
     };
-    const allTimeTotalDividend = getMostRecentValueFromList(allTimeDividendBase.aggregatedValues).value;
+    const allTimeTotalDividend = getMostRecentValueFromList(
+      allTimeDividendBase.aggregatedValues,
+    ).value;
 
     // Per-year annual return (%) via Modified Dietz — each year in isolation,
     // money-weighted, including dividends received.
@@ -354,7 +449,7 @@ function computePriceState(
       allTimeDates,
       allTimePortfolioValues,
       allTimeInvested,
-      allTimeDividendBase.aggregatedValues
+      allTimeDividendBase.aggregatedValues,
     );
 
     const portfolioValue = getMostRecentValueFromList(portfolioValues).value;
@@ -363,7 +458,10 @@ function computePriceState(
     // Gross invested capital for this stock: sum of buy values only (sells are
     // negative and excluded), at spot-at-purchase FX. This is the denominator
     // for the return-on-invested-capital percentage.
-    const stockGrossInvested = stockTxFx.reduce((s, tx) => s + (tx.value > 0 ? tx.value : 0), 0);
+    const stockGrossInvested = stockTxFx.reduce(
+      (s, tx) => s + (tx.value > 0 ? tx.value : 0),
+      0,
+    );
     grossInvestedSummary += stockGrossInvested;
 
     // --- 30-day daily return window (accurate regardless of chart granularity) ---
@@ -395,13 +493,18 @@ function computePriceState(
     //   percentage = absolute / purchase cost (gross invested) × 100
     // Gross invested as the base keeps the % sane after a sale (it can't
     // collapse to zero). Commission is not part of this figure.
-    const stockTotalInvested = getMostRecentValueFromList(investedForProfit).value;
-    const stockTotalCommission = getMostRecentValueFromList(commissionForProfit).value;
-    const totalReturnAbsolute = portfolioValue - stockTotalInvested + allTimeTotalDividend;
+    const stockTotalInvested =
+      getMostRecentValueFromList(investedForProfit).value;
+    const stockTotalCommission =
+      getMostRecentValueFromList(commissionForProfit).value;
+    const totalReturnAbsolute =
+      portfolioValue - stockTotalInvested + allTimeTotalDividend;
     const totalReturn = {
       absolute: totalReturnAbsolute,
       percentage:
-        stockGrossInvested !== 0 ? (totalReturnAbsolute / stockGrossInvested) * 100 : 0,
+        stockGrossInvested !== 0
+          ? (totalReturnAbsolute / stockGrossInvested) * 100
+          : 0,
     };
 
     chartTotalInvestedSummary += stockTotalInvested;
@@ -413,14 +516,23 @@ function computePriceState(
     // present. Holdings with no CSV dividend rows fall back to the Yahoo
     // dividend events so a dividend list is still shown.
     const withConverted = (txs: Transaction[]): Transaction[] =>
-      fx ? txs.map((d) => ({ ...d, convertedValue: fx.convert(d.value, d.date) })) : txs;
+      fx
+        ? txs.map((d) => ({
+            ...d,
+            convertedValue: fx.convert(d.value, d.date),
+          }))
+        : txs;
 
     const displayDividends =
       t.dividend.length > 0
         ? withConverted(t.dividend)
         : sortTransactions(
-            buildDividendTransactions(ticker, allTimeSeries.aggregatedAmounts, allTimeDates, fxConvert)
-              .filter((tx) => tx.amount > 0)
+            buildDividendTransactions(
+              ticker,
+              allTimeSeries.aggregatedAmounts,
+              allTimeDates,
+              fxConvert,
+            ).filter((tx) => tx.amount > 0),
           );
 
     const displayTransactions: Transactions = {
@@ -483,11 +595,16 @@ function computePriceState(
   //   percentage = absolute / purchase cost (gross invested) × 100
   // Gross invested as the base keeps the % sane after a sale; commission is not
   // part of this figure. The total-return-per-year chart uses the same formula.
-  const totalReturnAbsolute = portfolioValuesSummary - chartTotalInvestedSummary + chartTotalDividendSummary;
+  const totalReturnAbsolute =
+    portfolioValuesSummary -
+    chartTotalInvestedSummary +
+    chartTotalDividendSummary;
   const totalReturn = {
     absolute: totalReturnAbsolute,
     percentage:
-      grossInvestedSummary !== 0 ? (totalReturnAbsolute / grossInvestedSummary) * 100 : 0,
+      grossInvestedSummary !== 0
+        ? (totalReturnAbsolute / grossInvestedSummary) * 100
+        : 0,
   };
 
   const summary: Summary = {
@@ -515,16 +632,26 @@ export function computePortfolioStateSafe(
   transactionsDbo: TransactionsDbo,
   tickers: { [ticker: string]: Ticker },
   displayCurrency?: string,
-  range: TimeRange = 'ALL'
+  range: TimeRange = 'ALL',
 ): { portfolio: PortfolioState; fxError: string | null } {
   try {
     return {
-      portfolio: computePortfolioState(transactionsDbo, tickers, displayCurrency, range),
+      portfolio: computePortfolioState(
+        transactionsDbo,
+        tickers,
+        displayCurrency,
+        range,
+      ),
       fxError: null,
     };
   } catch (err) {
     return {
-      portfolio: computePortfolioState(transactionsDbo, tickers, undefined, range),
+      portfolio: computePortfolioState(
+        transactionsDbo,
+        tickers,
+        undefined,
+        range,
+      ),
       fxError: err instanceof Error ? err.message : 'FX conversion failed',
     };
   }
@@ -542,12 +669,17 @@ export function computeAllPortfolios(
   portfoliosDbo: PortfolioDbo[],
   tickers: { [ticker: string]: Ticker },
   baseCurrency?: string,
-  range: TimeRange = 'ALL'
+  range: TimeRange = 'ALL',
 ): { [id: string]: PortfolioComputedState } {
   const result: { [id: string]: PortfolioComputedState } = {};
   for (const portfolio of portfoliosDbo) {
     result[portfolio.id] = {
-      ...computePortfolioStateSafe(portfolio.transactions, tickers, baseCurrency, range).portfolio,
+      ...computePortfolioStateSafe(
+        portfolio.transactions,
+        tickers,
+        baseCurrency,
+        range,
+      ).portfolio,
       portfolioId: portfolio.id,
       portfolioName: portfolio.name,
     };

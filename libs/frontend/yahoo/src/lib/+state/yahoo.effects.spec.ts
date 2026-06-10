@@ -34,7 +34,9 @@ describe('YahooEffects.getTicker$', () => {
   function setup(returnedSymbols: string[]) {
     toast = { open: jest.fn() };
     service = {
-      getTickers: jest.fn().mockReturnValue(of(returnedSymbols.map(yahooObject))),
+      getTickers: jest
+        .fn()
+        .mockReturnValue(of(returnedSymbols.map(yahooObject))),
     };
 
     TestBed.configureTestingModule({

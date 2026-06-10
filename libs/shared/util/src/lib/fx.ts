@@ -31,7 +31,10 @@ function getFxRates(dates: Date[], fxTicker: Ticker): number[] {
       if (!isNaN(val) && val > 0) lastKnownRate = val;
       fxIdx++;
     }
-    if (fxIdx < fxTicker.dates.length && isSameDay(fxTicker.dates[fxIdx], dates[i])) {
+    if (
+      fxIdx < fxTicker.dates.length &&
+      isSameDay(fxTicker.dates[fxIdx], dates[i])
+    ) {
       const val = fxTicker.values[fxIdx];
       if (!isNaN(val) && val > 0) lastKnownRate = val;
       fxIdx++;
@@ -42,13 +45,16 @@ function getFxRates(dates: Date[], fxTicker: Ticker): number[] {
   // Find the first valid rate to fill any NaNs before it.
   let firstKnown = NaN;
   for (let i = 0; i < rates.length; i++) {
-    if (!isNaN(rates[i])) { firstKnown = rates[i]; break; }
+    if (!isNaN(rates[i])) {
+      firstKnown = rates[i];
+      break;
+    }
   }
 
   if (isNaN(firstKnown)) {
     throw new Error(
       `No FX rate data available for ${fxTicker.name}. ` +
-      `Ensure the symbol is valid and Yahoo Finance data has loaded.`
+        `Ensure the symbol is valid and Yahoo Finance data has loaded.`,
     );
   }
 
@@ -83,13 +89,16 @@ function getFxRateForDate(fxTicker: Ticker, date: Date): number {
     // Date precedes all FX data — backward-fill from the first valid rate.
     for (let i = 0; i < fxTicker.values.length; i++) {
       const v = fxTicker.values[i];
-      if (!isNaN(v) && v > 0) { rate = v; break; }
+      if (!isNaN(v) && v > 0) {
+        rate = v;
+        break;
+      }
     }
   }
   if (isNaN(rate)) {
     throw new Error(
       `No FX rate data available for ${fxTicker.name}. ` +
-      `Ensure the symbol is valid and Yahoo Finance data has loaded.`
+        `Ensure the symbol is valid and Yahoo Finance data has loaded.`,
     );
   }
   return rate;
@@ -133,13 +142,13 @@ export interface FxConverter {
 export function createFxConverter(
   stockCurrency: string,
   displayCurrency: string | undefined,
-  tickers: { [ticker: string]: Ticker }
+  tickers: { [ticker: string]: Ticker },
 ): FxConverter | null {
   if (!displayCurrency) return null;
 
   const { yahooTicker: fxSymbol, fxMultiplier } = getFxTickerForConversion(
     stockCurrency,
-    displayCurrency
+    displayCurrency,
   );
   const fxTicker = fxSymbol ? tickers[fxSymbol] : undefined;
   if (!fxTicker) return null;

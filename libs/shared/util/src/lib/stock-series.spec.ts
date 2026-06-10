@@ -13,7 +13,14 @@ function ticker(name: string, entries: [string, number][]): Ticker {
 }
 
 function stockTx(date: string, amount: number, value: number): Transaction {
-  return { ticker: 'ACME', type: 'stock', date: new Date(date), amount, value, currency: 'USD' };
+  return {
+    ticker: 'ACME',
+    type: 'stock',
+    date: new Date(date),
+    amount,
+    value,
+    currency: 'USD',
+  };
 }
 
 const d = (s: string) => new Date(s);
@@ -25,7 +32,10 @@ describe('buildStockSeries', () => {
       const series = buildStockSeries({
         dates,
         granularity: 'daily',
-        ticker: ticker('ACME', [['2023-01-10', 100], ['2023-01-11', 110]]),
+        ticker: ticker('ACME', [
+          ['2023-01-10', 100],
+          ['2023-01-11', 110],
+        ]),
         fx: null,
         stockTxs: [stockTx('2023-01-10', 2, 200)],
         stockTxsFx: [stockTx('2023-01-10', 2, 200)],
@@ -48,10 +58,19 @@ describe('buildStockSeries', () => {
         dates,
         granularity: 'daily',
         // No price on 2023-01-12 (the day the position is already fully sold).
-        ticker: ticker('ACME', [['2023-01-10', 100], ['2023-01-11', 110]]),
+        ticker: ticker('ACME', [
+          ['2023-01-10', 100],
+          ['2023-01-11', 110],
+        ]),
         fx: null,
-        stockTxs: [stockTx('2023-01-10', 1, 100), stockTx('2023-01-11', -1, -110)],
-        stockTxsFx: [stockTx('2023-01-10', 1, 100), stockTx('2023-01-11', -1, -110)],
+        stockTxs: [
+          stockTx('2023-01-10', 1, 100),
+          stockTx('2023-01-11', -1, -110),
+        ],
+        stockTxsFx: [
+          stockTx('2023-01-10', 1, 100),
+          stockTx('2023-01-11', -1, -110),
+        ],
         commissionTxs: [],
         commissionTxsFx: [],
         snapshotCutoff: d('2023-01-10'),
@@ -69,7 +88,10 @@ describe('buildStockSeries', () => {
       const series = buildStockSeries({
         dates: [d('2023-01-10'), d('2023-01-11'), d('2023-01-12')],
         granularity: 'daily',
-        ticker: ticker('ACME', [['2023-01-10', 100], ['2023-01-12', 120]]),
+        ticker: ticker('ACME', [
+          ['2023-01-10', 100],
+          ['2023-01-12', 120],
+        ]),
         fx: null,
         stockTxs: [stockTx('2023-01-10', 1, 100)],
         stockTxsFx: [stockTx('2023-01-10', 1, 100)],
@@ -89,7 +111,11 @@ describe('buildStockSeries', () => {
         // dates[0] = Sunday (closed), dates[1] = Monday with price
         dates: [d('2023-01-08'), d('2023-01-09'), d('2023-01-10')],
         granularity: 'daily',
-        ticker: ticker('ACME', [['2023-01-06', 90], ['2023-01-09', 100], ['2023-01-10', 110]]),
+        ticker: ticker('ACME', [
+          ['2023-01-06', 90],
+          ['2023-01-09', 100],
+          ['2023-01-10', 110],
+        ]),
         fx: null,
         // stock was purchased before the range; snapshot carries 1 share in
         stockTxs: [stockTx('2023-01-05', 1, 90)],
@@ -111,7 +137,10 @@ describe('buildStockSeries', () => {
       const series = buildStockSeries({
         dates,
         granularity: 'monthly',
-        ticker: ticker('ACME', [['2023-01-20', 100], ['2023-02-20', 120]]),
+        ticker: ticker('ACME', [
+          ['2023-01-20', 100],
+          ['2023-02-20', 120],
+        ]),
         fx: null,
         stockTxs: [stockTx('2023-01-15', 1, 100)],
         stockTxsFx: [stockTx('2023-01-15', 1, 100)],
@@ -143,7 +172,10 @@ describe('buildStockSeries', () => {
       const series = buildStockSeries({
         dates,
         granularity: 'daily',
-        ticker: ticker('ACME', [['2023-01-10', 100], ['2023-01-11', 110]]),
+        ticker: ticker('ACME', [
+          ['2023-01-10', 100],
+          ['2023-01-11', 110],
+        ]),
         fx,
         stockTxs,
         stockTxsFx: fx.convertTransactions(stockTxs),

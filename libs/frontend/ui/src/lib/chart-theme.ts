@@ -69,7 +69,7 @@ type Trigger = 'item' | 'axis';
 /** Shared tooltip config (dark surface, gold border, cream text). */
 export function baseTooltip(
   trigger: Trigger,
-  extra: Partial<TooltipComponentOption> = {}
+  extra: Partial<TooltipComponentOption> = {},
 ): TooltipComponentOption {
   return {
     trigger,
@@ -93,7 +93,10 @@ export function baseGrid(top: number): EChartsOption['grid'] {
 }
 
 /** Scrollable single-row legend that never wraps into the plot. */
-export function scrollLegend(top: number, data?: string[]): EChartsOption['legend'] {
+export function scrollLegend(
+  top: number,
+  data?: string[],
+): EChartsOption['legend'] {
   return {
     type: 'scroll',
     top,

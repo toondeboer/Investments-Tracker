@@ -10,7 +10,7 @@
       (keyup.enter)="confirm()"
       placeholder="e.g. AAPL"
       autofocus
-      />
+    />
   </div>
 
   <div class="field-group">
@@ -22,11 +22,15 @@
       <option value="EUR">EUR</option>
       <option value="USD">USD</option>
     </select>
-    <span class="field-hint">Applies to every transaction in this holding.</span>
+    <span class="field-hint"
+      >Applies to every transaction in this holding.</span
+    >
   </div>
 </div>
 
 <div class="dialog-actions">
   <button class="btn btn-secondary" (click)="cancel()">Cancel</button>
-  <button class="btn btn-primary" (click)="confirm()" [disabled]="!canConfirm">Save</button>
+  <button class="btn btn-primary" (click)="confirm()" [disabled]="!canConfirm">
+    Save
+  </button>
 </div>

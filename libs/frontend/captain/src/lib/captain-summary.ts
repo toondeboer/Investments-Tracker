@@ -20,7 +20,7 @@ const MAX_NOTABLE_MOVERS = 3;
  * movers / unexpected rises and drops" come from code, not the model.
  */
 export function detectMovers(
-  holdings: CaptainHolding[]
+  holdings: CaptainHolding[],
 ): { ticker: string; weeklyReturnPct: number; notable: boolean }[] {
   return [...holdings]
     .sort((a, b) => Math.abs(b.weeklyReturnPct) - Math.abs(a.weeklyReturnPct))
@@ -38,7 +38,7 @@ export function detectMovers(
  */
 export function buildCaptainSummary(
   state: PortfolioState,
-  currency: string
+  currency: string,
 ): CaptainSummary {
   const { summary, stocks } = state;
   const totalValue = summary.portfolioValue;

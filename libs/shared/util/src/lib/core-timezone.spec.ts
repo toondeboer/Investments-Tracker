@@ -17,8 +17,8 @@ describe('date helpers are timezone-independent (UTC)', () => {
     expect(
       isSameDay(
         new Date('2023-03-15T23:30:00.000Z'),
-        new Date('2023-03-15T00:30:00.000Z')
-      )
+        new Date('2023-03-15T00:30:00.000Z'),
+      ),
     ).toBe(true);
   });
 
@@ -26,8 +26,8 @@ describe('date helpers are timezone-independent (UTC)', () => {
     expect(
       isSameDay(
         new Date('2023-03-15T23:30:00.000Z'),
-        new Date('2023-03-16T00:30:00.000Z')
-      )
+        new Date('2023-03-16T00:30:00.000Z'),
+      ),
     ).toBe(false);
   });
 
@@ -35,14 +35,16 @@ describe('date helpers are timezone-independent (UTC)', () => {
     const late = new Date('2023-03-15T23:30:00.000Z');
     const earlyNext = new Date('2023-03-16T00:30:00.000Z');
     expect(isBeforeDay(late, earlyNext)).toBe(true);
-    expect(isOnOrBeforeDay(late, new Date('2023-03-15T00:00:00.000Z'))).toBe(true);
+    expect(isOnOrBeforeDay(late, new Date('2023-03-15T00:00:00.000Z'))).toBe(
+      true,
+    );
     expect(isBeforeDay(earlyNext, late)).toBe(false);
   });
 
   it('getMonthlyDates returns UTC month-ends regardless of runner timezone', () => {
     const dates = getMonthlyDates(
       new Date('2023-01-15T00:00:00.000Z'),
-      new Date('2023-03-20T00:00:00.000Z')
+      new Date('2023-03-20T00:00:00.000Z'),
     );
     // Jan 31, Feb 28, then clamped to the end (Mar 20) — all in UTC.
     expect(dates.map((d) => d.toISOString().slice(0, 10))).toEqual([
@@ -62,7 +64,7 @@ describe('date helpers are timezone-independent (UTC)', () => {
       dates,
       [100, 100, 200], // portfolio value
       [100, 100, 100], // cumulative net invested
-      [0, 0, 0]        // cumulative dividends
+      [0, 0, 0], // cumulative dividends
     );
     expect(result.years).toEqual(['2023', '2024']);
   });

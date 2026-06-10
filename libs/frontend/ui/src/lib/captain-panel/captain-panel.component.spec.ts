@@ -34,7 +34,7 @@ describe('CaptainPanelComponent', () => {
     component.draft = '  How did I do?  ';
     component.send(component.draft);
     expect(dispatch).toHaveBeenCalledWith(
-      sendMessage({ content: 'How did I do?', demo: undefined })
+      sendMessage({ content: 'How did I do?', demo: undefined }),
     );
     expect(component.draft).toBe('');
   });
@@ -43,7 +43,7 @@ describe('CaptainPanelComponent', () => {
     setup({ demo: true });
     component.send('What is my biggest holding?');
     expect(dispatch).toHaveBeenCalledWith(
-      sendMessage({ content: 'What is my biggest holding?', demo: true })
+      sendMessage({ content: 'What is my biggest holding?', demo: true }),
     );
   });
 

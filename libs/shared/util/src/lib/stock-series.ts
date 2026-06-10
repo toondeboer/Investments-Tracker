@@ -69,9 +69,19 @@ export function buildStockSeries(p: StockSeriesParams): StockSeries {
   // For daily, seed from the pre-range snapshot; commission share counts can be
   // forced to 0 ('zero') since they're irrelevant to profit.
   const aggregate = (txs: typeof p.stockTxs, seed: 'snapshot' | 'zero') => {
-    if (!daily) return getTransactionAmountsAndValuesByPeriod(dates, txs, p.periodRangeStart);
+    if (!daily)
+      return getTransactionAmountsAndValuesByPeriod(
+        dates,
+        txs,
+        p.periodRangeStart,
+      );
     const snap = computePreRangeSnapshot(txs, p.snapshotCutoff);
-    return getTransactionAmountsAndValues(dates, txs, seed === 'zero' ? 0 : snap.amount, snap.value);
+    return getTransactionAmountsAndValues(
+      dates,
+      txs,
+      seed === 'zero' ? 0 : snap.amount,
+      snap.value,
+    );
   };
   const commSeed = p.commissionSnapshotAmount === 'zero' ? 'zero' : 'snapshot';
 
@@ -102,7 +112,10 @@ export function buildStockSeries(p: StockSeriesParams): StockSeries {
     commissionTransactionValues = commAggFx.transactionValues;
   }
 
-  const profit = subtractLists(subtractLists(portfolioValues, invested), commission);
+  const profit = subtractLists(
+    subtractLists(portfolioValues, invested),
+    commission,
+  );
 
   return {
     portfolioValues,

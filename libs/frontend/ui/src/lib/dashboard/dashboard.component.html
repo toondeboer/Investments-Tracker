@@ -1,20 +1,21 @@
-@if ({
-  state: state$ | async,
-  portfolios: portfolios$ | async,
-  selectedIds: selectedPortfolioIds$ | async,
-  currency: baseCurrency$ | async,
-  loading: loading$ | async,
-  timeRange: timeRange$ | async
-  }; as vm) {
-  <div
-    class="page"
-    >
+@if (
+  {
+    state: state$ | async,
+    portfolios: portfolios$ | async,
+    selectedIds: selectedPortfolioIds$ | async,
+    currency: baseCurrency$ | async,
+    loading: loading$ | async,
+    timeRange: timeRange$ | async,
+  };
+  as vm
+) {
+  <div class="page">
     <header class="page-header">
       <div class="page-heading">
         <h1 class="page-title">Portfolio</h1>
         @if (vm.state?.summary?.startDate) {
           <p class="page-subtitle">
-            Since {{ vm.state?.summary?.startDate | date : 'MMM yyyy' }}
+            Since {{ vm.state?.summary?.startDate | date: 'MMM yyyy' }}
           </p>
         }
       </div>
@@ -37,10 +38,18 @@
           @for (portfolio of vm.portfolios; track portfolio) {
             <button
               class="chip"
-              [class.active]="isPortfolioActive(portfolio.id, vm.selectedIds ?? 'all')"
-              (click)="togglePortfolio(portfolio.id, vm.selectedIds ?? 'all', portfolioIds(vm.portfolios ?? []))"
+              [class.active]="
+                isPortfolioActive(portfolio.id, vm.selectedIds ?? 'all')
+              "
+              (click)="
+                togglePortfolio(
+                  portfolio.id,
+                  vm.selectedIds ?? 'all',
+                  portfolioIds(vm.portfolios ?? [])
+                )
+              "
               type="button"
-              >
+            >
               {{ portfolio.name }}
             </button>
           }
@@ -56,7 +65,7 @@
             [class.active]="vm.timeRange === range"
             (click)="selectRange(range)"
             type="button"
-            >
+          >
             {{ rangeLabels[range] }}
           </button>
         }
@@ -72,7 +81,10 @@
         <aws-insights-banner></aws-insights-banner>
       </section>
       <section class="page-section">
-        <aws-summary [summary]="vm.state?.summary" [currency]="vm.currency ?? 'EUR'"></aws-summary>
+        <aws-summary
+          [summary]="vm.state?.summary"
+          [currency]="vm.currency ?? 'EUR'"
+        ></aws-summary>
       </section>
       <section class="page-section">
         <aws-active-tickers
@@ -84,13 +96,20 @@
     } @else {
       <section class="page-section">
         <div class="empty-dashboard">
-          <lucide-icon name="Compass" [size]="40" class="empty-dashboard-icon"></lucide-icon>
+          <lucide-icon
+            name="Compass"
+            [size]="40"
+            class="empty-dashboard-icon"
+          ></lucide-icon>
           <h2 class="empty-dashboard-title">Start tracking your investments</h2>
           <p class="empty-dashboard-text">
-            Create your first portfolio to see your performance, holdings and captain's
-            insights here.
+            Create your first portfolio to see your performance, holdings and
+            captain's insights here.
           </p>
-          <a routerLink="/portfolios" class="btn btn-primary empty-dashboard-cta">
+          <a
+            routerLink="/portfolios"
+            class="btn btn-primary empty-dashboard-cta"
+          >
             Create your first portfolio
             <lucide-icon name="ArrowRight" [size]="16"></lucide-icon>
           </a>

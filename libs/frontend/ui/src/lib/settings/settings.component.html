@@ -6,11 +6,16 @@
   <div class="settings-card">
     <h2 class="card-title">Display currency</h2>
     <p class="card-description">
-      All portfolio values on the dashboard will be shown in this currency using historical exchange rates.
+      All portfolio values on the dashboard will be shown in this currency using
+      historical exchange rates.
     </p>
     <div class="field-group">
       <label class="field-label">Base currency</label>
-      <select class="field-select" [(ngModel)]="selectedCurrency" (ngModelChange)="onCurrencyChange($event)">
+      <select
+        class="field-select"
+        [(ngModel)]="selectedCurrency"
+        (ngModelChange)="onCurrencyChange($event)"
+      >
         @for (c of currencies; track c) {
           <option [value]="c">{{ c }}</option>
         }

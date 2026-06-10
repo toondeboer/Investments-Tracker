@@ -3,7 +3,12 @@ import { ChartData, TransactionChartData } from '@aws/util';
 import { ActiveTickersComponent } from './active-tickers.component';
 
 function emptyTxData(): TransactionChartData {
-  return { transactionValues: [], aggregatedValues: [], transactionAmounts: [], aggregatedAmounts: [] };
+  return {
+    transactionValues: [],
+    aggregatedValues: [],
+    transactionAmounts: [],
+    aggregatedAmounts: [],
+  };
 }
 
 function chartData(portfolioValues: number[], profit: number[]): ChartData {

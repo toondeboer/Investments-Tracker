@@ -2,7 +2,6 @@
 <div class="chart-section">
   <h3 class="section-title">Performance</h3>
   <div class="charts-grid">
-
     <div class="chart-card">
       <aws-chart
         [x]="dates"
@@ -23,11 +22,12 @@
 
     <div class="chart-card">
       <aws-bar-chart
-        [series]="chartData?.yieldPerYear ?? { years: [], yields: [], profit: [] }"
+        [series]="
+          chartData?.yieldPerYear ?? { years: [], yields: [], profit: [] }
+        "
         [currencySymbol]="currencySymbol"
       ></aws-bar-chart>
     </div>
-
   </div>
 </div>
 
@@ -35,7 +35,6 @@
 <div class="chart-section">
   <h3 class="section-title">Dividends</h3>
   <div class="charts-grid">
-
     <div class="chart-card">
       <aws-bar-chart-per-quarter-by-year
         [series]="chartData?.dividend?.perQuarterByYear ?? []"
@@ -45,7 +44,12 @@
 
     <div class="chart-card">
       <aws-bar-and-line-chart
-        [series]="chartData?.dividend?.ttmPerQuarter ?? { yearQuarters: [], dividends: [] }"
+        [series]="
+          chartData?.dividend?.ttmPerQuarter ?? {
+            yearQuarters: [],
+            dividends: [],
+          }
+        "
         [currencySymbol]="currencySymbol"
       ></aws-bar-and-line-chart>
     </div>
@@ -68,7 +72,6 @@
         [currencySymbol]="currencySymbol"
       ></aws-chart>
     </div>
-
   </div>
 </div>
 
@@ -94,7 +97,6 @@
 <div class="chart-section">
   <h3 class="section-title">Transactions</h3>
   <div class="charts-grid">
-
     <div class="chart-card">
       <aws-chart
         [x]="dates"
@@ -141,6 +143,5 @@
         [currencySymbol]="currencySymbol"
       ></aws-chart>
     </div>
-
   </div>
 </div>

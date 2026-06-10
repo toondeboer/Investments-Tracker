@@ -46,8 +46,12 @@
 
 // 4 copies → -25% = exactly one copy width. Needs each copy > viewport/3 to fill.
 @keyframes ticker-scroll {
-  from { transform: translateX(0); }
-  to   { transform: translateX(-25%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-25%);
+  }
 }
 
 // ─── Items ────────────────────────────────────────────────────────────────────
@@ -80,8 +84,12 @@
   font-weight: 500;
 }
 
-.ticker-pos { color: $color-success; }
-.ticker-neg { color: $color-error; }
+.ticker-pos {
+  color: $color-success;
+}
+.ticker-neg {
+  color: $color-error;
+}
 
 // ─── Separator ────────────────────────────────────────────────────────────────
 .ticker-sep {

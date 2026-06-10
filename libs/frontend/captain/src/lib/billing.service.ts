@@ -4,7 +4,7 @@ import { Observable, map } from 'rxjs';
 import { z } from 'zod';
 
 // The billing Lambda returns a Stripe Checkout Session URL to redirect to.
-const checkoutSchema = z.object({ url: z.string().url() });
+const checkoutSchema = z.object({ url: z.url() });
 
 /**
  * Talks to the billing Lambda to start a Stripe Checkout (subscription) flow.

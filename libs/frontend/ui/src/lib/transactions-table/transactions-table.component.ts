@@ -67,7 +67,7 @@ export class TransactionsTableComponent {
             portfolioId: this.portfolioId,
             originalKey: r.originalKey,
             transaction: r.transaction,
-          })
+          }),
         );
       });
   }
@@ -80,12 +80,21 @@ export class TransactionsTableComponent {
       time: transaction.time,
       value: transaction.value,
     };
-    this.store.dispatch(deleteTransaction({ portfolioId: this.portfolioId, transactionKey: key }));
+    this.store.dispatch(
+      deleteTransaction({ portfolioId: this.portfolioId, transactionKey: key }),
+    );
   }
 
   onDeleteHolding(stock: Stock) {
-    if (!confirm(`Delete all transactions for ${stock.ticker}? This cannot be undone.`)) return;
-    this.store.dispatch(deleteHolding({ portfolioId: this.portfolioId, ticker: stock.ticker }));
+    if (
+      !confirm(
+        `Delete all transactions for ${stock.ticker}? This cannot be undone.`,
+      )
+    )
+      return;
+    this.store.dispatch(
+      deleteHolding({ portfolioId: this.portfolioId, ticker: stock.ticker }),
+    );
   }
 
   onEditHolding(stock: Stock) {
@@ -108,7 +117,7 @@ export class TransactionsTableComponent {
               oldTicker: stock.ticker,
               newTicker: r.newTicker,
               currency: r.currency,
-            })
+            }),
           );
         } else if (tickerChanged) {
           this.store.dispatch(
@@ -116,7 +125,7 @@ export class TransactionsTableComponent {
               portfolioId: this.portfolioId,
               oldTicker: stock.ticker,
               newTicker: r.newTicker,
-            })
+            }),
           );
         } else if (currencyChanged) {
           this.store.dispatch(
@@ -125,7 +134,7 @@ export class TransactionsTableComponent {
               oldTicker: stock.ticker,
               newTicker: stock.ticker,
               currency: r.currency,
-            })
+            }),
           );
         }
       });
@@ -144,7 +153,10 @@ export class TransactionsTableComponent {
         const r = result as TransactionDialogResult | undefined;
         if (!r) return;
         this.store.dispatch(
-          saveTransaction({ portfolioId: this.portfolioId, transaction: r.transaction })
+          saveTransaction({
+            portfolioId: this.portfolioId,
+            transaction: r.transaction,
+          }),
         );
       });
   }

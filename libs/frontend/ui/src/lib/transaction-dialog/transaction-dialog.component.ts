@@ -28,7 +28,10 @@ export type TransactionDialogResult = {
   imports: [FormsModule, DatePickerComponent],
 })
 export class TransactionDialogComponent {
-  dialogRef = inject<DialogRef<TransactionDialogComponent, TransactionDialogResult | undefined>>(DIALOG_REF);
+  dialogRef =
+    inject<
+      DialogRef<TransactionDialogComponent, TransactionDialogResult | undefined>
+    >(DIALOG_REF);
   data = inject<TransactionDialogData>(DIALOG_DATA);
 
   type: TransactionType = 'stock';
@@ -71,7 +74,9 @@ export class TransactionDialogComponent {
 
   get title(): string {
     if (this.data.mode === 'edit') return 'Edit transaction';
-    return this.data.ticker ? `Add transaction — ${this.data.ticker}` : 'Add holding';
+    return this.data.ticker
+      ? `Add transaction — ${this.data.ticker}`
+      : 'Add holding';
   }
 
   // --- value ⇄ price-per-share sync -----------------------------------------

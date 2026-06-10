@@ -7,7 +7,11 @@ import {
 import { CaptainService } from './captain.service';
 import { CaptainSummary } from './captain.types';
 
-const summary = { currency: 'EUR', holdings: [], notableMovers: [] } as unknown as CaptainSummary;
+const summary = {
+  currency: 'EUR',
+  holdings: [],
+  notableMovers: [],
+} as unknown as CaptainSummary;
 
 describe('CaptainService', () => {
   let service: CaptainService;
@@ -29,12 +33,14 @@ describe('CaptainService', () => {
   afterEach(() => httpMock.verify());
 
   it('posts a chat request and resolves to the reply + usage', (done) => {
-    service.chat([{ role: 'user', content: 'How did I do?' }], summary).subscribe((res) => {
-      expect(res.reply).toBe('Aye, all is well.');
-      expect(res.usage?.plan).toBe('free');
-      expect(res.usage?.remaining).toBe(29);
-      done();
-    });
+    service
+      .chat([{ role: 'user', content: 'How did I do?' }], summary)
+      .subscribe((res) => {
+        expect(res.reply).toBe('Aye, all is well.');
+        expect(res.usage?.plan).toBe('free');
+        expect(res.usage?.remaining).toBe(29);
+        done();
+      });
     const req = httpMock.expectOne('/captain');
     expect(req.request.body.mode).toBe('chat');
     req.flush({
@@ -44,11 +50,13 @@ describe('CaptainService', () => {
   });
 
   it('tolerates a reply with no usage (usage = null)', (done) => {
-    service.chat([{ role: 'user', content: 'hi' }], summary).subscribe((res) => {
-      expect(res.reply).toBe('Aye.');
-      expect(res.usage).toBeNull();
-      done();
-    });
+    service
+      .chat([{ role: 'user', content: 'hi' }], summary)
+      .subscribe((res) => {
+        expect(res.reply).toBe('Aye.');
+        expect(res.usage).toBeNull();
+        done();
+      });
     httpMock.expectOne('/captain').flush({ reply: 'Aye.' });
   });
 

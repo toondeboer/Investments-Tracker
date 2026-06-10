@@ -2,7 +2,7 @@ import { TransactionsDbo } from './types';
 
 export type YahooCsvRow = {
   Symbol: string;
-  'Trade Date': string;       // YYYYMMDD
+  'Trade Date': string; // YYYYMMDD
   'Purchase Price': string;
   Quantity: string;
   Commission: string;
@@ -50,7 +50,13 @@ export function parseYahooCsvInput(rawRows: unknown[]): TransactionsDbo {
     const commissionRaw = (row['Commission'] ?? '').trim();
     const txType = (row['Transaction Type'] ?? '').trim().toUpperCase();
 
-    if (!symbol || !tradeDateRaw || !purchasePriceRaw || !quantityRaw || !txType) {
+    if (
+      !symbol ||
+      !tradeDateRaw ||
+      !purchasePriceRaw ||
+      !quantityRaw ||
+      !txType
+    ) {
       continue;
     }
 

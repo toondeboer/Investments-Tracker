@@ -13,16 +13,18 @@ export class SummaryComponent {
   @Input() summary: Summary | null | undefined = null;
 
   get safeSummary(): Summary {
-    return this.summary ?? {
-      portfolioValue: 0,
-      totalInvested: 0,
-      totalDividend: 0,
-      totalCommission: 0,
-      startDate: new Date(),
-      dailyReturn: { absolute: 0, percentage: 0 },
-      weeklyReturn: { absolute: 0, percentage: 0 },
-      monthlyReturn: { absolute: 0, percentage: 0 },
-      totalReturn: { absolute: 0, percentage: 0 },
-    };
+    return (
+      this.summary ?? {
+        portfolioValue: 0,
+        totalInvested: 0,
+        totalDividend: 0,
+        totalCommission: 0,
+        startDate: new Date(),
+        dailyReturn: { absolute: 0, percentage: 0 },
+        weeklyReturn: { absolute: 0, percentage: 0 },
+        monthlyReturn: { absolute: 0, percentage: 0 },
+        totalReturn: { absolute: 0, percentage: 0 },
+      }
+    );
   }
 }

@@ -19,7 +19,10 @@
 
   <!-- Live ticker (static demo data) -->
   <div class="demo-ticker">
-    <aws-scrolling-text [summary]="summary" [currencySymbol]="currencySymbol"></aws-scrolling-text>
+    <aws-scrolling-text
+      [summary]="summary"
+      [currencySymbol]="currencySymbol"
+    ></aws-scrolling-text>
   </div>
 
   <div class="demo-body">
@@ -34,7 +37,11 @@
     <!-- Captain's read (static demo narrative) + chat launcher -->
     <div class="demo-captain">
       <aws-insights-banner [demo]="true"></aws-insights-banner>
-      <button class="btn btn-secondary demo-captain-btn" (click)="openCaptain()" type="button">
+      <button
+        class="btn btn-secondary demo-captain-btn"
+        (click)="openCaptain()"
+        type="button"
+      >
         <lucide-icon name="Ship" [size]="18"></lucide-icon>
         <span>Ask the capt<span class="ai">ai</span>n</span>
       </button>
@@ -69,7 +76,10 @@
           ></aws-chart>
         </div>
         <div class="demo-card">
-          <aws-bar-chart [series]="annualReturns" [currencySymbol]="currencySymbol"></aws-bar-chart>
+          <aws-bar-chart
+            [series]="annualReturns"
+            [currencySymbol]="currencySymbol"
+          ></aws-bar-chart>
         </div>
       </div>
     </section>
@@ -136,7 +146,10 @@
     <!-- Closing CTA -->
     <section class="demo-closing">
       <h2>Ready to chart your own course?</h2>
-      <p>Import your DeGiro history and see your real portfolio come alive in minutes.</p>
+      <p>
+        Import your DeGiro history and see your real portfolio come alive in
+        minutes.
+      </p>
       <a routerLink="/signin" class="btn btn-primary btn-large demo-cta">
         Start Your Voyage
         <lucide-icon name="ArrowRight" [size]="20"></lucide-icon>

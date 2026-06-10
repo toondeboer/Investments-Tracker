@@ -12,7 +12,8 @@ import { PortfolioDbo, Summary } from '@aws/util';
 export class PortfolioListComponent {
   @Input() portfolios: PortfolioDbo[] = [];
   @Input() selectedPortfolioId: string | null = null;
-  @Input() portfolioStates: { [id: string]: { summary: Summary } } | null = null;
+  @Input() portfolioStates: { [id: string]: { summary: Summary } } | null =
+    null;
   @Input() baseCurrency = 'EUR';
 
   @Output() selectPortfolio = new EventEmitter<string>();

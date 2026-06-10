@@ -25,7 +25,7 @@ function isRetryable(error: unknown): boolean {
  */
 export function retryWithBackoff<T>(
   maxRetries = 2,
-  baseDelayMs = 500
+  baseDelayMs = 500,
 ): MonoTypeOperatorFunction<T> {
   return retry({
     count: maxRetries,

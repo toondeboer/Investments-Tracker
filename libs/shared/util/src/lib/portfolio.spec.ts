@@ -1,6 +1,10 @@
 import { Ticker, TransactionsDbo } from './types';
 import { getDailyDates, getStartDate, transactionsDboToStocks } from './util';
-import { computeAllPortfolios, computePortfolioState, computePortfolioStateSafe } from './portfolio';
+import {
+  computeAllPortfolios,
+  computePortfolioState,
+  computePortfolioStateSafe,
+} from './portfolio';
 import { PortfolioDbo } from './types';
 
 describe('computePortfolioState', () => {
@@ -63,7 +67,7 @@ describe('computePortfolioState', () => {
     // and a flat price of 150, so values are deterministic regardless of range.
     const dates = getDailyDates(
       getStartDate(transactionsDboToStocks(dbo)),
-      new Date()
+      new Date(),
     );
     const ticker: Ticker = {
       name: 'VUSA.AS',
@@ -92,14 +96,31 @@ describe('computePortfolioState', () => {
     // portfolio value must be 0, not the stale pre-sale numbers.
     const soldDbo: TransactionsDbo = {
       stock: [
-        { ticker: 'VUSA.AS', type: 'stock', date: '2023-01-10', amount: 2, value: 200, currency: 'EUR' },
-        { ticker: 'VUSA.AS', type: 'stock', date: '2023-06-10', amount: -2, value: -260, currency: 'EUR' },
+        {
+          ticker: 'VUSA.AS',
+          type: 'stock',
+          date: '2023-01-10',
+          amount: 2,
+          value: 200,
+          currency: 'EUR',
+        },
+        {
+          ticker: 'VUSA.AS',
+          type: 'stock',
+          date: '2023-06-10',
+          amount: -2,
+          value: -260,
+          currency: 'EUR',
+        },
       ],
       dividend: [],
       commission: [],
     };
 
-    const dates = getDailyDates(getStartDate(transactionsDboToStocks(soldDbo)), new Date());
+    const dates = getDailyDates(
+      getStartDate(transactionsDboToStocks(soldDbo)),
+      new Date(),
+    );
     const ticker: Ticker = {
       name: 'VUSA.AS',
       currency: 'EUR',
@@ -127,17 +148,47 @@ describe('computePortfolioState', () => {
       // For '3M' at this clock, rangeStart = 2024-03-03 and dates[0] = 2024-03-02.
       const dbo: TransactionsDbo = {
         stock: [
-          { ticker: 'VUSA.AS', type: 'stock', date: '2023-01-10', amount: 10, value: 1000, currency: 'EUR' },
-          { ticker: 'VUSA.AS', type: 'stock', date: '2024-03-02', amount: 1, value: 120, currency: 'EUR' },
+          {
+            ticker: 'VUSA.AS',
+            type: 'stock',
+            date: '2023-01-10',
+            amount: 10,
+            value: 1000,
+            currency: 'EUR',
+          },
+          {
+            ticker: 'VUSA.AS',
+            type: 'stock',
+            date: '2024-03-02',
+            amount: 1,
+            value: 120,
+            currency: 'EUR',
+          },
         ],
         dividend: [],
         commission: [
-          { ticker: 'VUSA.AS', type: 'commission', date: '2024-03-02', amount: 0, value: 7, currency: 'EUR' },
+          {
+            ticker: 'VUSA.AS',
+            type: 'commission',
+            date: '2024-03-02',
+            amount: 0,
+            value: 7,
+            currency: 'EUR',
+          },
         ],
       };
-      const dates = getDailyDates(getStartDate(transactionsDboToStocks(dbo)), new Date());
+      const dates = getDailyDates(
+        getStartDate(transactionsDboToStocks(dbo)),
+        new Date(),
+      );
       const tickers = {
-        'VUSA.AS': { name: 'VUSA.AS', currency: 'EUR', dates, values: dates.map(() => 150), dividends: [] } as Ticker,
+        'VUSA.AS': {
+          name: 'VUSA.AS',
+          currency: 'EUR',
+          dates,
+          values: dates.map(() => 150),
+          dividends: [],
+        } as Ticker,
       };
 
       const all = computePortfolioState(dbo, tickers, undefined, 'ALL').summary;
@@ -161,17 +212,45 @@ describe('computePortfolioState', () => {
     // (which nets out commission) shows 1200-1000-5 = 195.
     const dbo: TransactionsDbo = {
       stock: [
-        { ticker: 'VUSA.AS', type: 'stock', date: '2023-01-10', amount: 10, value: 1000, currency: 'EUR' },
-        { ticker: 'VUSA.AS', type: 'stock', date: '2023-06-10', amount: -10, value: -1200, currency: 'EUR' },
+        {
+          ticker: 'VUSA.AS',
+          type: 'stock',
+          date: '2023-01-10',
+          amount: 10,
+          value: 1000,
+          currency: 'EUR',
+        },
+        {
+          ticker: 'VUSA.AS',
+          type: 'stock',
+          date: '2023-06-10',
+          amount: -10,
+          value: -1200,
+          currency: 'EUR',
+        },
       ],
       dividend: [],
       commission: [
-        { ticker: 'VUSA.AS', type: 'commission', date: '2023-01-10', amount: 0, value: 5, currency: 'EUR' },
+        {
+          ticker: 'VUSA.AS',
+          type: 'commission',
+          date: '2023-01-10',
+          amount: 0,
+          value: 5,
+          currency: 'EUR',
+        },
       ],
     };
-    const dates = getDailyDates(getStartDate(transactionsDboToStocks(dbo)), new Date());
+    const dates = getDailyDates(
+      getStartDate(transactionsDboToStocks(dbo)),
+      new Date(),
+    );
     const ticker: Ticker = {
-      name: 'VUSA.AS', currency: 'EUR', dates, values: dates.map(() => 130), dividends: [],
+      name: 'VUSA.AS',
+      currency: 'EUR',
+      dates,
+      values: dates.map(() => 130),
+      dividends: [],
     };
 
     const result = computePortfolioState(dbo, { 'VUSA.AS': ticker });
@@ -184,7 +263,8 @@ describe('computePortfolioState', () => {
 
     // Profit on every sold-out day must be the realized 195 — never NaN from a
     // missing price multiplied by 0 shares.
-    const lastProfit = stock.chartData.profit[stock.chartData.profit.length - 1];
+    const lastProfit =
+      stock.chartData.profit[stock.chartData.profit.length - 1];
     expect(Number.isFinite(lastProfit)).toBe(true);
     expect(lastProfit).toBeCloseTo(195);
   });
@@ -201,19 +281,55 @@ describe('computePortfolioState', () => {
     // Aggregate current value ≈ €100; total profit ≈ €4000. Old %: ~4000%.
     const dbo: TransactionsDbo = {
       stock: [
-        { ticker: 'ACTIVE', type: 'stock', date: '2023-01-10', amount: 1, value: 100, currency: 'EUR' },
-        { ticker: 'SOLD', type: 'stock', date: '2023-01-10', amount: 10, value: 1000, currency: 'EUR' },
-        { ticker: 'SOLD', type: 'stock', date: '2023-06-10', amount: -10, value: -5000, currency: 'EUR' },
+        {
+          ticker: 'ACTIVE',
+          type: 'stock',
+          date: '2023-01-10',
+          amount: 1,
+          value: 100,
+          currency: 'EUR',
+        },
+        {
+          ticker: 'SOLD',
+          type: 'stock',
+          date: '2023-01-10',
+          amount: 10,
+          value: 1000,
+          currency: 'EUR',
+        },
+        {
+          ticker: 'SOLD',
+          type: 'stock',
+          date: '2023-06-10',
+          amount: -10,
+          value: -5000,
+          currency: 'EUR',
+        },
       ],
       dividend: [],
       commission: [],
     };
-    const dates = getDailyDates(getStartDate(transactionsDboToStocks(dbo)), new Date());
+    const dates = getDailyDates(
+      getStartDate(transactionsDboToStocks(dbo)),
+      new Date(),
+    );
     const beforeJune = (d: Date) => d < new Date('2023-06-01T00:00:00.000Z');
     const tickers = {
-      ACTIVE: { name: 'ACTIVE', currency: 'EUR', dates, values: dates.map(() => 100), dividends: [] } as Ticker,
+      ACTIVE: {
+        name: 'ACTIVE',
+        currency: 'EUR',
+        dates,
+        values: dates.map(() => 100),
+        dividends: [],
+      } as Ticker,
       // Price rises 100 -> 500 before the June sale, so the gain is a real market move.
-      SOLD: { name: 'SOLD', currency: 'EUR', dates, values: dates.map((d) => (beforeJune(d) ? 100 : 500)), dividends: [] } as Ticker,
+      SOLD: {
+        name: 'SOLD',
+        currency: 'EUR',
+        dates,
+        values: dates.map((d) => (beforeJune(d) ? 100 : 500)),
+        dividends: [],
+      } as Ticker,
     };
 
     const summary = computePortfolioState(dbo, tickers).summary;
@@ -238,8 +354,22 @@ describe('computePortfolioState', () => {
     try {
       const dbo: TransactionsDbo = {
         stock: [
-          { ticker: 'AAA', type: 'stock', date: '2024-01-02', amount: 10, value: 1000, currency: 'EUR' },
-          { ticker: 'BBB', type: 'stock', date: '2024-01-02', amount: 10, value: 1000, currency: 'EUR' },
+          {
+            ticker: 'AAA',
+            type: 'stock',
+            date: '2024-01-02',
+            amount: 10,
+            value: 1000,
+            currency: 'EUR',
+          },
+          {
+            ticker: 'BBB',
+            type: 'stock',
+            date: '2024-01-02',
+            amount: 10,
+            value: 1000,
+            currency: 'EUR',
+          },
         ],
         dividend: [],
         commission: [],
@@ -260,7 +390,10 @@ describe('computePortfolioState', () => {
         }
         return { name, currency: 'EUR', dates, values, dividends: [] };
       };
-      const summary = computePortfolioState(dbo, { AAA: mk('AAA', 1), BBB: mk('BBB', 2) }).summary;
+      const summary = computePortfolioState(dbo, {
+        AAA: mk('AAA', 1),
+        BBB: mk('BBB', 2),
+      }).summary;
 
       expect(Number.isFinite(summary.weeklyReturn.percentage)).toBe(true);
       expect(Number.isFinite(summary.monthlyReturn.percentage)).toBe(true);
@@ -283,7 +416,14 @@ describe('computePortfolioState', () => {
     try {
       const dbo: TransactionsDbo = {
         stock: [
-          { ticker: 'AAA', type: 'stock', date: '2026-03-02', amount: 10, value: 1000, currency: 'EUR' },
+          {
+            ticker: 'AAA',
+            type: 'stock',
+            date: '2026-03-02',
+            amount: 10,
+            value: 1000,
+            currency: 'EUR',
+          },
         ],
         dividend: [],
         commission: [],
@@ -300,9 +440,20 @@ describe('computePortfolioState', () => {
         dates.push(d);
         values.push(100);
       }
-      const ticker: Ticker = { name: 'AAA', currency: 'EUR', dates, values, dividends: [] };
+      const ticker: Ticker = {
+        name: 'AAA',
+        currency: 'EUR',
+        dates,
+        values,
+        dividends: [],
+      };
 
-      const result = computePortfolioState(dbo, { AAA: ticker }, undefined, '1M');
+      const result = computePortfolioState(
+        dbo,
+        { AAA: ticker },
+        undefined,
+        '1M',
+      );
       const pv = result.stocks['AAA'].chartData.portfolioValues;
       const profit = result.stocks['AAA'].chartData.profit;
 
@@ -311,7 +462,7 @@ describe('computePortfolioState', () => {
       expect(pv.every(Number.isFinite)).toBe(true);
       expect(profit.every(Number.isFinite)).toBe(true);
       const weekendIdx = result.dates.findIndex(
-        (d) => d.getUTCDay() === 0 || d.getUTCDay() === 6
+        (d) => d.getUTCDay() === 0 || d.getUTCDay() === 6,
       );
       expect(weekendIdx).toBeGreaterThan(-1);
       expect(pv[weekendIdx]).toBe(1000);
@@ -323,7 +474,7 @@ describe('computePortfolioState', () => {
   it('returns an empty portfolio for no transactions', () => {
     const result = computePortfolioState(
       { stock: [], dividend: [], commission: [] },
-      {}
+      {},
     );
 
     expect(result.stocks).toEqual({});
@@ -351,7 +502,7 @@ describe('computePortfolioState', () => {
 
     const dates = getDailyDates(
       getStartDate(transactionsDboToStocks(usdDbo)),
-      new Date()
+      new Date(),
     );
 
     const stockTicker: Ticker = {
@@ -375,7 +526,7 @@ describe('computePortfolioState', () => {
     const result = computePortfolioState(
       usdDbo,
       { AAPL: stockTicker, 'EUR=X': fxTicker },
-      'EUR'
+      'EUR',
     );
 
     // 1 share * $200 * 0.9 fx = €180
@@ -392,23 +543,42 @@ describe('computePortfolioState', () => {
   });
 
   it('leaves convertedValue undefined when no FX conversion is needed', () => {
-    const dates = getDailyDates(getStartDate(transactionsDboToStocks(dbo)), new Date());
+    const dates = getDailyDates(
+      getStartDate(transactionsDboToStocks(dbo)),
+      new Date(),
+    );
     const ticker: Ticker = {
-      name: 'VUSA.AS', currency: 'EUR', dates, values: dates.map(() => 150), dividends: [],
+      name: 'VUSA.AS',
+      currency: 'EUR',
+      dates,
+      values: dates.map(() => 150),
+      dividends: [],
     };
     const result = computePortfolioState(dbo, { 'VUSA.AS': ticker }, 'EUR');
-    expect(result.stocks['VUSA.AS'].transactions.stock[0].convertedValue).toBeUndefined();
+    expect(
+      result.stocks['VUSA.AS'].transactions.stock[0].convertedValue,
+    ).toBeUndefined();
   });
 
   it('fills the dividend list from Yahoo when the holding has no CSV dividends', () => {
     const noDivDbo: TransactionsDbo = {
       stock: [
-        { ticker: 'AAPL', type: 'stock', date: '2023-01-10', amount: 10, value: 1000, currency: 'USD' },
+        {
+          ticker: 'AAPL',
+          type: 'stock',
+          date: '2023-01-10',
+          amount: 10,
+          value: 1000,
+          currency: 'USD',
+        },
       ],
       dividend: [],
       commission: [],
     };
-    const dates = getDailyDates(getStartDate(transactionsDboToStocks(noDivDbo)), new Date());
+    const dates = getDailyDates(
+      getStartDate(transactionsDboToStocks(noDivDbo)),
+      new Date(),
+    );
     const ticker: Ticker = {
       name: 'AAPL',
       currency: 'USD',
@@ -429,26 +599,53 @@ describe('computePortfolioState', () => {
   it('locks cost basis at the purchase-date FX rate (spot-at-purchase)', () => {
     const usdDbo: TransactionsDbo = {
       stock: [
-        { ticker: 'AAPL', type: 'stock', date: '2023-01-10', amount: 1, value: 100, currency: 'USD' },
+        {
+          ticker: 'AAPL',
+          type: 'stock',
+          date: '2023-01-10',
+          amount: 1,
+          value: 100,
+          currency: 'USD',
+        },
       ],
       dividend: [],
       commission: [
-        { ticker: 'AAPL', type: 'commission', date: '2023-01-10', amount: 0, value: 10, currency: 'USD' },
+        {
+          ticker: 'AAPL',
+          type: 'commission',
+          date: '2023-01-10',
+          amount: 0,
+          value: 10,
+          currency: 'USD',
+        },
       ],
     };
 
-    const dates = getDailyDates(getStartDate(transactionsDboToStocks(usdDbo)), new Date());
+    const dates = getDailyDates(
+      getStartDate(transactionsDboToStocks(usdDbo)),
+      new Date(),
+    );
     const stockTicker: Ticker = {
-      name: 'AAPL', currency: 'USD', dates, values: dates.map(() => 200), dividends: [],
+      name: 'AAPL',
+      currency: 'USD',
+      dates,
+      values: dates.map(() => 200),
+      dividends: [],
     };
     // FX rate was 0.8 at purchase (first 5 days) and 1.0 now (rest).
     const fxTicker: Ticker = {
-      name: 'EUR=X', currency: 'EUR', dates,
+      name: 'EUR=X',
+      currency: 'EUR',
+      dates,
       values: dates.map((_, i) => (i < 5 ? 0.8 : 1.0)),
       dividends: [],
     };
 
-    const result = computePortfolioState(usdDbo, { AAPL: stockTicker, 'EUR=X': fxTicker }, 'EUR');
+    const result = computePortfolioState(
+      usdDbo,
+      { AAPL: stockTicker, 'EUR=X': fxTicker },
+      'EUR',
+    );
     const s = result.stocks['AAPL'].summary;
 
     // Market value uses today's spot (1.0): 1 * $200 * 1.0 = €200.
@@ -481,7 +678,7 @@ describe('computePortfolioState', () => {
 
     const dates = getDailyDates(
       getStartDate(transactionsDboToStocks(eurDbo)),
-      new Date()
+      new Date(),
     );
 
     const stockTicker: Ticker = {
@@ -495,7 +692,7 @@ describe('computePortfolioState', () => {
     const result = computePortfolioState(
       eurDbo,
       { 'VUSA.AS': stockTicker },
-      'EUR'
+      'EUR',
     );
 
     // No FX applied: 2 shares * €150 = €300
@@ -520,7 +717,7 @@ describe('computePortfolioState', () => {
 
     const dates = getDailyDates(
       getStartDate(transactionsDboToStocks(usdDbo)),
-      new Date()
+      new Date(),
     );
 
     const stockTicker: Ticker = {
@@ -545,7 +742,7 @@ describe('computePortfolioState', () => {
     const result = computePortfolioState(
       usdDbo,
       { AAPL: stockTicker, 'EUR=X': fxTicker },
-      'EUR'
+      'EUR',
     );
 
     // All portfolio values should use rate 0.9 — backward fill covers the gap.
@@ -574,7 +771,7 @@ describe('computePortfolioState', () => {
 
     const dates = getDailyDates(
       getStartDate(transactionsDboToStocks(usdDbo)),
-      new Date()
+      new Date(),
     );
 
     const stockTicker: Ticker = {
@@ -597,8 +794,8 @@ describe('computePortfolioState', () => {
       computePortfolioState(
         usdDbo,
         { AAPL: stockTicker, 'EUR=X': emptyFxTicker },
-        'EUR'
-      )
+        'EUR',
+      ),
     ).toThrow('No FX rate data available for EUR=X');
   });
 
@@ -620,7 +817,7 @@ describe('computePortfolioState', () => {
 
     const dates = getDailyDates(
       getStartDate(transactionsDboToStocks(eurDbo)),
-      new Date()
+      new Date(),
     );
 
     const stockTicker: Ticker = {
@@ -643,7 +840,7 @@ describe('computePortfolioState', () => {
     const result = computePortfolioState(
       eurDbo,
       { 'VUSA.AS': stockTicker, 'EURUSD=X': fxTicker },
-      'USD'
+      'USD',
     );
 
     // 1 share * €150 * 1.1 EURUSD = $165
@@ -669,7 +866,7 @@ describe('computePortfolioState', () => {
 
     const dates = getDailyDates(
       getStartDate(transactionsDboToStocks(gbpDbo)),
-      new Date()
+      new Date(),
     );
 
     const stockTicker: Ticker = {
@@ -692,7 +889,7 @@ describe('computePortfolioState', () => {
     const result = computePortfolioState(
       gbpDbo,
       { 'BP.L': stockTicker, 'GBPUSD=X': fxTicker },
-      'USD'
+      'USD',
     );
 
     // 10 shares * £60 * 1.25 GBPUSD = $750
@@ -718,7 +915,7 @@ describe('computePortfolioState', () => {
 
     const dates = getDailyDates(
       getStartDate(transactionsDboToStocks(usdDbo)),
-      new Date()
+      new Date(),
     );
 
     const stockTicker: Ticker = {
@@ -753,7 +950,7 @@ describe('computePortfolioState', () => {
 
     const dates = getDailyDates(
       getStartDate(transactionsDboToStocks(gbpDbo)),
-      new Date()
+      new Date(),
     );
 
     // Price in pence: 60p per share
@@ -777,7 +974,7 @@ describe('computePortfolioState', () => {
     const result = computePortfolioState(
       gbpDbo,
       { 'LLOY.L': stockTicker, 'GBPEUR=X': fxTicker },
-      'EUR'
+      'EUR',
     );
 
     // 100 shares * 60p = 6000p = £60; £60 * 1.15 = €69
@@ -790,23 +987,47 @@ describe('computePortfolioState', () => {
 
 describe('computePortfolioStateSafe', () => {
   const usdDbo: TransactionsDbo = {
-    stock: [{ ticker: 'AAPL', type: 'stock', date: '2023-01-10', amount: 1, value: 100, currency: 'USD' }],
+    stock: [
+      {
+        ticker: 'AAPL',
+        type: 'stock',
+        date: '2023-01-10',
+        amount: 1,
+        value: 100,
+        currency: 'USD',
+      },
+    ],
     dividend: [],
     commission: [],
   };
 
   function usdTicker(): Ticker {
-    const dates = getDailyDates(getStartDate(transactionsDboToStocks(usdDbo)), new Date());
-    return { name: 'AAPL', currency: 'USD', dates, values: dates.map(() => 200), dividends: [] };
+    const dates = getDailyDates(
+      getStartDate(transactionsDboToStocks(usdDbo)),
+      new Date(),
+    );
+    return {
+      name: 'AAPL',
+      currency: 'USD',
+      dates,
+      values: dates.map(() => 200),
+      dividends: [],
+    };
   }
 
   it('returns fxError and a native fallback when FX data is missing', () => {
-    const emptyFx: Ticker = { name: 'EUR=X', currency: 'EUR', dates: [], values: [], dividends: [] };
+    const emptyFx: Ticker = {
+      name: 'EUR=X',
+      currency: 'EUR',
+      dates: [],
+      values: [],
+      dividends: [],
+    };
 
     const { portfolio, fxError } = computePortfolioStateSafe(
       usdDbo,
       { AAPL: usdTicker(), 'EUR=X': emptyFx },
-      'EUR'
+      'EUR',
     );
 
     expect(fxError).toContain('No FX rate data available');
@@ -816,25 +1037,59 @@ describe('computePortfolioStateSafe', () => {
 
   it('returns null fxError when conversion succeeds', () => {
     const dates = usdTicker().dates;
-    const fx: Ticker = { name: 'EUR=X', currency: 'EUR', dates, values: dates.map(() => 0.9), dividends: [] };
+    const fx: Ticker = {
+      name: 'EUR=X',
+      currency: 'EUR',
+      dates,
+      values: dates.map(() => 0.9),
+      dividends: [],
+    };
 
-    const { fxError } = computePortfolioStateSafe(usdDbo, { AAPL: usdTicker(), 'EUR=X': fx }, 'EUR');
+    const { fxError } = computePortfolioStateSafe(
+      usdDbo,
+      { AAPL: usdTicker(), 'EUR=X': fx },
+      'EUR',
+    );
     expect(fxError).toBeNull();
   });
 });
 
 describe('computeAllPortfolios FX isolation', () => {
   it('a missing FX rate in one portfolio does not strip FX from the others', () => {
-    const dates = getDailyDates(new Date('2023-01-09T00:00:00.000Z'), new Date());
-    const aapl: Ticker = { name: 'AAPL', currency: 'USD', dates, values: dates.map(() => 200), dividends: [] };
-    const eurx: Ticker = { name: 'EUR=X', currency: 'EUR', dates, values: dates.map(() => 0.9), dividends: [] };
+    const dates = getDailyDates(
+      new Date('2023-01-09T00:00:00.000Z'),
+      new Date(),
+    );
+    const aapl: Ticker = {
+      name: 'AAPL',
+      currency: 'USD',
+      dates,
+      values: dates.map(() => 200),
+      dividends: [],
+    };
+    const eurx: Ticker = {
+      name: 'EUR=X',
+      currency: 'EUR',
+      dates,
+      values: dates.map(() => 0.9),
+      dividends: [],
+    };
 
     const portfolios: PortfolioDbo[] = [
       {
         id: 'good',
         name: 'Good',
         transactions: {
-          stock: [{ ticker: 'AAPL', type: 'stock', date: '2023-01-10', amount: 1, value: 100, currency: 'USD' }],
+          stock: [
+            {
+              ticker: 'AAPL',
+              type: 'stock',
+              date: '2023-01-10',
+              amount: 1,
+              value: 100,
+              currency: 'USD',
+            },
+          ],
           dividend: [],
           commission: [],
         },
@@ -844,7 +1099,16 @@ describe('computeAllPortfolios FX isolation', () => {
         name: 'Bad (FX missing)',
         transactions: {
           // GBP needs GBPEUR=X which is absent -> this portfolio falls back to native.
-          stock: [{ ticker: 'BP.L', type: 'stock', date: '2023-01-10', amount: 10, value: 500, currency: 'GBP' }],
+          stock: [
+            {
+              ticker: 'BP.L',
+              type: 'stock',
+              date: '2023-01-10',
+              amount: 10,
+              value: 500,
+              currency: 'GBP',
+            },
+          ],
           dividend: [],
           commission: [],
         },
@@ -852,8 +1116,19 @@ describe('computeAllPortfolios FX isolation', () => {
     ];
 
     // BP.L price ticker present but no GBPEUR=X, so 'bad' can't convert.
-    const bpl: Ticker = { name: 'BP.L', currency: 'GBP', dates, values: dates.map(() => 60), dividends: [] };
-    const result = computeAllPortfolios(portfolios, { AAPL: aapl, 'EUR=X': eurx, 'BP.L': bpl }, 'EUR', '1Y');
+    const bpl: Ticker = {
+      name: 'BP.L',
+      currency: 'GBP',
+      dates,
+      values: dates.map(() => 60),
+      dividends: [],
+    };
+    const result = computeAllPortfolios(
+      portfolios,
+      { AAPL: aapl, 'EUR=X': eurx, 'BP.L': bpl },
+      'EUR',
+      '1Y',
+    );
 
     // 'good' is still FX-converted: 1 * $200 * 0.9 = €180.
     expect(result['good'].summary.portfolioValue).toBeCloseTo(180);

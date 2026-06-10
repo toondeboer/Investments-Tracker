@@ -1,52 +1,53 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { computeAllPortfolios, computePortfolioStateSafe, mergeTransactionsDbo } from '@aws/util';
+import {
+  computeAllPortfolios,
+  computePortfolioStateSafe,
+  mergeTransactionsDbo,
+} from '@aws/util';
 import { FeatureState, featureKey } from './state.reducer';
 
 export const selectFeature = createFeatureSelector<FeatureState>(featureKey);
 
 export const selectPortfoliosDbo = createSelector(
   selectFeature,
-  (state) => state.portfoliosDbo
+  (state) => state.portfoliosDbo,
 );
 
 export const selectSettings = createSelector(
   selectFeature,
-  (state) => state.settings
+  (state) => state.settings,
 );
 
 export const selectBaseCurrency = createSelector(
   selectSettings,
-  (settings) => settings.baseCurrency
+  (settings) => settings.baseCurrency,
 );
 
-const selectTickers = createSelector(
-  selectFeature,
-  (state) => state.tickers
-);
+const selectTickers = createSelector(selectFeature, (state) => state.tickers);
 
 export const selectLoading = createSelector(
   selectFeature,
-  (state) => state.loading
+  (state) => state.loading,
 );
 
 export const selectError = createSelector(
   selectFeature,
-  (state) => state.error
+  (state) => state.error,
 );
 
 export const selectLastFetched = createSelector(
   selectFeature,
-  (state) => state.lastFetched
+  (state) => state.lastFetched,
 );
 
 export const selectSelectedPortfolioIds = createSelector(
   selectFeature,
-  (state) => state.selectedPortfolioIds
+  (state) => state.selectedPortfolioIds,
 );
 
 export const selectTimeRange = createSelector(
   selectFeature,
-  (state) => state.timeRange
+  (state) => state.timeRange,
 );
 
 // The portfolios that are currently visible on the dashboard.
@@ -54,7 +55,7 @@ export const selectVisiblePortfoliosDbo = createSelector(
   selectPortfoliosDbo,
   selectSelectedPortfolioIds,
   (portfolios, ids) =>
-    ids === 'all' ? portfolios : portfolios.filter((p) => ids.includes(p.id))
+    ids === 'all' ? portfolios : portfolios.filter((p) => ids.includes(p.id)),
 );
 
 // Aggregate portfolio with a separate fxError so the error can be surfaced
@@ -67,7 +68,7 @@ const selectAggregatePortfolioResult = createSelector(
   (portfolios, tickers, baseCurrency, timeRange) => {
     const merged = mergeTransactionsDbo(portfolios.map((p) => p.transactions));
     return computePortfolioStateSafe(merged, tickers, baseCurrency, timeRange);
-  }
+  },
 );
 
 // Per-portfolio computed states keyed by portfolio ID.
@@ -78,7 +79,7 @@ export const selectAllPortfolioStates = createSelector(
   selectTickers,
   selectBaseCurrency,
   (portfolios, tickers, baseCurrency) =>
-    computeAllPortfolios(portfolios, tickers, baseCurrency, '1Y')
+    computeAllPortfolios(portfolios, tickers, baseCurrency, '1Y'),
 );
 
 // Public view-model — same shape as before (transactions, stocks, dates, summary,
@@ -91,5 +92,5 @@ export const selectState = createSelector(
     ...portfolio,
     loading,
     error: error || fxError,
-  })
+  }),
 );

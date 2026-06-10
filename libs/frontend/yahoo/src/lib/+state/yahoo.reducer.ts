@@ -17,7 +17,7 @@ export const reducer = createReducer(
   on(getTickersSuccess, (state, action) => ({
     ...state,
     tickers: action.tickers,
-  }))
+  })),
 );
 
 export const feature = createFeature({ name: featureKey, reducer });

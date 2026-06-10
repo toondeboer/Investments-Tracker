@@ -30,28 +30,119 @@ const FX_CUTOVER = new Date('2023-07-01T00:00:00.000Z');
 export const goldenDbo: TransactionsDbo = {
   stock: [
     // VUSA.AS — EUR (no FX). Two buys: 2@100 then 1@120 -> 3 shares, €320 cost.
-    { ticker: 'VUSA.AS', type: 'stock', date: '2023-01-10', amount: 2, value: 200, currency: 'EUR' },
-    { ticker: 'VUSA.AS', type: 'stock', date: '2023-07-10', amount: 1, value: 120, currency: 'EUR' },
+    {
+      ticker: 'VUSA.AS',
+      type: 'stock',
+      date: '2023-01-10',
+      amount: 2,
+      value: 200,
+      currency: 'EUR',
+    },
+    {
+      ticker: 'VUSA.AS',
+      type: 'stock',
+      date: '2023-07-10',
+      amount: 1,
+      value: 120,
+      currency: 'EUR',
+    },
     // AAPL — USD. Buy 4@100 BEFORE the FX cutover, 2@110 AFTER -> 6 shares, $620 cost.
-    { ticker: 'AAPL', type: 'stock', date: '2023-03-01', amount: 4, value: 400, currency: 'USD' },
-    { ticker: 'AAPL', type: 'stock', date: '2023-09-01', amount: 2, value: 220, currency: 'USD' },
+    {
+      ticker: 'AAPL',
+      type: 'stock',
+      date: '2023-03-01',
+      amount: 4,
+      value: 400,
+      currency: 'USD',
+    },
+    {
+      ticker: 'AAPL',
+      type: 'stock',
+      date: '2023-09-01',
+      amount: 2,
+      value: 220,
+      currency: 'USD',
+    },
     // LLOY.L — GBp (pence). Buy 100 shares for 5000 pence (£50). Flat FX 1.15.
-    { ticker: 'LLOY.L', type: 'stock', date: '2023-05-01', amount: 100, value: 5000, currency: 'GBp' },
+    {
+      ticker: 'LLOY.L',
+      type: 'stock',
+      date: '2023-05-01',
+      amount: 100,
+      value: 5000,
+      currency: 'GBp',
+    },
   ],
   dividend: [
-    { ticker: 'VUSA.AS', type: 'dividend', date: '2023-04-15', amount: 0, value: 5, currency: 'EUR' },
-    { ticker: 'VUSA.AS', type: 'dividend', date: '2024-01-15', amount: 0, value: 6, currency: 'EUR' },
+    {
+      ticker: 'VUSA.AS',
+      type: 'dividend',
+      date: '2023-04-15',
+      amount: 0,
+      value: 5,
+      currency: 'EUR',
+    },
+    {
+      ticker: 'VUSA.AS',
+      type: 'dividend',
+      date: '2024-01-15',
+      amount: 0,
+      value: 6,
+      currency: 'EUR',
+    },
     // AAPL dividend is AFTER the FX cutover, so its rate is 1.00 under both
     // conversion schemes — keeps the dividend total stable across phases.
-    { ticker: 'AAPL', type: 'dividend', date: '2023-12-01', amount: 0, value: 8, currency: 'USD' },
+    {
+      ticker: 'AAPL',
+      type: 'dividend',
+      date: '2023-12-01',
+      amount: 0,
+      value: 8,
+      currency: 'USD',
+    },
   ],
   commission: [
-    { ticker: 'VUSA.AS', type: 'commission', date: '2023-01-10', amount: 0, value: 3, currency: 'EUR' },
-    { ticker: 'VUSA.AS', type: 'commission', date: '2023-07-10', amount: 0, value: 2, currency: 'EUR' },
+    {
+      ticker: 'VUSA.AS',
+      type: 'commission',
+      date: '2023-01-10',
+      amount: 0,
+      value: 3,
+      currency: 'EUR',
+    },
+    {
+      ticker: 'VUSA.AS',
+      type: 'commission',
+      date: '2023-07-10',
+      amount: 0,
+      value: 2,
+      currency: 'EUR',
+    },
     // AAPL commission: 1 USD before the cutover, 1 USD after.
-    { ticker: 'AAPL', type: 'commission', date: '2023-03-01', amount: 0, value: 1, currency: 'USD' },
-    { ticker: 'AAPL', type: 'commission', date: '2023-09-01', amount: 0, value: 1, currency: 'USD' },
-    { ticker: 'LLOY.L', type: 'commission', date: '2023-05-01', amount: 0, value: 400, currency: 'GBp' },
+    {
+      ticker: 'AAPL',
+      type: 'commission',
+      date: '2023-03-01',
+      amount: 0,
+      value: 1,
+      currency: 'USD',
+    },
+    {
+      ticker: 'AAPL',
+      type: 'commission',
+      date: '2023-09-01',
+      amount: 0,
+      value: 1,
+      currency: 'USD',
+    },
+    {
+      ticker: 'LLOY.L',
+      type: 'commission',
+      date: '2023-05-01',
+      amount: 0,
+      value: 400,
+      currency: 'GBp',
+    },
   ],
 };
 
@@ -59,7 +150,12 @@ export const goldenDbo: TransactionsDbo = {
  * Builds a flat-price ticker spanning the whole history up to GOLDEN_NOW, with
  * one entry per calendar day so that exact-date matches always exist.
  */
-function flatTicker(name: string, currency: string, price: number, start: Date): Ticker {
+function flatTicker(
+  name: string,
+  currency: string,
+  price: number,
+  start: Date,
+): Ticker {
   const dates: Date[] = [];
   const values: number[] = [];
   const cursor = new Date(start);
@@ -96,8 +192,12 @@ const aaplTicker = flatTicker('AAPL', 'USD', 130, HISTORY_START);
 // golden summary asserts.
 //   VUSA: €2/share on 2024-01-15, holding 3 shares -> €6 received.
 //   AAPL: $1/share on 2023-12-01, holding 6 shares -> $6 received.
-vusaTicker.dividends = [{ date: new Date('2024-01-15T00:00:00.000Z'), amountPerShare: 2 }];
-aaplTicker.dividends = [{ date: new Date('2023-12-01T00:00:00.000Z'), amountPerShare: 1 }];
+vusaTicker.dividends = [
+  { date: new Date('2024-01-15T00:00:00.000Z'), amountPerShare: 2 },
+];
+aaplTicker.dividends = [
+  { date: new Date('2023-12-01T00:00:00.000Z'), amountPerShare: 1 },
+];
 
 export const goldenTickers: { [ticker: string]: Ticker } = {
   // Flat prices: VUSA €150, AAPL $130, LLOY 60 pence.
@@ -130,9 +230,30 @@ export const goldenTickers: { [ticker: string]: Ticker } = {
  */
 export const GOLDEN_EXPECTED = {
   native: {
-    VUSA: { value: 450, invested: 320, commission: 5, dividend: 6, shares: 3, avgPrice: 320 / 3 },
-    AAPL: { value: 780, invested: 620, commission: 2, dividend: 6, shares: 6, avgPrice: 620 / 6 },
-    LLOY: { value: 6000, invested: 5000, commission: 400, dividend: 0, shares: 100, avgPrice: 50 },
+    VUSA: {
+      value: 450,
+      invested: 320,
+      commission: 5,
+      dividend: 6,
+      shares: 3,
+      avgPrice: 320 / 3,
+    },
+    AAPL: {
+      value: 780,
+      invested: 620,
+      commission: 2,
+      dividend: 6,
+      shares: 6,
+      avgPrice: 620 / 6,
+    },
+    LLOY: {
+      value: 6000,
+      invested: 5000,
+      commission: 400,
+      dividend: 0,
+      shares: 100,
+      avgPrice: 50,
+    },
   },
   eur: {
     portfolioValue: 1299,

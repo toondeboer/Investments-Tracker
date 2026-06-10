@@ -21,7 +21,7 @@ describe('demo-data', () => {
 
     it('is deterministic (same values across calls)', () => {
       expect(buildDemoSeries().portfolioValues).toEqual(
-        buildDemoSeries().portfolioValues
+        buildDemoSeries().portfolioValues,
       );
     });
 
@@ -30,7 +30,7 @@ describe('demo-data', () => {
       const last = s.portfolioValues.length - 1;
       expect(s.profit[last]).toBeCloseTo(
         s.portfolioValues[last] - s.invested[last],
-        2
+        2,
       );
     });
   });
@@ -39,11 +39,13 @@ describe('demo-data', () => {
     it('derives headline metrics from the series', () => {
       const s = buildDemoSeries();
       const summary = buildDemoSummary(s);
-      expect(summary.portfolioValue).toBe(s.portfolioValues[s.portfolioValues.length - 1]);
+      expect(summary.portfolioValue).toBe(
+        s.portfolioValues[s.portfolioValues.length - 1],
+      );
       expect(summary.startDate).toEqual(s.dates[0]);
       expect(summary.totalReturn.absolute).toBeCloseTo(
         summary.portfolioValue - summary.totalInvested,
-        2
+        2,
       );
     });
   });

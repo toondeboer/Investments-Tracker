@@ -42,9 +42,15 @@ header {
     border: none;
     border-bottom: 1px solid rgba($color-cream, 0.08);
 
-    .logo .wordmark { color: $color-cream; }
-    .nav-links a { color: $color-cream; }
-    .nav-links a.nav-demo-link { color: $color-gold; }
+    .logo .wordmark {
+      color: $color-cream;
+    }
+    .nav-links a {
+      color: $color-cream;
+    }
+    .nav-links a.nav-demo-link {
+      color: $color-gold;
+    }
   }
 }
 
@@ -94,7 +100,9 @@ nav {
 
       // On hover the link itself turns gold — without this, the "ai"
       // emphasis in "Meet the captain" would blend into the hover colour.
-      .ai { color: $color-cream; }
+      .ai {
+        color: $color-cream;
+      }
     }
   }
 
@@ -145,16 +153,22 @@ nav {
   color: $color-bg-base;
   box-shadow: $shadow-gold;
 
-  lucide-icon { transition: transform 0.3s ease; }
+  lucide-icon {
+    transition: transform 0.3s ease;
+  }
 
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba($color-gold, 0.4);
 
-    lucide-icon { transform: translateX(3px); }
+    lucide-icon {
+      transform: translateX(3px);
+    }
   }
 
-  &:active { transform: translateY(0); }
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 // ─── Mobile menu ─────────────────────────────────────────────────────────────
@@ -219,7 +233,9 @@ nav {
 
           // On hover the link itself turns gold — without this, the "ai"
           // emphasis in "Meet the captain" would blend into the hover colour.
-          .ai { color: $color-cream; }
+          .ai {
+            color: $color-cream;
+          }
         }
       }
     }
@@ -273,7 +289,9 @@ nav {
 .hero-word {
   @include gradient-text($accent-gradient);
   display: inline-block;
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
 
   // The word itself is gradient-clipped text (transparent fill + gold
   // background). `-webkit-text-fill-color: transparent` is inherited and
@@ -387,18 +405,30 @@ nav {
 }
 
 .wave-into-alt {
-  .wave-front { fill: $color-bg-alt; }
-  .wave-back  { fill: $color-bg-alt; }
+  .wave-front {
+    fill: $color-bg-alt;
+  }
+  .wave-back {
+    fill: $color-bg-alt;
+  }
 }
 
 .wave-into-base {
-  .wave-front { fill: $color-bg-base; }
-  .wave-back  { fill: $color-bg-base; }
+  .wave-front {
+    fill: $color-bg-base;
+  }
+  .wave-back {
+    fill: $color-bg-base;
+  }
 }
 
 .wave-into-navy {
-  .wave-front { fill: $color-navy; }
-  .wave-back  { fill: $color-navy; }
+  .wave-front {
+    fill: $color-navy;
+  }
+  .wave-back {
+    fill: $color-navy;
+  }
 }
 
 // ─── Captain Spotlight (unique selling point) ────────────────────────────────
@@ -456,11 +486,17 @@ nav {
 
   // This is a primary (gold-gradient) button — the default gold "ai"
   // emphasis would disappear into the background, so use cream for contrast.
-  .ai { color: $color-cream; }
+  .ai {
+    color: $color-cream;
+  }
 
-  lucide-icon { transition: transform 0.3s ease; }
+  lucide-icon {
+    transition: transform 0.3s ease;
+  }
 
-  &:hover lucide-icon { transform: translateX(4px); }
+  &:hover lucide-icon {
+    transform: translateX(4px);
+  }
 }
 
 .captain-preview-card {
@@ -485,7 +521,9 @@ nav {
   padding-bottom: 0.5rem;
   border-bottom: 1px solid $color-border;
 
-  .ai { color: $color-cream; }
+  .ai {
+    color: $color-cream;
+  }
 }
 
 .captain-preview-bubble {
@@ -555,10 +593,23 @@ nav {
   text-align: center;
   cursor: default;
 
-  &:nth-child(1) .feature-icon { background: $accent-gradient; color: $color-bg-base; }
-  &:nth-child(2) .feature-icon { background: linear-gradient(135deg, $color-ocean, $color-navy-light); }
-  &:nth-child(3) .feature-icon { background: linear-gradient(135deg, $color-success, color.adjust($color-success, $lightness: -15%)); }
-  &:nth-child(4) .feature-icon { background: linear-gradient(135deg, $color-muted, $color-ocean); }
+  &:nth-child(1) .feature-icon {
+    background: $accent-gradient;
+    color: $color-bg-base;
+  }
+  &:nth-child(2) .feature-icon {
+    background: linear-gradient(135deg, $color-ocean, $color-navy-light);
+  }
+  &:nth-child(3) .feature-icon {
+    background: linear-gradient(
+      135deg,
+      $color-success,
+      color.adjust($color-success, $lightness: -15%)
+    );
+  }
+  &:nth-child(4) .feature-icon {
+    background: linear-gradient(135deg, $color-muted, $color-ocean);
+  }
 
   h3 {
     @include serif-heading;
@@ -676,9 +727,13 @@ nav {
   align-items: center;
   gap: 0.5rem;
 
-  lucide-icon { transition: transform 0.3s ease; }
+  lucide-icon {
+    transition: transform 0.3s ease;
+  }
 
-  &:hover lucide-icon { transform: translateX(4px); }
+  &:hover lucide-icon {
+    transform: translateX(4px);
+  }
 }
 
 // ─── Footer ──────────────────────────────────────────────────────────────────
@@ -717,16 +772,26 @@ footer {
 
 // ─── Responsive ──────────────────────────────────────────────────────────────
 @include respond-to($bp-md) {
-  .nav-links    { display: none; }
-  .cta-buttons  { display: none; }
-  .mobile-menu  { display: block; }
-  .mobile-nav   { display: block; }
+  .nav-links {
+    display: none;
+  }
+  .cta-buttons {
+    display: none;
+  }
+  .mobile-menu {
+    display: block;
+  }
+  .mobile-nav {
+    display: block;
+  }
 
   .hero {
     padding: 6rem 0 5rem;
   }
 
-  .hero-compass { display: none; }
+  .hero-compass {
+    display: none;
+  }
 
   .hero-title {
     font-size: 2.5rem;
@@ -736,24 +801,40 @@ footer {
     font-size: 1.1rem;
   }
 
-  .course-line { display: none; }
+  .course-line {
+    display: none;
+  }
 
-  .dashboard-preview { padding: 1rem; }
-  .chart-container   { padding: 1rem; }
+  .dashboard-preview {
+    padding: 1rem;
+  }
+  .chart-container {
+    padding: 1rem;
+  }
 
   .features-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
 
-  .feature-card { padding: 1.5rem; }
-  .section-title { font-size: 2rem; }
-  .cta-section h2 { font-size: 2rem; }
-  .cta-section p  { font-size: 1.1rem; }
+  .feature-card {
+    padding: 1.5rem;
+  }
+  .section-title {
+    font-size: 2rem;
+  }
+  .cta-section h2 {
+    font-size: 2rem;
+  }
+  .cta-section p {
+    font-size: 1.1rem;
+  }
 }
 
 @include respond-to($bp-sm) {
-  .container { padding: 0 15px; }
+  .container {
+    padding: 0 15px;
+  }
 
   .hero-title {
     font-size: 2rem;
@@ -777,6 +858,10 @@ footer {
     height: 60px;
   }
 
-  .section-title { font-size: 1.75rem; }
-  .cta-section h2 { font-size: 1.75rem; }
+  .section-title {
+    font-size: 1.75rem;
+  }
+  .cta-section h2 {
+    font-size: 1.75rem;
+  }
 }

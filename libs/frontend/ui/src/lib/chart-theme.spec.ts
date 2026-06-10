@@ -31,7 +31,7 @@ describe('chart-theme helpers', () => {
       expect(formatAxisDate(ms, 90)).toBe('28 Jun 2024');
     });
 
-    it("collapses to month-year for long spans", () => {
+    it('collapses to month-year for long spans', () => {
       expect(formatAxisDate(ms, 1000)).toBe("Jun '24");
     });
   });

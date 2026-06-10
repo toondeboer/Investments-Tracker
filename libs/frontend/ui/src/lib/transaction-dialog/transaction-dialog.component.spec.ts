@@ -8,7 +8,10 @@ import {
 import { Transaction } from '@aws/util';
 
 function setup(data: TransactionDialogData) {
-  const dialogRef = new DialogRef<TransactionDialogComponent, TransactionDialogResult | undefined>();
+  const dialogRef = new DialogRef<
+    TransactionDialogComponent,
+    TransactionDialogResult | undefined
+  >();
   TestBed.configureTestingModule({
     imports: [TransactionDialogComponent],
     providers: [
@@ -24,7 +27,11 @@ describe('TransactionDialogComponent', () => {
   afterEach(() => TestBed.resetTestingModule());
 
   it('locks ticker and currency when adding to an existing holding', () => {
-    const { component } = setup({ mode: 'add', ticker: 'AAPL', lockedCurrency: 'USD' });
+    const { component } = setup({
+      mode: 'add',
+      ticker: 'AAPL',
+      lockedCurrency: 'USD',
+    });
     expect(component.tickerLocked).toBe(true);
     expect(component.currencyLocked).toBe(true);
     expect(component.ticker).toBe('AAPL');
@@ -80,7 +87,10 @@ describe('TransactionDialogComponent', () => {
       value: 300,
       currency: 'USD',
     };
-    const { component, dialogRef } = setup({ mode: 'edit', transaction: original });
+    const { component, dialogRef } = setup({
+      mode: 'edit',
+      transaction: original,
+    });
 
     let result: TransactionDialogResult | undefined;
     dialogRef.afterClosed().subscribe((r) => (result = r));

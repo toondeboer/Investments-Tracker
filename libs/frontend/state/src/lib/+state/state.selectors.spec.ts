@@ -11,7 +11,16 @@ describe('state selectors', () => {
       id: 'p1',
       name: 'One',
       transactions: {
-        stock: [{ ticker: 'VUSA.AS', type: 'stock', date: '2023-01-10', amount: 2, value: 200, currency: 'EUR' }],
+        stock: [
+          {
+            ticker: 'VUSA.AS',
+            type: 'stock',
+            date: '2023-01-10',
+            amount: 2,
+            value: 200,
+            currency: 'EUR',
+          },
+        ],
         dividend: [],
         commission: [],
       },
@@ -25,7 +34,9 @@ describe('state selectors', () => {
 
   describe('selectVisiblePortfoliosDbo', () => {
     it('returns all portfolios when selection is "all"', () => {
-      expect(selectVisiblePortfoliosDbo.projector(portfolios, 'all')).toHaveLength(2);
+      expect(
+        selectVisiblePortfoliosDbo.projector(portfolios, 'all'),
+      ).toHaveLength(2);
     });
 
     it('filters to the selected ids', () => {
@@ -54,12 +65,20 @@ describe('state selectors', () => {
     });
 
     it('surfaces fxError when there is no hard error', () => {
-      const vm = selectState.projector({ ...aggregate, fxError: 'FX failed' }, false, null);
+      const vm = selectState.projector(
+        { ...aggregate, fxError: 'FX failed' },
+        false,
+        null,
+      );
       expect(vm.error).toBe('FX failed');
     });
 
     it('prefers a hard error over fxError', () => {
-      const vm = selectState.projector({ ...aggregate, fxError: 'FX failed' }, false, 'Network down');
+      const vm = selectState.projector(
+        { ...aggregate, fxError: 'FX failed' },
+        false,
+        'Network down',
+      );
       expect(vm.error).toBe('Network down');
     });
   });

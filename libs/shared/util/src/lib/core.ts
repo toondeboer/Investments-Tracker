@@ -93,14 +93,14 @@ export function forwardFillValues(values: number[]): number[] {
 export function addLists(
   list1: number[],
   list2: number[],
-  nanAsZero = false
+  nanAsZero = false,
 ): number[] {
   const result = [];
   for (let i = 0; i < list1.length; i++) {
     if (nanAsZero && Number.isNaN(list1[i]) !== Number.isNaN(list2[i])) {
       result.push(
         (Number.isNaN(list1[i]) ? 0 : list1[i]) +
-          (Number.isNaN(list2[i]) ? 0 : list2[i])
+          (Number.isNaN(list2[i]) ? 0 : list2[i]),
       );
     } else {
       result.push(list1[i] + list2[i]);
@@ -127,8 +127,10 @@ export function multiplyLists(list1: number[], list2: number[]): number[] {
 
 /** True when d1 is strictly before d2 (ignoring time-of-day), in UTC. */
 export function isBeforeDay(d1: Date, d2: Date): boolean {
-  if (d1.getUTCFullYear() !== d2.getUTCFullYear()) return d1.getUTCFullYear() < d2.getUTCFullYear();
-  if (d1.getUTCMonth() !== d2.getUTCMonth()) return d1.getUTCMonth() < d2.getUTCMonth();
+  if (d1.getUTCFullYear() !== d2.getUTCFullYear())
+    return d1.getUTCFullYear() < d2.getUTCFullYear();
+  if (d1.getUTCMonth() !== d2.getUTCMonth())
+    return d1.getUTCMonth() < d2.getUTCMonth();
   return d1.getUTCDate() < d2.getUTCDate();
 }
 
@@ -140,9 +142,13 @@ export function isOnOrBeforeDay(d1: Date, d2: Date): boolean {
 /** Returns the last day of each calendar month from start to end (inclusive), in UTC. */
 export function getMonthlyDates(start: Date, end: Date): Date[] {
   const dates: Date[] = [];
-  const cursor = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1));
+  const cursor = new Date(
+    Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), 1),
+  );
   while (cursor <= end) {
-    const lastDay = new Date(Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 0));
+    const lastDay = new Date(
+      Date.UTC(cursor.getUTCFullYear(), cursor.getUTCMonth() + 1, 0),
+    );
     dates.push(lastDay <= end ? lastDay : new Date(end));
     cursor.setUTCMonth(cursor.getUTCMonth() + 1);
   }
@@ -173,25 +179,35 @@ export function getGranularityForRange(range: TimeRange): ChartGranularity {
  * Returns the chart start date for the selected range.
  * portfolioStart is used for 'ALL' to return the full history.
  */
-export function getRangeStartDate(range: TimeRange, portfolioStart: Date): Date {
+export function getRangeStartDate(
+  range: TimeRange,
+  portfolioStart: Date,
+): Date {
   const today = new Date();
   const y = today.getUTCFullYear();
   const m = today.getUTCMonth();
   const d = today.getUTCDate();
   switch (range) {
-    case '1M': return new Date(Date.UTC(y, m - 1, d));
-    case '3M': return new Date(Date.UTC(y, m - 3, d));
-    case '6M': return new Date(Date.UTC(y, m - 6, d));
-    case 'YTD': return new Date(Date.UTC(y, 0, 1));
-    case '1Y': return new Date(Date.UTC(y - 1, m, d));
-    case '5Y': return new Date(Date.UTC(y - 5, m, d));
-    case 'ALL': return portfolioStart;
+    case '1M':
+      return new Date(Date.UTC(y, m - 1, d));
+    case '3M':
+      return new Date(Date.UTC(y, m - 3, d));
+    case '6M':
+      return new Date(Date.UTC(y, m - 6, d));
+    case 'YTD':
+      return new Date(Date.UTC(y, 0, 1));
+    case '1Y':
+      return new Date(Date.UTC(y - 1, m, d));
+    case '5Y':
+      return new Date(Date.UTC(y - 5, m, d));
+    case 'ALL':
+      return portfolioStart;
   }
 }
 
 export function addPerQuarterByYearLists(
   list1: { year: string; data: number[] }[],
-  list2: { year: string; data: number[] }[]
+  list2: { year: string; data: number[] }[],
 ): { year: string; data: number[] }[] {
   const result = [];
   for (let i = 0; i < list1.length; i++) {

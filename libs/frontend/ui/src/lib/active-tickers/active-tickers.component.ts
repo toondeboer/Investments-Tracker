@@ -50,7 +50,7 @@ export class ActiveTickersComponent implements OnChanges {
     for (let i = 1; i < this.activeStocks.length; i++) {
       chartData = this.addChartDatas(
         chartData,
-        this.stocks[this.activeStocks[i]].chartData
+        this.stocks[this.activeStocks[i]].chartData,
       );
     }
 
@@ -62,21 +62,30 @@ export class ActiveTickersComponent implements OnChanges {
     // are continuous — no NaN to guard against when summing.
     const portfolioValues = addLists(
       chartData1.portfolioValues,
-      chartData2.portfolioValues
+      chartData2.portfolioValues,
     );
     const profit = addLists(chartData1.profit, chartData2.profit);
 
     // Merge full-history data (same monthly dates for all stocks in the portfolio).
     const allTimeDates = chartData1.allTimeDates;
-    const allTimePortfolioValues = addLists(chartData1.allTimePortfolioValues, chartData2.allTimePortfolioValues);
-    const allTimeInvested = addLists(chartData1.allTimeInvested, chartData2.allTimeInvested);
-    const allTimeProfit = addLists(chartData1.allTimeProfit, chartData2.allTimeProfit);
+    const allTimePortfolioValues = addLists(
+      chartData1.allTimePortfolioValues,
+      chartData2.allTimePortfolioValues,
+    );
+    const allTimeInvested = addLists(
+      chartData1.allTimeInvested,
+      chartData2.allTimeInvested,
+    );
+    const allTimeProfit = addLists(
+      chartData1.allTimeProfit,
+      chartData2.allTimeProfit,
+    );
 
     // Cumulative dividends per all-time date, summed across the active stocks —
     // the dividend term in the per-year annual return.
     const allTimeDividends = addLists(
       chartData1.dividend.aggregatedValues,
-      chartData2.dividend.aggregatedValues
+      chartData2.dividend.aggregatedValues,
     );
 
     return {
@@ -84,75 +93,75 @@ export class ActiveTickersComponent implements OnChanges {
         transactionValues: addLists(
           chartData1.stock.transactionValues,
           chartData2.stock.transactionValues,
-          true
+          true,
         ),
         aggregatedValues: addLists(
           chartData1.stock.aggregatedValues,
-          chartData2.stock.aggregatedValues
+          chartData2.stock.aggregatedValues,
         ),
         transactionAmounts: addLists(
           chartData1.stock.transactionAmounts,
           chartData2.stock.transactionAmounts,
-          true
+          true,
         ),
         aggregatedAmounts: addLists(
           chartData1.stock.aggregatedAmounts,
-          chartData2.stock.aggregatedAmounts
+          chartData2.stock.aggregatedAmounts,
         ),
       },
       dividend: {
         transactionValues: addLists(
           chartData1.dividend.transactionValues,
           chartData2.dividend.transactionValues,
-          true
+          true,
         ),
         aggregatedValues: addLists(
           chartData1.dividend.aggregatedValues,
-          chartData2.dividend.aggregatedValues
+          chartData2.dividend.aggregatedValues,
         ),
         transactionAmounts: addLists(
           chartData1.dividend.transactionAmounts,
-          chartData2.dividend.transactionAmounts
+          chartData2.dividend.transactionAmounts,
         ),
         aggregatedAmounts: addLists(
           chartData1.dividend.aggregatedAmounts,
-          chartData2.dividend.aggregatedAmounts
+          chartData2.dividend.aggregatedAmounts,
         ),
         perQuarterByYear: addPerQuarterByYearLists(
           chartData1.dividend.perQuarterByYear,
-          chartData2.dividend.perQuarterByYear
+          chartData2.dividend.perQuarterByYear,
         ),
         perQuarter: {
           yearQuarters: chartData1.dividend.perQuarter.yearQuarters,
           dividends: addLists(
             chartData1.dividend.perQuarter.dividends,
-            chartData2.dividend.perQuarter.dividends
+            chartData2.dividend.perQuarter.dividends,
           ),
         },
         ttmPerQuarter: {
           yearQuarters: chartData1.dividend.ttmPerQuarter.yearQuarters,
           dividends: addLists(
             chartData1.dividend.ttmPerQuarter.dividends,
-            chartData2.dividend.ttmPerQuarter.dividends
+            chartData2.dividend.ttmPerQuarter.dividends,
           ),
         },
       },
       commission: {
         transactionValues: addLists(
           chartData1.commission.transactionValues,
-          chartData2.commission.transactionValues
+          chartData2.commission.transactionValues,
         ),
         aggregatedValues: addLists(
           chartData1.commission.aggregatedValues,
-          chartData2.commission.aggregatedValues
+          chartData2.commission.aggregatedValues,
         ),
         transactionAmounts: addLists(
           chartData1.commission.transactionAmounts,
-          chartData2.commission.transactionAmounts
+          chartData2.commission.transactionAmounts,
         ),
         aggregatedAmounts: addLists(
           chartData1.commission.aggregatedAmounts,
-          chartData2.commission.aggregatedAmounts
+          chartData2.commission.aggregatedAmounts,
         ),
       },
       portfolioValues,
@@ -167,7 +176,7 @@ export class ActiveTickersComponent implements OnChanges {
         allTimeDates,
         allTimePortfolioValues,
         allTimeInvested,
-        allTimeDividends
+        allTimeDividends,
       ),
     };
   }

@@ -43,7 +43,7 @@ function tx(
   date: Date,
   amount: number,
   value: number,
-  type: TransactionType = 'stock'
+  type: TransactionType = 'stock',
 ): Transaction {
   return { ticker: 'VUSA.AS', type, date, amount, value, currency: 'EUR' };
 }
@@ -53,7 +53,7 @@ function dbo(
   amount: number,
   value: number,
   type: TransactionType = 'stock',
-  currency = 'EUR'
+  currency = 'EUR',
 ): TransactionDbo {
   return { ticker: 'VUSA.AS', type, date, amount, value, currency };
 }
@@ -67,7 +67,7 @@ describe('parseCsvInput', () => {
   function row(
     Datum: string,
     Omschrijving: string,
-    amount: string
+    amount: string,
   ): CsvInput[number] {
     return { Datum, Product: product, Omschrijving, '': amount };
   }
@@ -100,7 +100,7 @@ describe('parseCsvInput', () => {
       row(
         '04-10-2023',
         'DEGIRO Transactiekosten en/of kosten van derden',
-        '-1.50'
+        '-1.50',
       ),
       row('05-10-2023', 'DEGIRO Verrekening Promotie', '-2.00'),
       row('06-10-2023', 'Valuta Creditering', '12.34'),
@@ -152,7 +152,10 @@ describe('parseCsvInput', () => {
 
 describe('getMostRecentValueFromList', () => {
   it('returns the last present value and its index', () => {
-    expect(getMostRecentValueFromList([1, 2, 3])).toEqual({ value: 3, index: 2 });
+    expect(getMostRecentValueFromList([1, 2, 3])).toEqual({
+      value: 3,
+      index: 2,
+    });
   });
 
   it('skips trailing NaN/missing placeholders', () => {
@@ -165,15 +168,27 @@ describe('getMostRecentValueFromList', () => {
   it('treats a legitimate trailing 0 as a real value (e.g. sold-out position)', () => {
     // A 0 is NOT a gap — a fully-sold position has 0 shares now and must not
     // walk back to the stale earlier count.
-    expect(getMostRecentValueFromList([1, 2, 0])).toEqual({ value: 0, index: 2 });
-    expect(getMostRecentValueFromList([0, 0, 0])).toEqual({ value: 0, index: 2 });
+    expect(getMostRecentValueFromList([1, 2, 0])).toEqual({
+      value: 0,
+      index: 2,
+    });
+    expect(getMostRecentValueFromList([0, 0, 0])).toEqual({
+      value: 0,
+      index: 2,
+    });
     // ...but a 0 BEHIND a NaN still skips the NaN to reach the 0.
-    expect(getMostRecentValueFromList([3, 0, NaN])).toEqual({ value: 0, index: 1 });
+    expect(getMostRecentValueFromList([3, 0, NaN])).toEqual({
+      value: 0,
+      index: 1,
+    });
   });
 
   it('returns { value: 0, index: -1 } when there is no present value', () => {
     expect(getMostRecentValueFromList([])).toEqual({ value: 0, index: -1 });
-    expect(getMostRecentValueFromList([NaN, NaN])).toEqual({ value: 0, index: -1 });
+    expect(getMostRecentValueFromList([NaN, NaN])).toEqual({
+      value: 0,
+      index: -1,
+    });
   });
 });
 
@@ -230,14 +245,14 @@ describe('isSameDay', () => {
     expect(
       isSameDay(
         new Date('2023-01-02T09:30:00.000Z'),
-        new Date('2023-01-02T23:59:00.000Z')
-      )
+        new Date('2023-01-02T23:59:00.000Z'),
+      ),
     ).toBe(true);
     expect(
       isSameDay(
         new Date('2023-01-02T00:00:00.000Z'),
-        new Date('2023-01-03T00:00:00.000Z')
-      )
+        new Date('2023-01-03T00:00:00.000Z'),
+      ),
     ).toBe(false);
   });
 });
@@ -323,12 +338,17 @@ describe('getPortfolioValues', () => {
     const ticker: Ticker = {
       name: 'X',
       currency: 'EUR',
-      dates: [new Date('2023-01-02T00:00:00.000Z'), new Date('2023-01-04T00:00:00.000Z')],
+      dates: [
+        new Date('2023-01-02T00:00:00.000Z'),
+        new Date('2023-01-04T00:00:00.000Z'),
+      ],
       values: [100, NaN],
       dividends: [],
     };
     // No NaN must leak in: holding nothing is worth 0 on every day.
-    expect(getPortfolioValues(dates, aggregatedAmounts, ticker)).toEqual([0, 0, 0]);
+    expect(getPortfolioValues(dates, aggregatedAmounts, ticker)).toEqual([
+      0, 0, 0,
+    ]);
   });
 
   it('forward-fills the last known price on closed days (no NaN produced)', () => {
@@ -342,12 +362,17 @@ describe('getPortfolioValues', () => {
     const ticker: Ticker = {
       name: 'X',
       currency: 'EUR',
-      dates: [new Date('2023-01-06T00:00:00.000Z'), new Date('2023-01-09T00:00:00.000Z')],
+      dates: [
+        new Date('2023-01-06T00:00:00.000Z'),
+        new Date('2023-01-09T00:00:00.000Z'),
+      ],
       values: [100, 110],
       dividends: [],
     };
     // Saturday and Sunday must carry Friday's price, not NaN or 0.
-    expect(getPortfolioValues(dates, aggregatedAmounts, ticker)).toEqual([200, 200, 200, 220]);
+    expect(getPortfolioValues(dates, aggregatedAmounts, ticker)).toEqual([
+      200, 200, 200, 220,
+    ]);
   });
 
   it('uses the last known price on the leading date when it is a closed day', () => {
@@ -361,12 +386,17 @@ describe('getPortfolioValues', () => {
     const ticker: Ticker = {
       name: 'X',
       currency: 'EUR',
-      dates: [new Date('2023-01-06T00:00:00.000Z'), new Date('2023-01-09T00:00:00.000Z')],
+      dates: [
+        new Date('2023-01-06T00:00:00.000Z'),
+        new Date('2023-01-09T00:00:00.000Z'),
+      ],
       values: [90, 100],
       dividends: [],
     };
     // Sunday should use Friday's price (90), not 0 or NaN.
-    expect(getPortfolioValues(dates, aggregatedAmounts, ticker)).toEqual([90, 100]);
+    expect(getPortfolioValues(dates, aggregatedAmounts, ticker)).toEqual([
+      90, 100,
+    ]);
   });
 });
 
@@ -400,10 +430,12 @@ describe('getDividendTtmPerQuarter', () => {
       dividends: [1, 2, 3, 4, 5],
     };
 
-    expect(getDividendTtmPerQuarter(input).dividends).toEqual([1, 3, 6, 10, 14]);
+    expect(getDividendTtmPerQuarter(input).dividends).toEqual([
+      1, 3, 6, 10, 14,
+    ]);
     // year/quarter labels pass through unchanged
     expect(getDividendTtmPerQuarter(input).yearQuarters).toEqual(
-      input.yearQuarters
+      input.yearQuarters,
     );
   });
 });
@@ -421,7 +453,12 @@ describe('getYieldPerYear (Modified Dietz, per year in isolation)', () => {
     const netInvested = [100, 100, 100];
     const dividends = [0, 0, 0];
 
-    const result = getYieldPerYear(dates, portfolioValues, netInvested, dividends);
+    const result = getYieldPerYear(
+      dates,
+      portfolioValues,
+      netInvested,
+      dividends,
+    );
     expect(result.years).toEqual(['2023', '2024']);
     // Each year stands alone: +20% then +20% (cumulative would be +20%, +44%).
     expect(result.yields[0]).toBeCloseTo(20, 10); // (120-100)/100
@@ -439,7 +476,12 @@ describe('getYieldPerYear (Modified Dietz, per year in isolation)', () => {
     const netInvested = [0, 100, 100];
     const dividends = [0, 0, 0];
 
-    const result = getYieldPerYear(dates, portfolioValues, netInvested, dividends);
+    const result = getYieldPerYear(
+      dates,
+      portfolioValues,
+      netInvested,
+      dividends,
+    );
     // €10 gain on €100 invested for ~half the year. Average capital ≈ €50, so
     // the period return is ≈ +20% (not +10%), because the money was only at work
     // for part of the year. (183/365 weight on the mid-year buy.)
@@ -448,13 +490,21 @@ describe('getYieldPerYear (Modified Dietz, per year in isolation)', () => {
   });
 
   it('includes dividends received as part of the annual return', () => {
-    const dates = [new Date(Date.UTC(2023, 11, 31)), new Date(Date.UTC(2024, 11, 31))];
+    const dates = [
+      new Date(Date.UTC(2023, 11, 31)),
+      new Date(Date.UTC(2024, 11, 31)),
+    ];
     // Held flat at €100; €5 dividend in 2023, a further €3 in 2024 (cumulative).
     const portfolioValues = [100, 100];
     const netInvested = [100, 100];
     const dividends = [5, 8];
 
-    const result = getYieldPerYear(dates, portfolioValues, netInvested, dividends);
+    const result = getYieldPerYear(
+      dates,
+      portfolioValues,
+      netInvested,
+      dividends,
+    );
     expect(result.profit).toEqual([5, 3]); // dividend income each year
     expect(result.yields[0]).toBeGreaterThan(0);
     expect(result.yields[1]).toBeCloseTo(3, 10); // €3 income on €100 base
@@ -471,7 +521,12 @@ describe('getYieldPerYear (Modified Dietz, per year in isolation)', () => {
     const netInvested = [100, -50, -50];
     const dividends = [0, 0, 0];
 
-    const result = getYieldPerYear(dates, portfolioValues, netInvested, dividends);
+    const result = getYieldPerYear(
+      dates,
+      portfolioValues,
+      netInvested,
+      dividends,
+    );
     expect(result.years).toEqual(['2023', '2024']);
     expect(result.yields[0]).toBeCloseTo(50, 10); // realized +50% in 2023
     expect(result.yields[1]).toBe(0); // nothing held in 2024 (isolated)
@@ -480,12 +535,20 @@ describe('getYieldPerYear (Modified Dietz, per year in isolation)', () => {
   });
 
   it('returns 0% (not Infinity/NaN) when no capital was at work', () => {
-    const dates = [new Date(Date.UTC(2023, 11, 31)), new Date(Date.UTC(2024, 11, 31))];
+    const dates = [
+      new Date(Date.UTC(2023, 11, 31)),
+      new Date(Date.UTC(2024, 11, 31)),
+    ];
     const portfolioValues = [0, 0];
     const netInvested = [0, 0];
     const dividends = [0, 0];
 
-    const result = getYieldPerYear(dates, portfolioValues, netInvested, dividends);
+    const result = getYieldPerYear(
+      dates,
+      portfolioValues,
+      netInvested,
+      dividends,
+    );
     expect(result.yields).toEqual([0, 0]);
     result.yields.forEach((y) => expect(Number.isFinite(y)).toBe(true));
   });
@@ -526,7 +589,10 @@ describe('sortTransactions', () => {
 
 describe('transactionsDboToStocks / getStartDate / getCurrencies', () => {
   const input: TransactionsDbo = {
-    stock: [dbo('2023-05-10', 1, 100, 'stock', 'USD'), dbo('2023-01-15', 2, 200, 'stock', 'USD')],
+    stock: [
+      dbo('2023-05-10', 1, 100, 'stock', 'USD'),
+      dbo('2023-01-15', 2, 200, 'stock', 'USD'),
+    ],
     dividend: [],
     commission: [],
   };
@@ -541,7 +607,7 @@ describe('transactionsDboToStocks / getStartDate / getCurrencies', () => {
   it('getStartDate returns the earliest transaction date across stocks', () => {
     const stocks = transactionsDboToStocks(input);
     expect(getStartDate(stocks).getTime()).toBe(
-      new Date('2023-01-15').getTime()
+      new Date('2023-01-15').getTime(),
     );
   });
 
@@ -571,7 +637,9 @@ describe('transactionsDboToStocks / getStartDate / getCurrencies', () => {
     const stocks = transactionsDboToStocks(gbpInput);
     expect(stocks['VUSA.AS'].currency).toEqual({ value: 'GBP' });
     // EUR display: GBPEUR=X. USD display: GBPUSD=X.
-    expect(getCurrencies(stocks)).toEqual(expect.arrayContaining(['GBPEUR=X', 'GBPUSD=X']));
+    expect(getCurrencies(stocks)).toEqual(
+      expect.arrayContaining(['GBPEUR=X', 'GBPUSD=X']),
+    );
     expect(getCurrencies(stocks)).toHaveLength(2);
   });
 
@@ -589,14 +657,23 @@ describe('transactionsDboToStocks / getStartDate / getCurrencies', () => {
     const mixed: TransactionsDbo = {
       stock: [
         dbo('2023-01-10', 1, 100, 'stock', 'GBP'),
-        { ticker: 'LLOY.L', type: 'stock', date: '2023-01-11', amount: 100, value: 5000, currency: 'GBp' },
+        {
+          ticker: 'LLOY.L',
+          type: 'stock',
+          date: '2023-01-11',
+          amount: 100,
+          value: 5000,
+          currency: 'GBp',
+        },
       ],
       dividend: [],
       commission: [],
     };
     const stocks = transactionsDboToStocks(mixed);
     // GBP and GBp share the same FX ticker base — deduplicated to just 2.
-    expect(getCurrencies(stocks)).toEqual(expect.arrayContaining(['GBPEUR=X', 'GBPUSD=X']));
+    expect(getCurrencies(stocks)).toEqual(
+      expect.arrayContaining(['GBPEUR=X', 'GBPUSD=X']),
+    );
     expect(getCurrencies(stocks)).toHaveLength(2);
   });
 });
@@ -664,7 +741,7 @@ describe('yahooObjectToTicker', () => {
             {
               meta: { currency: 'USD', symbol: 'AAPL' },
               timestamp: [ts1, ts2], // 2 timestamps
-              indicators: { quote: [{ close: [150 ] } as any] }, // only 1 close
+              indicators: { quote: [{ close: [150] } as any] }, // only 1 close
             } as any,
           ],
         },
@@ -699,7 +776,12 @@ describe('buildDividendTransactions', () => {
   });
 
   it('sets convertedValue from the converter at the ex-date', () => {
-    const [tx] = buildDividendTransactions(ticker, amountOfShares, periodDates, (v) => v * 0.9);
+    const [tx] = buildDividendTransactions(
+      ticker,
+      amountOfShares,
+      periodDates,
+      (v) => v * 0.9,
+    );
     expect(tx.value).toBe(20);
     expect(tx.convertedValue).toBeCloseTo(18); // 20 * 0.9
   });
@@ -712,13 +794,16 @@ describe('holding & transaction mutation helpers', () => {
     value: number,
     type: TransactionType = 'stock',
     currency = 'EUR',
-    amount = 1
+    amount = 1,
   ): TransactionDbo {
     return { ticker, type, date, amount, value, currency };
   }
 
   const base: TransactionsDbo = {
-    stock: [row('AAPL', '2023-01-01', 100, 'stock', 'USD'), row('VUSA.AS', '2023-02-01', 50)],
+    stock: [
+      row('AAPL', '2023-01-01', 100, 'stock', 'USD'),
+      row('VUSA.AS', '2023-02-01', 50),
+    ],
     dividend: [row('AAPL', '2023-03-01', 5, 'dividend', 'USD')],
     commission: [row('AAPL', '2023-01-01', 1, 'commission', 'USD')],
   };
@@ -736,7 +821,12 @@ describe('holding & transaction mutation helpers', () => {
 
   describe('applyTransactionEdit', () => {
     it('replaces the matching transaction with the updated one', () => {
-      const key: TransactionKey = { type: 'stock', ticker: 'AAPL', date: '2023-01-01', value: 100 };
+      const key: TransactionKey = {
+        type: 'stock',
+        ticker: 'AAPL',
+        date: '2023-01-01',
+        value: 100,
+      };
       const updated = row('AAPL', '2023-01-05', 120, 'stock', 'USD', 2);
       const result = applyTransactionEdit(base, key, updated);
 
@@ -748,7 +838,12 @@ describe('holding & transaction mutation helpers', () => {
     });
 
     it('moves a transaction between type lists when the type changes', () => {
-      const key: TransactionKey = { type: 'stock', ticker: 'AAPL', date: '2023-01-01', value: 100 };
+      const key: TransactionKey = {
+        type: 'stock',
+        ticker: 'AAPL',
+        date: '2023-01-01',
+        value: 100,
+      };
       const updated = row('AAPL', '2023-01-01', 100, 'dividend', 'USD');
       const result = applyTransactionEdit(base, key, updated);
 
@@ -772,11 +867,15 @@ describe('holding & transaction mutation helpers', () => {
     it('rewrites the currency for the holding across all lists, leaving others alone', () => {
       const result = setHoldingCurrency(base, 'AAPL', 'EUR');
 
-      expect(result.stock.find((t) => t.ticker === 'AAPL')?.currency).toBe('EUR');
+      expect(result.stock.find((t) => t.ticker === 'AAPL')?.currency).toBe(
+        'EUR',
+      );
       expect(result.dividend[0].currency).toBe('EUR');
       expect(result.commission[0].currency).toBe('EUR');
       // VUSA.AS unaffected.
-      expect(result.stock.find((t) => t.ticker === 'VUSA.AS')?.currency).toBe('EUR');
+      expect(result.stock.find((t) => t.ticker === 'VUSA.AS')?.currency).toBe(
+        'EUR',
+      );
     });
   });
 });

@@ -7,8 +7,16 @@
   justify-content: center;
   background: $color-bg-base;
   background-image:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(30, 96, 145, 0.18) 0%, transparent 70%),
-    radial-gradient(ellipse 50% 40% at 80% 100%, rgba(201, 168, 76, 0.08) 0%, transparent 60%);
+    radial-gradient(
+      ellipse 80% 60% at 50% 0%,
+      rgba(30, 96, 145, 0.18) 0%,
+      transparent 70%
+    ),
+    radial-gradient(
+      ellipse 50% 40% at 80% 100%,
+      rgba(201, 168, 76, 0.08) 0%,
+      transparent 60%
+    );
   padding: 24px;
 }
 
@@ -26,8 +34,14 @@
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .wordmark {
@@ -39,7 +53,9 @@
   text-align: center;
   margin-bottom: 28px;
 
-  .ai { color: $color-gold; }
+  .ai {
+    color: $color-gold;
+  }
 }
 
 .check-icon {
@@ -118,7 +134,9 @@
     outline: none;
     transition: $transition-base;
 
-    &::placeholder { color: rgba(143, 168, 192, 0.5); }
+    &::placeholder {
+      color: rgba(143, 168, 192, 0.5);
+    }
 
     &:focus {
       border-color: $color-gold;
@@ -129,7 +147,10 @@
       border-color: rgba(231, 76, 60, 0.6);
     }
 
-    &:disabled { opacity: 0.5; cursor: not-allowed; }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 
   &.code-input {
@@ -144,7 +165,9 @@
   font-size: 0.75rem;
 }
 
-.mismatch-hint { color: #ff6b6b; }
+.mismatch-hint {
+  color: #ff6b6b;
+}
 
 .btn-primary {
   width: 100%;
@@ -170,7 +193,10 @@
     box-shadow: $shadow-gold;
   }
 
-  &:disabled { opacity: 0.45; cursor: not-allowed; }
+  &:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
 }
 
 .spinner {
@@ -183,7 +209,9 @@
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .footer-link {
@@ -193,7 +221,8 @@
   text-align: center;
   margin: 20px 0 0;
 
-  a, .link-btn {
+  a,
+  .link-btn {
     color: $color-gold;
     text-decoration: none;
     font-weight: 500;
@@ -204,7 +233,13 @@
     font-family: inherit;
     font-size: inherit;
 
-    &:hover { color: $color-gold-light; text-decoration: underline; }
-    &:disabled { opacity: 0.5; cursor: not-allowed; }
+    &:hover {
+      color: $color-gold-light;
+      text-decoration: underline;
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
   }
 }

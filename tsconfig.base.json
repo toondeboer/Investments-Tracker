@@ -15,6 +15,7 @@
     "noImplicitOverride": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@aws/captain": ["libs/frontend/captain/src/index.ts"],

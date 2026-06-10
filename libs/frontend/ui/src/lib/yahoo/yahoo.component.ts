@@ -18,8 +18,8 @@ import { AsyncPipe, CommonModule } from '@angular/common';
     BarChartPerQuarterByYearComponent,
     BarChartComponent,
     AsyncPipe,
-    CommonModule
-  ]
+    CommonModule,
+  ],
 })
 export class YahooComponent {
   private store = inject(Store);
@@ -34,13 +34,14 @@ export class YahooComponent {
 
   /** Last day of each quarter (e.g. Q0 → March 31) for use as x-axis dates. */
   quarterDates(yearQuarters: YearQuarter[]): Date[] {
-    return yearQuarters.map(({ year, quarter }) =>
-      new Date(Date.UTC(parseInt(year), (quarter + 1) * 3, 0))
+    return yearQuarters.map(
+      ({ year, quarter }) =>
+        new Date(Date.UTC(parseInt(year), (quarter + 1) * 3, 0)),
     );
   }
 
   /** Map 0-dividend quarters to NaN so the chart only draws dots on active quarters. */
   quarterValues(dividends: number[]): number[] {
-    return dividends.map(v => v === 0 ? NaN : v);
+    return dividends.map((v) => (v === 0 ? NaN : v));
   }
 }

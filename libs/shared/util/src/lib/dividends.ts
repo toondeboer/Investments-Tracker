@@ -5,11 +5,14 @@ import {
   YearQuarter,
 } from './types';
 import { getQuarter, isOnOrBeforeDay } from './core';
-import { getTransactionAmountsAndValues, getTransactionAmountsAndValuesByPeriod } from './transactions';
+import {
+  getTransactionAmountsAndValues,
+  getTransactionAmountsAndValuesByPeriod,
+} from './transactions';
 
 export function getDividendPerQuarterByYear(
   startDate: Date,
-  dividends: Transaction[]
+  dividends: Transaction[],
 ): { year: string; data: number[] }[] {
   const dividendsByYear: { [year: string]: number[] } = {};
 
@@ -38,7 +41,7 @@ export function getDividendPerQuarterByYear(
 
 export function getDividendPerQuarter(
   startDate: Date,
-  dividendPerQuarterByYear: { year: string; data: number[] }[]
+  dividendPerQuarterByYear: { year: string; data: number[] }[],
 ): { yearQuarters: YearQuarter[]; dividends: number[] } {
   const now = new Date();
   const yearQuarters: YearQuarter[] = [];
@@ -86,13 +89,13 @@ export function updateDividends(
   amountOfShares: number[],
   ticker: Ticker,
   dates: Date[],
-  startDate: Date
+  startDate: Date,
 ): DividendTransactionChartData {
   const transactions: Transaction[] = ticker.dividends.map((dividend) => {
     const amount = getAmountOfSharesForDate(
       amountOfShares,
       dates,
-      dividend.date
+      dividend.date,
     );
     return {
       ticker: ticker.name,
@@ -106,15 +109,15 @@ export function updateDividends(
 
   const dividendTransactionAmountsAndValues = getTransactionAmountsAndValues(
     dates,
-    transactions
+    transactions,
   );
   const dividendPerQuarterByYear = getDividendPerQuarterByYear(
     startDate,
-    transactions
+    transactions,
   );
   const dividendPerQuarter = getDividendPerQuarter(
     startDate,
-    dividendPerQuarterByYear
+    dividendPerQuarterByYear,
   );
   const dividendTtmPerQuarter = getDividendTtmPerQuarter(dividendPerQuarter);
 
@@ -135,7 +138,7 @@ export function updateDividends(
 function getAmountOfSharesForDate(
   amountOfShares: number[],
   dates: Date[],
-  date: Date
+  date: Date,
 ): number {
   let result = 0;
   for (let i = 0; i < dates.length; i++) {
@@ -166,10 +169,14 @@ export function buildDividendTransactions(
   ticker: Ticker,
   amountOfShares: number[],
   periodDates: Date[],
-  fxConvert?: (value: number, date: Date) => number
+  fxConvert?: (value: number, date: Date) => number,
 ): Transaction[] {
   return ticker.dividends.map((div) => {
-    const amount = getAmountOfSharesForDate(amountOfShares, periodDates, div.date);
+    const amount = getAmountOfSharesForDate(
+      amountOfShares,
+      periodDates,
+      div.date,
+    );
     const nativeValue = div.amountPerShare * amount;
     return {
       ticker: ticker.name,
@@ -192,7 +199,7 @@ export function updateDividendsByPeriod(
   // Optional converter applied to each dividend's value at its own ex-date, so
   // dividends received are expressed in the display currency at the rate that
   // applied when the cash was paid (spot-at-receipt).
-  fxConvert?: (value: number, date: Date) => number
+  fxConvert?: (value: number, date: Date) => number,
 ): DividendTransactionChartData {
   // The chart series consume value in the display currency, so collapse
   // converted → value here (buildDividendTransactions keeps them separate for
@@ -201,16 +208,23 @@ export function updateDividendsByPeriod(
     ticker,
     amountOfShares,
     periodDates,
-    fxConvert
+    fxConvert,
   ).map((tx) => ({ ...tx, value: tx.convertedValue ?? tx.value }));
 
-  const dividendTransactionAmountsAndValues = getTransactionAmountsAndValuesByPeriod(
-    periodDates,
+  const dividendTransactionAmountsAndValues =
+    getTransactionAmountsAndValuesByPeriod(
+      periodDates,
+      transactions,
+      rangeStart,
+    );
+  const dividendPerQuarterByYear = getDividendPerQuarterByYear(
+    startDate,
     transactions,
-    rangeStart
   );
-  const dividendPerQuarterByYear = getDividendPerQuarterByYear(startDate, transactions);
-  const dividendPerQuarter = getDividendPerQuarter(startDate, dividendPerQuarterByYear);
+  const dividendPerQuarter = getDividendPerQuarter(
+    startDate,
+    dividendPerQuarterByYear,
+  );
   const dividendTtmPerQuarter = getDividendTtmPerQuarter(dividendPerQuarter);
 
   return {

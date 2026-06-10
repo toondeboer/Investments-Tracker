@@ -8,11 +8,7 @@ import { AsyncPipe, CommonModule } from '@angular/common';
   selector: 'aws-transactions',
   templateUrl: './transactions.component.html',
   styleUrls: ['./transactions.component.scss'],
-  imports: [
-    TransactionsTableComponent,
-    AsyncPipe,
-    CommonModule
-  ]
+  imports: [TransactionsTableComponent, AsyncPipe, CommonModule],
 })
 export class TransactionsComponent implements OnInit {
   private store = inject(Store);
