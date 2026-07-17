@@ -1,8 +1,8 @@
 version = 0.1
 
 # Deploy with:  sam deploy --config-env prod
-# (CodeUri points at the esbuild output, so run `node libs/backend/lambdas/build.mjs`
-#  first — the buildspec does this in CI.)
+# (sam build packages the Python handlers in services/ with requirements.txt —
+#  the buildspec runs it in CI.)
 #
 # The Captain Lambda reads the OpenAI API key from the SSM SecureString named by
 # OpenAIParamName (default /sailor/openai-api-key). Create it once, out of band:

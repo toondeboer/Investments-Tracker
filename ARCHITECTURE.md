@@ -4,7 +4,8 @@ An [Nx](https://nx.dev) monorepo: an **Angular 21 + NgRx 21** frontend and a **P
 DynamoDB** backend (managed with AWS SAM), authenticated with **Cognito (OIDC)**. It tracks a
 stock/dividend portfolio, imports DEGIRO CSV exports, and pulls prices from Yahoo Finance.
 
-See [README.md](README.md) for setup and run instructions.
+See [README.md](README.md) for setup and run instructions, and
+[docs/OPERATIONS.md](docs/OPERATIONS.md) for deploy/admin runbooks.
 
 ## Projects
 
@@ -148,11 +149,12 @@ services differ:
 > **Note — isolated dev pool.** Dev uses its own `sailor-dev` Cognito pool, so test users and the
 > `admin` group never touch prod. `environment.ts` (frontend) and the local Lambdas' `env.json`
 > both point at it; `environment.prod.ts` keeps the prod pool. DynamoDB and Stripe are isolated too
-> (local table; test mode). See the README's "Test users" section for the pool/seed setup.
+> (local table; test mode). See [docs/OPERATIONS.md](docs/OPERATIONS.md#test-users-dev-cognito-pool)
+> for the pool/seed setup.
 
 ## Backend
 
-Three Python 3.13 Lambdas behind one API Gateway:
+Four Python 3.13 Lambdas behind one API Gateway:
 
 - **dynamodb** (`handler_dynamodb.py`) — CRUD over the `sailor` table (partition key =
   Cognito `sub`); verifies the Cognito ID token's signature via JWKS; CORS via an origin allowlist
@@ -192,10 +194,18 @@ language — a chat panel plus an auto-generated, daily-cached "Captain's read" 
 - **Cost control.** Requests go through an authenticated Lambda (key server-side), use the cheapest
   small model with a tight `max_tokens`, and the dashboard insight is cached per day + portfolio in
   `localStorage`, so a reload or same-day revisit triggers no new call. On top of that, two quota
-  layers bound spend: a **per-user monthly limit** (free vs paid, raised via a Stripe subscription)
-  and a **global monthly ceiling** that hard-stops all calls once reached — the real "never spend
-  more than I earn" guarantee. Cognito `admin`-group members bypass both. See "Captain limits &
-  subscription" in the README.
+  layers bound spend (atomic, race-free DynamoDB counters that self-expire via TTL):
+  - **Per-user monthly quota** — fairness. Free users get `FREE_MONTHLY_LIMIT` calls/month; paid
+    users get `PAID_MONTHLY_LIMIT` (raised via a Stripe subscription). Hitting it returns `429`
+    and the chat panel shows an **Upgrade** call-to-action.
+  - **Global monthly ceiling** — the hard spend cap: once the whole user base makes
+    `GLOBAL_MONTHLY_LIMIT` calls in a month, all captain calls stop until the next month (`0`
+    disables it) — the real "never spend more than I earn" guarantee. Derive it from live
+    pricing — `floor(monthly_budget / cost_per_call)`. At GPT-5.4-mini rates a worst-case call
+    is ≈ $0.0105, so `450` keeps a $5/mo budget safe (~$4.73).
+  - **Admin bypass** — Cognito `admin`-group members bypass both.
+
+  Setup and limit configuration: [docs/OPERATIONS.md](docs/OPERATIONS.md#captain-quotas--spend-caps).
 - **Demo mode.** The public `/demo` page is unauthenticated, so it never calls the Lambda — the chat
   and insight render canned, offline responses from `captain.demo.ts` (the same advice-refusal
   behaviour, mirrored client-side).

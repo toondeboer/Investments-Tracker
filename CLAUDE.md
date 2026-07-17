@@ -1,13 +1,18 @@
 # CLAUDE.md
 
-1. Read README.md and ARCHITECTURE.md before making changes.
+1. Read README.md (setup, financial formulas) and ARCHITECTURE.md (design) before making
+   changes. Operational runbooks live in docs/OPERATIONS.md; planned work in ROADMAP.md —
+   do not implement roadmap phases unless asked.
 
 ## Critical invariants
 
-- AppComponent must remain non-standalone.
+- AppComponent must remain non-standalone (scheduled to be lifted in the modernization
+  phase — see ROADMAP.md; until that migration lands, do not convert it).
 - state must never import yahoo.
 - Portfolio calculations belong in computePortfolioState(), not reducers.
 - The product name is always written **sailor** — all lowercase, including at the start of a sentence or heading.
+- AWS costs must stay ≈ $5/month — no new AWS services or always-on infrastructure without
+  checking pricing first.
 
 ## Testing
 
