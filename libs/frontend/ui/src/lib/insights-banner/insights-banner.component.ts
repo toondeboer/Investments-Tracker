@@ -2,6 +2,7 @@ import { Component, DestroyRef, Input, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
+import { SkeletonComponent } from '../skeleton/skeleton.component';
 import { Store } from '@ngrx/store';
 import { filter, take } from 'rxjs';
 import { selectState } from '@aws/state';
@@ -21,7 +22,7 @@ import { parseInsightNarrative } from './insight-narrative';
 @Component({
   selector: 'aws-insights-banner',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, SkeletonComponent],
   templateUrl: './insights-banner.component.html',
   styleUrls: ['./insights-banner.component.scss'],
 })

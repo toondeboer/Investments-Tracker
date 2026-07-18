@@ -20,6 +20,7 @@ import { SummaryComponent } from '../summary/summary.component';
 import { AsyncPipe, CommonModule, DatePipe } from '@angular/common';
 import { ActiveTickersComponent } from '../active-tickers/active-tickers.component';
 import { InsightsBannerComponent } from '../insights-banner/insights-banner.component';
+import { SkeletonComponent } from '../skeleton/skeleton.component';
 
 @Component({
   selector: 'aws-dashboard',
@@ -34,6 +35,7 @@ import { InsightsBannerComponent } from '../insights-banner/insights-banner.comp
     InsightsBannerComponent,
     LucideAngularModule,
     RouterLink,
+    SkeletonComponent,
   ],
 })
 export class DashboardComponent implements OnInit {

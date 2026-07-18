@@ -11,6 +11,11 @@
   </div>
 
   <div class="portfolio-items">
+    @if (loading && !portfolios.length) {
+      <aws-skeleton class="mb-2 h-16"></aws-skeleton>
+      <aws-skeleton class="mb-2 h-16"></aws-skeleton>
+      <aws-skeleton class="h-16"></aws-skeleton>
+    }
     @for (portfolio of portfolios; track portfolio) {
       <div
         class="portfolio-item"
@@ -50,7 +55,7 @@
       </div>
     }
 
-    @if (portfolios.length === 0) {
+    @if (!loading && portfolios.length === 0) {
       <div class="empty-state">
         No portfolios yet.<br />Click + to create one.
       </div>

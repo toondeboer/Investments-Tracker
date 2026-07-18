@@ -17,13 +17,9 @@ body {
 }
 
 // ─── Layout utilities ────────────────────────────────────────────────────────
-.grid {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-}
+// NOTE: never define a global class that shadows a Tailwind core utility
+// (a former global `.grid { display: flex }` here silently broke Tailwind's
+// `grid` everywhere — its flex layout now lives scoped in summary/transactions).
 
 .bold {
   font-weight: 900;

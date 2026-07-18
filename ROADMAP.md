@@ -42,10 +42,12 @@ Goal: sailor feels like it was designed for a phone, not shrunk to fit one.
       (dashboard, portfolios, settings) fit the pattern exactly. Keep the sidenav at
       ≥ `md`. Migrate the hand-rolled `MediaQueryList` handling to CDK
       `BreakpointObserver` (already a dependency).
-- [ ] ⬜ **Skeleton loading states.** One reusable `skeleton` component in
-      `libs/frontend/ui` (Tailwind `animate-pulse`), applied to the summary tiles,
-      charts, active-tickers, transactions table, portfolio list, and insights banner —
-      replacing the single `vm.loading` progress bar.
+- [x] ✅ **Skeleton loading states.** One reusable `skeleton` component in
+      `libs/frontend/ui` (Tailwind `animate-pulse`), applied on initial load to the
+      dashboard (insights banner, summary tiles, holdings/chart area), the portfolio
+      list, and the portfolio detail pane; the insights banner's bespoke shimmer was
+      unified onto it. The slim progress bars remain for background refetches, where
+      content is already on screen.
 - [ ] ⬜ **Touch-target audit.** Everything tappable ≥ 44×44 px: nav items, table row
       actions, date-picker, dialog buttons.
 - [ ] ⬜ **Responsive dialogs.** `DialogService` is the single creation point — add

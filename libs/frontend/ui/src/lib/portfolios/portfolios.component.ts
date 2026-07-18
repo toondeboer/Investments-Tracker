@@ -17,6 +17,7 @@ import {
   renamePortfolio,
   selectAllPortfolioStates,
   selectBaseCurrency,
+  selectLoading,
   selectPortfoliosDbo,
 } from '@aws/state';
 import { PortfolioDbo, Stock } from '@aws/util';
@@ -56,6 +57,7 @@ export class PortfoliosComponent implements OnInit, OnDestroy {
   portfolios$ = this.store.select(selectPortfoliosDbo);
   allPortfolioStates$ = this.store.select(selectAllPortfolioStates);
   baseCurrency$ = this.store.select(selectBaseCurrency);
+  loading$ = this.store.select(selectLoading);
   selectedPortfolioId: string | null = null;
   showDetail = false;
 

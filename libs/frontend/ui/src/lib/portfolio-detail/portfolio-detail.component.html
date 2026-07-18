@@ -24,6 +24,15 @@
       [baseCurrency]="baseCurrency"
     ></aws-transactions-table>
   </div>
+} @else if (loading) {
+  <!-- Initial load: placeholder mimicking the header + transaction rows -->
+  <div class="p-6">
+    <aws-skeleton class="mb-6 h-9 w-48"></aws-skeleton>
+    <aws-skeleton class="mb-2 h-14"></aws-skeleton>
+    <aws-skeleton class="mb-2 h-14"></aws-skeleton>
+    <aws-skeleton class="mb-2 h-14"></aws-skeleton>
+    <aws-skeleton class="h-14"></aws-skeleton>
+  </div>
 } @else {
   <div class="no-selection">
     <span class="no-selection-icon">&#128193;</span>

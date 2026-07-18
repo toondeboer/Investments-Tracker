@@ -2,9 +2,13 @@
 @use 'mixins' as *;
 
 .grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
   margin-top: 16px;
   gap: 12px;
-  justify-content: flex-start;
 }
 
 .box {
