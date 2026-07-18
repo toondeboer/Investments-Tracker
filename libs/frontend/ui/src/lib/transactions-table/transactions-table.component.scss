@@ -258,6 +258,7 @@
 }
 
 .icon-btn {
+  @include touch-target;
   display: inline-flex;
   align-items: center;
   justify-content: center;

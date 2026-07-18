@@ -23,6 +23,7 @@
 }
 
 .add-btn {
+  @include touch-target;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -124,6 +125,7 @@
 }
 
 .action-btn {
+  @include touch-target;
   display: flex;
   align-items: center;
   justify-content: center;

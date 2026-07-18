@@ -23,6 +23,7 @@
 }
 
 .chip {
+  @include touch-target;
   background: transparent;
   border: 1px solid $color-border-strong;
   border-radius: $radius-sm;

@@ -101,6 +101,7 @@
 }
 
 .chip {
+  @include touch-target;
   padding: 6px 14px;
   border-radius: 20px;
   border: 1px solid $color-border;

@@ -53,6 +53,7 @@ aws-scrolling-text {
 }
 
 .captain-btn {
+  @include touch-target;
   flex-shrink: 0;
   display: flex;
   align-items: center;

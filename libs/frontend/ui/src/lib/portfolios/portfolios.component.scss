@@ -1,4 +1,5 @@
 @use 'tokens' as *;
+@use 'mixins' as *;
 
 :host {
   display: block;
@@ -36,6 +37,7 @@
 }
 
 .back-btn {
+  @include touch-target;
   display: flex;
   align-items: center;
   gap: 4px;

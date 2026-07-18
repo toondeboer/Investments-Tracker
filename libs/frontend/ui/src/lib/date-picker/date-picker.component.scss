@@ -6,6 +6,7 @@
 }
 
 .date-trigger {
+  @include touch-target;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -55,6 +56,12 @@
   box-shadow: $shadow-card;
   padding: 14px;
   width: 280px;
+
+  // Wider panel on touch layouts so the 7-column day grid yields ~40px
+  // cells (dense-grid exception to the 44px rule).
+  @media (max-width: 767.98px) {
+    width: min(320px, calc(100vw - 32px));
+  }
 }
 
 .calendar-header {
@@ -72,6 +79,7 @@
 }
 
 .nav-btn {
+  @include touch-target;
   display: inline-flex;
   align-items: center;
   justify-content: center;
