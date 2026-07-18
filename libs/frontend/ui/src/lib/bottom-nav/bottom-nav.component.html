@@ -1,0 +1,23 @@
+<nav
+  class="fixed inset-x-0 bottom-0 z-50 border-t border-gold/15 bg-bg-surface pb-[env(safe-area-inset-bottom)]"
+  aria-label="Primary"
+>
+  <ul class="m-0 flex list-none p-0">
+    @for (nav of options; track nav.path) {
+      <li class="flex-1">
+        <a
+          [routerLink]="'/' + nav.path"
+          routerLinkActive
+          #link="routerLinkActive"
+          [attr.aria-current]="link.isActive ? 'page' : null"
+          [class.text-gold]="link.isActive"
+          [class.text-muted]="!link.isActive"
+          class="flex min-h-14 flex-col items-center justify-center gap-1 no-underline transition-colors"
+        >
+          <lucide-icon [name]="nav.icon" [size]="22"></lucide-icon>
+          <span class="text-xs font-medium">{{ nav.text }}</span>
+        </a>
+      </li>
+    }
+  </ul>
+</nav>

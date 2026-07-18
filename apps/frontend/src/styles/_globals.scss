@@ -148,6 +148,13 @@
   z-index: 9999;
   cursor: pointer;
   animation: fadeInUp 0.3s ease forwards;
+
+  // Below Tailwind's `md` the bottom tab bar (3.5rem + safe-area inset)
+  // occupies the bottom edge — lift toasts above it.
+  @media (max-width: 767.98px) {
+    bottom: calc(3.5rem + env(safe-area-inset-bottom) + 1rem);
+    left: 1rem;
+  }
 }
 
 .sailor-toast-error {
