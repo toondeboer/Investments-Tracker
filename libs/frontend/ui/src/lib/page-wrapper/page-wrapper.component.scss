@@ -121,15 +121,7 @@ aws-scrolling-text {
   overflow: hidden;
 }
 
-// ─── Mobile overlay ───────────────────────────────────────────────────────────
-.sidenav-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
-  z-index: 40;
-}
-
-// ─── Sidenav ──────────────────────────────────────────────────────────────────
+// ─── Sidenav (desktop only — mobile uses the bottom tab bar) ─────────────────
 .app-sidenav {
   width: 220px;
   background-color: $color-bg-surface;
@@ -145,19 +137,6 @@ aws-scrolling-text {
   &.sidenav-desktop-closed {
     width: 0;
     border-color: transparent;
-  }
-
-  &.sidenav-mobile {
-    position: fixed;
-    inset-block: 0;
-    left: 0;
-    z-index: 50;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-
-    &.sidenav-open {
-      transform: translateX(0);
-    }
   }
 }
 

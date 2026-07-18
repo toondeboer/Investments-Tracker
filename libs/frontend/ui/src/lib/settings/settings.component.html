@@ -22,4 +22,16 @@
       </select>
     </div>
   </div>
+
+  <div class="settings-card mt-6">
+    <h2 class="card-title">Account</h2>
+    <p class="card-description">Sign out of sailor on this device.</p>
+    <button
+      class="flex min-h-11 cursor-pointer items-center gap-2 rounded-sm border border-gold/40 bg-transparent px-4 text-sm text-muted transition-colors hover:border-error hover:text-error"
+      (click)="logout()"
+    >
+      <lucide-icon name="LogOut" [size]="16"></lucide-icon>
+      Log out
+    </button>
+  </div>
 </div>

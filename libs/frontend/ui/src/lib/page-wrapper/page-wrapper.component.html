@@ -1,13 +1,21 @@
-<div class="app-shell" [class.is-mobile]="mobileQuery.matches">
+<div class="app-shell" [class.is-mobile]="isMobile()">
   <!-- ── Toolbar ──────────────────────────────────────────────────────────── -->
   <header class="app-toolbar">
-    <button
-      class="menu-btn"
-      (click)="sidenavOpen = !sidenavOpen"
-      aria-label="Toggle navigation"
-    >
-      <lucide-icon name="Menu" [size]="20"></lucide-icon>
-    </button>
+    @if (isMobile()) {
+      <img
+        src="assets/logo.png"
+        alt="sailor"
+        class="ml-3 h-8 w-auto object-contain"
+      />
+    } @else {
+      <button
+        class="menu-btn"
+        (click)="sidenavOpen = !sidenavOpen"
+        aria-label="Toggle navigation"
+      >
+        <lucide-icon name="Menu" [size]="20"></lucide-icon>
+      </button>
+    }
     <aws-scrolling-text></aws-scrolling-text>
     <button
       class="captain-btn"
@@ -29,56 +37,59 @@
   }
 
   <!-- ── Body ─────────────────────────────────────────────────────────────── -->
-  <div class="app-body" [style.marginTop.px]="mobileQuery.matches ? 56 : 0">
-    <!-- Mobile overlay -->
-    @if (mobileQuery.matches && sidenavOpen) {
-      <div class="sidenav-overlay" (click)="sidenavOpen = false"></div>
+  <div class="app-body" [style.marginTop.px]="isMobile() ? 56 : 0">
+    <!-- ── Sidenav (desktop only — mobile uses the bottom tab bar) ─────────── -->
+    @if (!isMobile()) {
+      <nav
+        class="app-sidenav"
+        [class.sidenav-open]="sidenavOpen"
+        [class.sidenav-desktop-closed]="!sidenavOpen"
+      >
+        <div class="sidenav-inner">
+          <div class="sidenav-header">
+            <img src="assets/logo.png" alt="sailor" class="sidenav-logo" />
+            <span class="wordmark">s<span class="ai">ai</span>lor</span>
+          </div>
+
+          <ul class="nav-list">
+            @for (nav of navigationOptions; track nav) {
+              <li>
+                <button
+                  class="nav-item"
+                  [class.active]="isActive(nav.path)"
+                  (click)="routeTo(nav.path)"
+                >
+                  <lucide-icon
+                    [name]="nav.icon"
+                    [size]="20"
+                    class="nav-icon"
+                  ></lucide-icon>
+                  <span>{{ nav.text }}</span>
+                </button>
+              </li>
+            }
+          </ul>
+
+          <div class="sidenav-footer">
+            <button class="logout-btn" (click)="logout()">
+              <lucide-icon name="LogOut" [size]="18"></lucide-icon>
+              Log out
+            </button>
+          </div>
+        </div>
+      </nav>
     }
 
-    <!-- ── Sidenav ─────────────────────────────────────────────────────────── -->
-    <nav
-      class="app-sidenav"
-      [class.sidenav-open]="sidenavOpen"
-      [class.sidenav-mobile]="mobileQuery.matches"
-      [class.sidenav-desktop-closed]="!mobileQuery.matches && !sidenavOpen"
-    >
-      <div class="sidenav-inner">
-        <div class="sidenav-header">
-          <img src="assets/logo.png" alt="sailor" class="sidenav-logo" />
-          <span class="wordmark">s<span class="ai">ai</span>lor</span>
-        </div>
-
-        <ul class="nav-list">
-          @for (nav of navigationOptions; track nav) {
-            <li>
-              <button
-                class="nav-item"
-                [class.active]="isActive(nav.path)"
-                (click)="routeTo(nav.path)"
-              >
-                <lucide-icon
-                  [name]="nav.icon"
-                  [size]="20"
-                  class="nav-icon"
-                ></lucide-icon>
-                <span>{{ nav.text }}</span>
-              </button>
-            </li>
-          }
-        </ul>
-
-        <div class="sidenav-footer">
-          <button class="logout-btn" (click)="logout()">
-            <lucide-icon name="LogOut" [size]="18"></lucide-icon>
-            Log out
-          </button>
-        </div>
-      </div>
-    </nav>
-
     <!-- ── Main content ───────────────────────────────────────────────────── -->
-    <main class="app-content">
+    <main
+      class="app-content pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0"
+    >
       <router-outlet></router-outlet>
     </main>
   </div>
+
+  <!-- ── Bottom tab bar (mobile only) ─────────────────────────────────────── -->
+  @if (isMobile()) {
+    <aws-bottom-nav [options]="navigationOptions"></aws-bottom-nav>
+  }
 </div>
