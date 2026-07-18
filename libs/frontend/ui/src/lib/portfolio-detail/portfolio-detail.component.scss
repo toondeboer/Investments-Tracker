@@ -18,6 +18,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  // Let the actions drop to their own row on narrow screens instead of
+  // colliding with the title.
+  flex-wrap: wrap;
+  gap: 8px 16px;
   padding: 20px 24px 16px;
   border-bottom: 1px solid $color-border;
   flex-shrink: 0;
@@ -36,6 +40,10 @@
   display: flex;
   align-items: center;
   gap: 10px;
+
+  .btn {
+    white-space: nowrap;
+  }
 }
 
 .add-holding-btn {
