@@ -68,3 +68,12 @@
   padding-right: 34px;
   cursor: pointer;
 }
+
+// ~44px minimum tap target on touch-first (sub-md) layouts — Apple HIG /
+// WCAG 2.5.5. Desktop keeps the denser pointer-sized controls.
+@mixin touch-target($size: 44px) {
+  @media (max-width: 767.98px) {
+    min-width: $size;
+    min-height: $size;
+  }
+}

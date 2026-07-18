@@ -48,8 +48,12 @@ Goal: sailor feels like it was designed for a phone, not shrunk to fit one.
       list, and the portfolio detail pane; the insights banner's bespoke shimmer was
       unified onto it. The slim progress bars remain for background refetches, where
       content is already on screen.
-- [ ] ⬜ **Touch-target audit.** Everything tappable ≥ 44×44 px: nav items, table row
-      actions, date-picker, dialog buttons.
+- [x] ✅ **Touch-target audit.** Everything tappable ≥ 44×44 px on sub-`md` layouts via
+      a shared `touch-target` SCSS mixin: chips, holding/table row actions,
+      portfolio-list actions, captain button, back button, dialog fields, date-picker
+      trigger and month nav. Desktop keeps the denser pointer-sized controls. One
+      documented exception: calendar day cells are 40×40 (dense 7-column grid on a
+      390px phone; the panel widens on mobile to get there).
 - [ ] ⬜ **Responsive dialogs.** `DialogService` is the single creation point — add
       responsive sizing there so all dialogs (transaction, holding-edit, CSV-upload,
       confirm, portfolio-name) render full-screen or as bottom sheets below the mobile

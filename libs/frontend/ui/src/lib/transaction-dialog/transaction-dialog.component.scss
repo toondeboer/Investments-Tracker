@@ -44,6 +44,7 @@
 }
 
 .field-input {
+  @include touch-target;
   background: $color-bg-surface;
   border: 1px solid $color-border-strong;
   border-radius: $radius-sm;
