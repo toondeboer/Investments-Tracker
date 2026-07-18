@@ -3,6 +3,7 @@
     portfolios: portfolios$ | async,
     allStates: allPortfolioStates$ | async,
     baseCurrency: baseCurrency$ | async,
+    loading: loading$ | async,
   };
   as vm
 ) {
@@ -13,6 +14,7 @@
           [portfolios]="vm.portfolios ?? []"
           [portfolioStates]="vm.allStates"
           [baseCurrency]="vm.baseCurrency ?? 'EUR'"
+          [loading]="vm.loading ?? false"
           [selectedPortfolioId]="selectedPortfolioId"
           (selectPortfolio)="onSelectPortfolio($event)"
           (createPortfolio)="onCreatePortfolio()"
@@ -35,6 +37,7 @@
           [portfolio]="getSelectedPortfolio(vm.portfolios ?? [])"
           [stocks]="getSelectedPortfolioStocks(vm.allStates)"
           [baseCurrency]="vm.baseCurrency ?? 'EUR'"
+          [loading]="vm.loading ?? false"
           (importCsv)="onImportCsv($event)"
         ></aws-portfolio-detail>
       </main>

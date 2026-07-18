@@ -93,6 +93,23 @@
           [currencySymbol]="currencySymbol(vm.currency)"
         ></aws-active-tickers>
       </section>
+    } @else if (vm.loading) {
+      <!-- Initial load: skeleton placeholders mirroring the dashboard layout -->
+      <section class="page-section">
+        <aws-skeleton class="h-24"></aws-skeleton>
+      </section>
+      <section class="page-section">
+        <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+          <aws-skeleton class="h-24"></aws-skeleton>
+          <aws-skeleton class="h-24"></aws-skeleton>
+          <aws-skeleton class="h-24"></aws-skeleton>
+          <aws-skeleton class="h-24"></aws-skeleton>
+        </div>
+      </section>
+      <section class="page-section">
+        <aws-skeleton class="mb-4 h-9 w-2/3"></aws-skeleton>
+        <aws-skeleton class="h-72"></aws-skeleton>
+      </section>
     } @else {
       <section class="page-section">
         <div class="empty-dashboard">
